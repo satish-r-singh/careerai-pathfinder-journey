@@ -72,16 +72,16 @@ const Onboarding = () => {
     }
   };
 
-  const isStepValid = () => {
+  const isStepValid = (): boolean => {
     switch (currentStep) {
       case 1:
-        return data.fullName && data.email;
+        return Boolean(data.fullName && data.email);
       case 2:
-        return data.currentRole && data.experience;
+        return Boolean(data.currentRole && data.experience);
       case 3:
-        return data.background && data.aiInterest;
+        return Boolean(data.background && data.aiInterest);
       case 4:
-        return data.goals.length > 0 && data.timeline;
+        return Boolean(data.goals.length > 0 && data.timeline);
       case 5:
         return true; // File upload is optional
       default:
