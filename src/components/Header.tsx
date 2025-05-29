@@ -1,12 +1,19 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { User, Menu, X } from 'lucide-react';
+import { User, Menu, X, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
@@ -38,12 +45,26 @@ const Header = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" onClick={() => navigate('/login')}>
-              Sign In
-            </Button>
-            <Button onClick={() => navigate('/onboarding')} className="bg-primary hover:bg-primary/90">
-              Get Started
-            </Button>
+            {user ? (
+              <>
+                <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                  Dashboard
+                </Button>
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => navigate('/auth')}>
+                  Sign In
+                </Button>
+                <Button onClick={() => navigate('/auth')} className="bg-primary hover:bg-primary/90">
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -69,12 +90,26 @@ const Header = () => {
                 Success Stories
               </a>
               <div className="flex flex-col space-y-2 pt-4">
-                <Button variant="outline" onClick={() => navigate('/login')}>
-                  Sign In
-                </Button>
-                <Button onClick={() => navigate('/onboarding')} className="bg-primary hover:bg-primary/90">
-                  Get Started
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                      Dashboard
+                    </Button>
+                    <Button variant="outline" onClick={handleSignOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" onClick={() => navigate('/auth')}>
+                      Sign In
+                    </Button>
+                    <Button onClick={() => navigate('/auth')} className="bg-primary hover:bg-primary/90">
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>

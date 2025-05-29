@@ -1,15 +1,23 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProgressBar from '@/components/ProgressBar';
 import PhaseCard from '@/components/PhaseCard';
-import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen } from 'lucide-react';
+import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [currentPhase] = useState(1);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   const phases = [
     {
       id: 1,
@@ -83,6 +91,9 @@ const Dashboard = () => {
               <Button variant="ghost" size="sm">
                 <User className="w-4 h-4" />
               </Button>
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -92,7 +103,7 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, Alex! 👋
+            Welcome back, {user?.user_metadata?.full_name || user?.email}! 👋
           </h1>
           <p className="text-gray-600">
             You're in the <span className="font-semibold text-primary">Introspection</span> phase. 
