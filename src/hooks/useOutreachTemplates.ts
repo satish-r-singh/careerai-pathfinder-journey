@@ -11,16 +11,6 @@ interface IkigaiData {
   vocation: string[];
 }
 
-interface OutreachTemplate {
-  id: string;
-  template_content: string;
-  template_type: string;
-  job_description: string | null;
-  ikigai_data: IkigaiData;
-  created_at: string;
-  updated_at: string;
-}
-
 export const useOutreachTemplates = (ikigaiData: IkigaiData, jobDescription: string) => {
   const { user } = useAuth();
   const [templates, setTemplates] = useState<string[]>([]);
@@ -42,7 +32,7 @@ export const useOutreachTemplates = (ikigaiData: IkigaiData, jobDescription: str
       if (error) throw error;
 
       if (data && data.length > 0) {
-        const templateContents = data.map((template: OutreachTemplate) => template.template_content);
+        const templateContents = data.map((template) => template.template_content);
         setTemplates(templateContents);
         return true;
       }
