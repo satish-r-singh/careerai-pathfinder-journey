@@ -169,7 +169,13 @@ const Dashboard = () => {
                   <PhaseCard 
                     key={phase.id} 
                     phase={phase}
-                    onClick={() => console.log(`Navigate to ${phase.name} phase`)}
+                    onClick={() => {
+                      if (phase.name === 'Introspection') {
+                        navigate('/introspection');
+                      } else {
+                        console.log(`Navigate to ${phase.name} phase`);
+                      }
+                    }}
                   />
                 ))}
               </div>

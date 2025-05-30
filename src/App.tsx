@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Auth from "./pages/Auth";
 import Introspection from "./pages/Introspection";
+import Ikigai from "./pages/Ikigai";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,11 @@ const App = () => (
             <Route path="/introspection" element={
               <ProtectedRoute>
                 <Introspection />
+              </ProtectedRoute>
+            } />
+            <Route path="/ikigai" element={
+              <ProtectedRoute>
+                <Ikigai />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={

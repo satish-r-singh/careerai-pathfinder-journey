@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Heart, Globe, Star, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import IkigaiDiscovery from '@/components/IkigaiDiscovery';
 
 const Introspection = () => {
   const navigate = useNavigate();
@@ -59,15 +58,20 @@ const Introspection = () => {
                 </div>
               </div>
               <div className="text-center">
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 mb-6">
                   This guided discovery will help you find clarity on your career direction 
                   and identify opportunities in the AI space that align with your true purpose.
                 </p>
+                <Button 
+                  onClick={() => navigate('/ikigai')}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Start Ikigai Discovery
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </CardContent>
           </Card>
-
-          <IkigaiDiscovery />
         </div>
       </div>
     </div>
