@@ -42,15 +42,8 @@ ${ikigaiData.profession?.join('\n') || 'Not specified'}
 VOCATION (What You Can Be Paid For):
 ${ikigaiData.vocation?.join('\n') || 'Not specified'}
 
-Please provide:
-1. Top 5 industries that align with these insights
-2. Specific AI-related roles within each industry
-3. Market trends and growth opportunities
-4. Required skills and qualifications
-5. Salary ranges and career progression paths
-6. Companies or organizations to research
+You MUST respond with valid JSON in the exact format below. Do not include any text before or after the JSON:
 
-Format the response as structured JSON with the following format:
 {
   "industries": [
     {
@@ -77,7 +70,9 @@ Format the response as structured JSON with the following format:
   "skill_gaps": [
     "Skills to develop based on analysis"
   ]
-}`;
+}
+
+Please provide at least 3-5 industries with 2-3 AI roles each.`;
 
     console.log('Sending request to OpenAI');
 
@@ -92,7 +87,7 @@ Format the response as structured JSON with the following format:
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert career counselor and industry analyst specializing in AI careers. Provide detailed, actionable insights based on Ikigai principles.' 
+            content: 'You are an expert career counselor and industry analyst specializing in AI careers. You MUST respond with valid JSON only. Do not include any explanatory text outside the JSON structure.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -109,14 +104,28 @@ Format the response as structured JSON with the following format:
     const data = await response.json();
     console.log('OpenAI response received');
     
-    const generatedContent = data.choices[0].message.content;
+    let generatedContent = data.choices[0].message.content.trim();
     
-    // Try to parse as JSON, fallback to structured text if needed
+    // Clean up the response to ensure it's valid JSON
+    if (generatedContent.startsWith('```json')) {
+      generatedContent = generatedContent.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    }
+    
+    if (generatedContent.startsWith('```')) {
+      generatedContent = generatedContent.replace(/^```\n?/, '').replace(/\n?```$/, '');
+    }
+    
+    // Try to parse as JSON
     let researchResults;
     try {
       researchResults = JSON.parse(generatedContent);
+      console.log('Successfully parsed JSON response');
     } catch (e) {
-      console.log('Failed to parse as JSON, using structured text format');
+      console.log('Failed to parse as JSON, creating fallback structure');
+      console.error('JSON parse error:', e);
+      console.log('Raw content:', generatedContent);
+      
+      // Create a fallback structure if JSON parsing fails
       researchResults = {
         content: generatedContent,
         type: 'text'
