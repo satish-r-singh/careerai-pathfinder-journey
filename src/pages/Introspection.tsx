@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import IntrospectionProgressBar from '@/components/IntrospectionProgressBar';
 import IkigaiAnswersDisplay from '@/components/IkigaiAnswersDisplay';
@@ -30,7 +29,7 @@ const Introspection = () => {
     
     try {
       // Reset the ikigai progress
-      const { error } = await supabase
+      const { error: ikigaiError } = await supabase
         .from('ikigai_progress')
         .update({
           is_completed: false,
@@ -45,11 +44,35 @@ const Introspection = () => {
         })
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (ikigaiError) throw ikigaiError;
+
+      // Reset industry research (since it's based on Ikigai data)
+      const { error: industryError } = await supabase
+        .from('industry_research')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (industryError) throw industryError;
+
+      // Reset career roadmaps (since they're based on Ikigai + Industry Research)
+      const { error: roadmapError } = await supabase
+        .from('career_roadmaps')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (roadmapError) throw roadmapError;
+
+      // Reset outreach templates (since they're personalized based on Ikigai)
+      const { error: templatesError } = await supabase
+        .from('outreach_templates')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (templatesError) throw templatesError;
 
       toast({
-        title: "Assessment Reset",
-        description: "Your Ikigai assessment has been reset. You can now start over.",
+        title: "Assessment Reset Complete",
+        description: "Your Ikigai assessment and all related data have been reset. You can now start over.",
       });
 
       // Refresh the status
