@@ -62,7 +62,7 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
     try {
       const { error } = await supabase
         .from('ikigai_progress')
-        .update({ ai_insights: newInsights })
+        .update({ ai_insights: newInsights as unknown as any })
         .eq('user_id', user.id);
 
       if (error) throw error;
