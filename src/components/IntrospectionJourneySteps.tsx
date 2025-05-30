@@ -3,12 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowRight, FileText, Sparkles, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import PersonalizedOutreachCard from './PersonalizedOutreachCard';
 
 interface IntrospectionJourneyStepsProps {
   industryResearchCompleted: boolean;
+  ikigaiData: {
+    passion: string[];
+    mission: string[];
+    profession: string[];
+    vocation: string[];
+  };
 }
 
-const IntrospectionJourneySteps = ({ industryResearchCompleted }: IntrospectionJourneyStepsProps) => {
+const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: IntrospectionJourneyStepsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -21,6 +28,7 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted }: IntrospectionJ
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-6">
+          {/* Industry Analysis Card */}
           <div className={`p-6 border rounded-xl transition-all duration-300 ${
             industryResearchCompleted 
               ? 'bg-gradient-to-br from-green-50/50 to-emerald-50/50 border-green-200 shadow-lg' 
@@ -53,6 +61,7 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted }: IntrospectionJ
             </Button>
           </div>
 
+          {/* AI Career Integration Card */}
           <div className={`p-6 border rounded-xl transition-all duration-300 ${
             industryResearchCompleted 
               ? 'bg-gradient-to-br from-violet-50/50 to-purple-50/50 border-violet-200 hover:shadow-lg' 
@@ -85,7 +94,11 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted }: IntrospectionJ
             </Button>
           </div>
 
-          <div className="md:col-span-2 p-6 border rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 border-indigo-200">
+          {/* Personalised Outreach Card */}
+          <PersonalizedOutreachCard ikigaiData={ikigaiData} />
+
+          {/* Review Your Progress Card */}
+          <div className="p-6 border rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 border-indigo-200">
             <div className="flex items-center space-x-3 mb-4">
               <CheckCircle className="w-8 h-8 text-indigo-500" />
               <h3 className="text-lg font-semibold">Review Your Progress</h3>

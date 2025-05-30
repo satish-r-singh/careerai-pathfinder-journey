@@ -60,7 +60,10 @@ const Introspection = () => {
               <IkigaiCompletionBanner />
               <IkigaiAnswersDisplay ikigaiData={ikigaiData} />
               <IkigaiInsights ikigaiData={ikigaiData} />
-              <IntrospectionJourneySteps industryResearchCompleted={industryResearchCompleted} />
+              <IntrospectionJourneySteps 
+                industryResearchCompleted={industryResearchCompleted} 
+                ikigaiData={ikigaiData}
+              />
             </div>
           )}
         </div>
