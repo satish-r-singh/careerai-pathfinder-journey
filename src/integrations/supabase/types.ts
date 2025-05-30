@@ -66,6 +66,39 @@ export type Database = {
         }
         Relationships: []
       }
+      outreach_templates: {
+        Row: {
+          created_at: string
+          id: string
+          ikigai_data: Json
+          job_description: string | null
+          template_content: string
+          template_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ikigai_data: Json
+          job_description?: string | null
+          template_content: string
+          template_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ikigai_data?: Json
+          job_description?: string | null
+          template_content?: string
+          template_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ai_interest: string | null
