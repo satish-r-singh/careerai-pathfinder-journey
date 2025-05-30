@@ -33,6 +33,7 @@ function App() {
               <Route path="/introspection" element={<ProtectedRoute><Introspection /></ProtectedRoute>} />
               <Route path="/ikigai" element={<ProtectedRoute><Ikigai /></ProtectedRoute>} />
               <Route path="/industry-research" element={<ProtectedRoute><IndustryResearch /></ProtectedRoute>} />
+              <Route path="/ai-career-integration" element={<ProtectedRoute><AICareerIntegration /></ProtectedRoute>} />
             </Routes>
             <Toaster />
           </div>
