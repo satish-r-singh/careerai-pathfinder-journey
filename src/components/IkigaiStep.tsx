@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,32 +21,40 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
   const [responses, setResponses] = useState<string[]>(initialData || []);
   const [currentResponse, setCurrentResponse] = useState('');
 
+  // Use useCallback to memoize the onDataChange callback
+  const memoizedOnDataChange = useCallback(onDataChange, [onDataChange]);
+
   useEffect(() => {
     setResponses(initialData || []);
   }, [initialData, step.category]);
 
+  // Only call onDataChange when responses actually change, not on every render
   useEffect(() => {
-    onDataChange(responses);
-  }, [responses, onDataChange]);
+    // Compare arrays to avoid unnecessary calls
+    const hasChanged = JSON.stringify(responses) !== JSON.stringify(initialData || []);
+    if (hasChanged) {
+      memoizedOnDataChange(responses);
+    }
+  }, [responses, memoizedOnDataChange, initialData]);
 
-  const addResponse = () => {
+  const addResponse = useCallback(() => {
     if (currentResponse.trim()) {
       const newResponses = [...responses, currentResponse.trim()];
       setResponses(newResponses);
       setCurrentResponse('');
     }
-  };
+  }, [currentResponse, responses]);
 
-  const removeResponse = (index: number) => {
+  const removeResponse = useCallback((index: number) => {
     const newResponses = responses.filter((_, i) => i !== index);
     setResponses(newResponses);
-  };
+  }, [responses]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
       addResponse();
     }
-  };
+  }, [addResponse]);
 
   return (
     <Card>
@@ -97,7 +105,7 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
                 </div>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {responses.map((response, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border">
+                    <div key={`${step.category}-${index}-${response.slice(0, 20)}`} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border">
                       <span className="flex-1 text-sm leading-relaxed break-words">{response}</span>
                       <Button
                         variant="ghost"
