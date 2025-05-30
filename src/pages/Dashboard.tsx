@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [phaseProgress, setPhaseProgress] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
+  const [ikigaiLoading, setIkigaiLoading] = useState(true);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
@@ -23,9 +24,14 @@ const Dashboard = () => {
   }, [user]);
 
   const loadIntrospectionProgress = async () => {
-    if (!user) return;
+    if (!user) {
+      setIkigaiLoading(false);
+      return;
+    }
     
     try {
+      console.log('Loading introspection progress for dashboard...');
+      
       // Load Ikigai progress
       const { data: ikigaiData, error: ikigaiError } = await supabase
         .from('ikigai_progress')
@@ -38,7 +44,9 @@ const Dashboard = () => {
         return;
       }
 
+      console.log('Dashboard - Ikigai progress data:', ikigaiData);
       const isIkigaiCompleted = ikigaiData?.is_completed || false;
+      console.log('Dashboard - Setting ikigaiCompleted to:', isIkigaiCompleted);
       setIkigaiCompleted(isIkigaiCompleted);
 
       // Calculate overall introspection phase progress
@@ -54,17 +62,14 @@ const Dashboard = () => {
       }
 
       // 2. Target roles research (20% of total progress)
-      // Check if user has completed today's research task
       if (completedTasks.includes(2)) {
         totalProgress += 20;
       }
 
       // 3. Career goals definition (20% of total progress)
       // This could be tracked when user completes profile or separate goal-setting flow
-      // For now, we'll simulate this based on profile completeness
       
       // 4. Industry research (20% of total progress)
-      // Check if user has completed today's reading task
       if (completedTasks.includes(3)) {
         totalProgress += 20;
       }
@@ -72,6 +77,8 @@ const Dashboard = () => {
       setPhaseProgress(Math.round(totalProgress));
     } catch (error) {
       console.error('Error loading introspection progress:', error);
+    } finally {
+      setIkigaiLoading(false);
     }
   };
   
@@ -81,6 +88,13 @@ const Dashboard = () => {
   };
 
   const handleIntrospectionClick = () => {
+    console.log('Introspection clicked - ikigaiCompleted:', ikigaiCompleted, 'ikigaiLoading:', ikigaiLoading);
+    
+    if (ikigaiLoading) {
+      // Wait for loading to complete
+      return;
+    }
+    
     if (ikigaiCompleted) {
       // Navigate to introspection page which will show next steps
       navigate('/introspection');

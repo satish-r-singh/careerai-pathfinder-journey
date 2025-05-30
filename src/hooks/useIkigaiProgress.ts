@@ -23,17 +23,22 @@ export const useIkigaiProgress = () => {
   });
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const lastSavedDataRef = useRef<string>('');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef(false);
 
   useEffect(() => {
-    loadSavedProgress();
+    if (user) {
+      loadSavedProgress();
+    } else {
+      setInitialLoading(false);
+    }
   }, [user]);
 
   // Debounced auto-save when ikigaiData changes
   useEffect(() => {
-    if (!user) return;
+    if (!user || initialLoading) return;
     
     const currentDataString = JSON.stringify(ikigaiData);
     const hasData = ikigaiData.passion.length > 0 || ikigaiData.mission.length > 0 || 
@@ -55,7 +60,7 @@ export const useIkigaiProgress = () => {
         }
       }, 500); // 500ms debounce
     }
-  }, [ikigaiData, user]);
+  }, [ikigaiData, user, initialLoading]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -69,7 +74,11 @@ export const useIkigaiProgress = () => {
   const loadSavedProgress = async () => {
     if (!user) return;
     
+    setInitialLoading(true);
+    
     try {
+      console.log('Loading saved progress for user:', user.id);
+      
       const { data, error } = await supabase
         .from('ikigai_progress')
         .select('*')
@@ -77,12 +86,14 @@ export const useIkigaiProgress = () => {
         .maybeSingle();
 
       if (error) {
+        console.error('Error loading saved progress:', error);
         throw error;
       }
 
       if (data) {
+        console.log('Found saved ikigai progress:', data);
+        
         const savedIkigaiData = data.ikigai_data as unknown as IkigaiData;
-        console.log('Loaded saved ikigai data:', savedIkigaiData);
         const loadedData = savedIkigaiData || {
           passion: [],
           mission: [],
@@ -90,15 +101,36 @@ export const useIkigaiProgress = () => {
           vocation: []
         };
         
+        console.log('Setting loaded data:', loadedData);
         setIkigaiData(loadedData);
         setCurrentStep(data.current_step || 0);
         setIsCompleted(data.is_completed || false);
         
         // Update the ref to prevent immediate auto-save after loading
         lastSavedDataRef.current = JSON.stringify(loadedData);
+        
+        console.log('Loaded progress - Step:', data.current_step, 'Completed:', data.is_completed);
+      } else {
+        console.log('No saved progress found, starting fresh');
+        // Reset to initial state if no data found
+        setIkigaiData({
+          passion: [],
+          mission: [],
+          profession: [],
+          vocation: []
+        });
+        setCurrentStep(0);
+        setIsCompleted(false);
       }
     } catch (error) {
       console.error('Error loading saved progress:', error);
+      toast({
+        title: "Error loading progress",
+        description: "Failed to load your saved progress. Starting fresh.",
+        variant: "destructive",
+      });
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -184,6 +216,7 @@ export const useIkigaiProgress = () => {
     isCompleted,
     setIsCompleted,
     loading,
+    initialLoading,
     saveProgress,
     handleStepData,
     loadSavedProgress
