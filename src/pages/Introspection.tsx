@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Heart, Globe, Star, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import IkigaiChart from '@/components/IkigaiChart';
 
 const Introspection = () => {
   const navigate = useNavigate();
@@ -35,6 +36,9 @@ const Introspection = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Add the visual chart */}
+              <IkigaiChart />
+              
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="text-center p-4 bg-red-50 rounded-lg">
                   <Heart className="w-8 h-8 text-red-500 mx-auto mb-2" />
