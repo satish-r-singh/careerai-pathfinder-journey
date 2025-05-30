@@ -78,6 +78,15 @@ const AICareerIntegration = () => {
 
       if (researchError) throw researchError;
 
+      // Load existing roadmap
+      const { data: roadmapResult, error: roadmapError } = await supabase
+        .from('career_roadmaps')
+        .select('roadmap_data')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (roadmapError) throw roadmapError;
+
       if (!ikigaiResult?.ikigai_data || !researchResult?.research_data) {
         toast({
           title: "Missing Prerequisites",
@@ -90,6 +99,11 @@ const AICareerIntegration = () => {
 
       setIkigaiData(ikigaiResult.ikigai_data);
       setIndustryResearch(researchResult.research_data);
+      
+      // Set existing roadmap if found
+      if (roadmapResult?.roadmap_data) {
+        setRoadmap(roadmapResult.roadmap_data);
+      }
 
     } catch (error) {
       console.error('Error loading data:', error);
