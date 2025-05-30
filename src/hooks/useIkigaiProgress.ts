@@ -58,7 +58,7 @@ export const useIkigaiProgress = () => {
           lastSavedDataRef.current = currentDataString;
           saveProgress();
         }
-      }, 500); // 500ms debounce
+      }, 1000); // Increased to 1000ms debounce for more stability
     }
   }, [ikigaiData, user, initialLoading]);
 
@@ -193,10 +193,11 @@ export const useIkigaiProgress = () => {
     }
   }, [ikigaiData, currentStep, isCompleted, user, toast]);
 
-  const handleStepData = (category: string, responses: string[]) => {
+  const handleStepData = useCallback((category: string, responses: string[]) => {
     console.log('Updating step data for category:', category, 'with responses:', responses);
     
     setIkigaiData(prev => {
+      // Create a deep copy to ensure we don't mutate the previous state
       const updated = {
         passion: category === 'passion' ? [...responses] : [...prev.passion],
         mission: category === 'mission' ? [...responses] : [...prev.mission],
@@ -207,7 +208,7 @@ export const useIkigaiProgress = () => {
       console.log('Updated ikigaiData:', updated);
       return updated;
     });
-  };
+  }, []);
 
   return {
     currentStep,
