@@ -58,6 +58,21 @@ const IkigaiDiscovery = () => {
         // Save progress after updating step
         await saveProgress();
       } else {
+        // Check if all steps are completed before allowing completion
+        const allStepsCompleted = ikigaiData.passion.length > 0 && 
+                                 ikigaiData.mission.length > 0 && 
+                                 ikigaiData.profession.length > 0 && 
+                                 ikigaiData.vocation.length > 0;
+
+        if (!allStepsCompleted) {
+          toast({
+            title: "Incomplete Discovery",
+            description: "Please complete all four sections (Passion, Mission, Profession, Vocation) before finishing your discovery.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         console.log('Completing discovery...');
         
         // First save the current progress with completion
@@ -193,6 +208,7 @@ const IkigaiDiscovery = () => {
               currentStep={currentStep}
               totalSteps={ikigaiQuestions.length}
               loading={loading}
+              ikigaiData={ikigaiData}
               onPrevStep={prevStep}
               onNextStep={nextStep}
             />
