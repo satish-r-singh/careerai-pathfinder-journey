@@ -3,8 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface IkigaiStepProps {
   step: {
@@ -45,11 +44,6 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
     }
   }, [currentResponse, responses]);
 
-  const removeResponse = useCallback((index: number) => {
-    const newResponses = responses.filter((_, i) => i !== index);
-    setResponses(newResponses);
-  }, [responses]);
-
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
       addResponse();
@@ -85,7 +79,7 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
               onChange={(e) => setCurrentResponse(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Share your thoughts, ideas, or specific examples..."
-              className="min-h-[100px] resize-none"
+              className="min-h-[150px] resize-none"
             />
             <div className="flex justify-between items-center">
               <p className="text-sm text-gray-500">Press Ctrl+Enter to add</p>
@@ -94,32 +88,6 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
                 Add Response
               </Button>
             </div>
-          </div>
-
-          <div className="min-h-[60px]">
-            {responses.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="font-medium">Your responses:</label>
-                  <Badge variant="secondary">{responses.length} response{responses.length !== 1 ? 's' : ''} added</Badge>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {responses.map((response, index) => (
-                    <div key={`${step.category}-${index}-${response.slice(0, 20)}`} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border">
-                      <span className="flex-1 text-sm leading-relaxed break-words">{response}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeResponse(index)}
-                        className="text-gray-400 hover:text-red-500 flex-shrink-0 h-8 w-8 p-0"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </CardContent>

@@ -5,6 +5,7 @@ import IkigaiStep from './IkigaiStep';
 import IkigaiResults from './IkigaiResults';
 import IkigaiProgressHeader from './IkigaiProgressHeader';
 import IkigaiNavigationButtons from './IkigaiNavigationButtons';
+import IkigaiSidebar from './IkigaiSidebar';
 import { useIkigaiProgress } from '@/hooks/useIkigaiProgress';
 import { ikigaiQuestions } from '@/constants/ikigaiQuestions';
 
@@ -65,38 +66,45 @@ const IkigaiDiscovery = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Ikigai Discovery Journey</CardTitle>
-          <CardDescription>
-            Discover your purpose by exploring the intersection of what you love, what you're good at, 
-            what the world needs, and what you can be paid for.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <IkigaiProgressHeader
-            currentStep={currentStep}
-            totalSteps={ikigaiQuestions.length}
-            loading={loading}
-            onSaveProgress={saveProgress}
-          />
+    <div className="max-w-7xl mx-auto flex gap-6">
+      <IkigaiSidebar 
+        ikigaiData={ikigaiData} 
+        currentStep={currentStep} 
+      />
+      
+      <div className="flex-1 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Ikigai Discovery Journey</CardTitle>
+            <CardDescription>
+              Discover your purpose by exploring the intersection of what you love, what you're good at, 
+              what the world needs, and what you can be paid for.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <IkigaiProgressHeader
+              currentStep={currentStep}
+              totalSteps={ikigaiQuestions.length}
+              loading={loading}
+              onSaveProgress={saveProgress}
+            />
 
-          <IkigaiStep
-            step={ikigaiQuestions[currentStep]}
-            initialData={ikigaiData[ikigaiQuestions[currentStep].category as keyof IkigaiData]}
-            onDataChange={(responses) => handleStepData(ikigaiQuestions[currentStep].category, responses)}
-          />
+            <IkigaiStep
+              step={ikigaiQuestions[currentStep]}
+              initialData={ikigaiData[ikigaiQuestions[currentStep].category as keyof IkigaiData]}
+              onDataChange={(responses) => handleStepData(ikigaiQuestions[currentStep].category, responses)}
+            />
 
-          <IkigaiNavigationButtons
-            currentStep={currentStep}
-            totalSteps={ikigaiQuestions.length}
-            loading={loading}
-            onPrevStep={prevStep}
-            onNextStep={nextStep}
-          />
-        </CardContent>
-      </Card>
+            <IkigaiNavigationButtons
+              currentStep={currentStep}
+              totalSteps={ikigaiQuestions.length}
+              loading={loading}
+              onPrevStep={prevStep}
+              onNextStep={nextStep}
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
