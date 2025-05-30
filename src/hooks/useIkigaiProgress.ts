@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,16 +23,24 @@ export const useIkigaiProgress = () => {
   });
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const lastSavedDataRef = useRef<string>('');
 
   useEffect(() => {
     loadSavedProgress();
   }, [user]);
 
-  // Auto-save when ikigaiData changes
+  // Auto-save when ikigaiData changes, but only if it's actually different
   useEffect(() => {
-    if (user && (ikigaiData.passion.length > 0 || ikigaiData.mission.length > 0 || 
-        ikigaiData.profession.length > 0 || ikigaiData.vocation.length > 0)) {
+    if (!user) return;
+    
+    const currentDataString = JSON.stringify(ikigaiData);
+    const hasData = ikigaiData.passion.length > 0 || ikigaiData.mission.length > 0 || 
+                   ikigaiData.profession.length > 0 || ikigaiData.vocation.length > 0;
+    
+    // Only save if data has actually changed and we have some data
+    if (hasData && currentDataString !== lastSavedDataRef.current) {
       console.log('Auto-saving progress due to data change:', ikigaiData);
+      lastSavedDataRef.current = currentDataString;
       saveProgress();
     }
   }, [ikigaiData, user]);
@@ -54,14 +62,19 @@ export const useIkigaiProgress = () => {
       if (data) {
         const savedIkigaiData = data.ikigai_data as unknown as IkigaiData;
         console.log('Loaded saved ikigai data:', savedIkigaiData);
-        setIkigaiData(savedIkigaiData || {
+        const loadedData = savedIkigaiData || {
           passion: [],
           mission: [],
           profession: [],
           vocation: []
-        });
+        };
+        
+        setIkigaiData(loadedData);
         setCurrentStep(data.current_step || 0);
         setIsCompleted(data.is_completed || false);
+        
+        // Update the ref to prevent immediate auto-save after loading
+        lastSavedDataRef.current = JSON.stringify(loadedData);
       }
     } catch (error) {
       console.error('Error loading saved progress:', error);
@@ -128,7 +141,6 @@ export const useIkigaiProgress = () => {
     console.log('Updating step data for category:', category, 'with responses:', responses);
     
     setIkigaiData(prev => {
-      // Create a completely new object to avoid any reference issues
       const updated = {
         passion: category === 'passion' ? [...responses] : [...prev.passion],
         mission: category === 'mission' ? [...responses] : [...prev.mission],
