@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [currentPhase, setCurrentPhase] = useState(1);
   const [phaseProgress, setPhaseProgress] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
+  const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
@@ -37,12 +38,14 @@ const Dashboard = () => {
         return;
       }
 
+      const isIkigaiCompleted = ikigaiData?.is_completed || false;
+      setIkigaiCompleted(isIkigaiCompleted);
+
       // Calculate overall introspection phase progress
       let totalProgress = 0;
-      const totalActivities = 4; // Ikigai + 3 other key activities
 
       // 1. Ikigai assessment (40% of total progress)
-      if (ikigaiData?.is_completed) {
+      if (isIkigaiCompleted) {
         totalProgress += 40;
       } else if (ikigaiData?.current_step > 0) {
         // Partial progress based on current step (assuming 4 total steps)
@@ -51,14 +54,20 @@ const Dashboard = () => {
       }
 
       // 2. Target roles research (20% of total progress)
-      // For now, we'll simulate this - in a real app, you'd track this separately
-      // This could be tracked via a separate table or additional fields
-      
+      // Check if user has completed today's research task
+      if (completedTasks.includes(2)) {
+        totalProgress += 20;
+      }
+
       // 3. Career goals definition (20% of total progress)
       // This could be tracked when user completes profile or separate goal-setting flow
+      // For now, we'll simulate this based on profile completeness
       
       // 4. Industry research (20% of total progress)
-      // This could be tracked via reading articles, completing courses, etc.
+      // Check if user has completed today's reading task
+      if (completedTasks.includes(3)) {
+        totalProgress += 20;
+      }
 
       setPhaseProgress(Math.round(totalProgress));
     } catch (error) {
@@ -69,6 +78,16 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleIntrospectionClick = () => {
+    if (ikigaiCompleted) {
+      // Navigate to introspection page which will show next steps
+      navigate('/introspection');
+    } else {
+      // Navigate to ikigai discovery
+      navigate('/ikigai');
+    }
   };
 
   const phases = [
@@ -117,11 +136,16 @@ const Dashboard = () => {
   ];
 
   const handleTaskToggle = (taskId: number) => {
-    setCompletedTasks(prev => 
-      prev.includes(taskId) 
+    setCompletedTasks(prev => {
+      const newCompleted = prev.includes(taskId) 
         ? prev.filter(id => id !== taskId)
-        : [...prev, taskId]
-    );
+        : [...prev, taskId];
+      
+      // Recalculate progress when tasks change
+      setTimeout(() => loadIntrospectionProgress(), 100);
+      
+      return newCompleted;
+    });
   };
 
   const getPriorityColor = (priority: string) => {
@@ -239,7 +263,7 @@ const Dashboard = () => {
                     phase={phase}
                     onClick={() => {
                       if (phase.name === 'Introspection') {
-                        navigate('/introspection');
+                        handleIntrospectionClick();
                       } else {
                         console.log(`Navigate to ${phase.name} phase`);
                       }
