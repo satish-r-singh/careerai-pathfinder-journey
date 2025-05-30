@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import IkigaiChart from './IkigaiChart';
 
 interface IkigaiData {
   passion: string[];
@@ -77,72 +77,90 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
   };
 
   return (
-    <Card className="premium-card">
-      <CardHeader>
-        <CardTitle className="gradient-text flex items-center">
-          <Brain className="w-5 h-5 mr-2" />
-          AI-Powered Insights
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Generating your personalized insights...</p>
-          </div>
-        ) : insights ? (
-          <div className="space-y-6">
-            {/* Summary */}
-            <div>
-              <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
-                Summary
-              </h4>
-              <p className="text-gray-700 leading-relaxed">{insights.summary}</p>
-            </div>
+    <div className="space-y-6">
+      {/* Ikigai Visual Diagram */}
+      <Card className="premium-card">
+        <CardHeader>
+          <CardTitle className="gradient-text text-center">
+            Your Ikigai Visualization
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <IkigaiChart />
+          <p className="text-center text-gray-600 mt-4">
+            Your purpose lies at the intersection of these four elements
+          </p>
+        </CardContent>
+      </Card>
 
-            {/* Sentiment */}
-            <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Sentiment Analysis</h4>
-              <Badge className={getSentimentColor(insights.sentiment)}>
-                {insights.sentiment}
-              </Badge>
+      {/* AI Insights */}
+      <Card className="premium-card">
+        <CardHeader>
+          <CardTitle className="gradient-text flex items-center">
+            <Brain className="w-5 h-5 mr-2" />
+            AI-Powered Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Generating your personalized insights...</p>
             </div>
+          ) : insights ? (
+            <div className="space-y-6">
+              {/* Summary */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+                  <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
+                  Summary
+                </h4>
+                <p className="text-gray-700 leading-relaxed">{insights.summary}</p>
+              </div>
 
-            {/* Key Themes */}
-            <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Key Themes</h4>
-              <div className="flex flex-wrap gap-2">
-                {insights.keyThemes.map((theme, index) => (
-                  <Badge key={index} variant="outline" className="bg-purple-50 text-purple-700">
-                    {theme}
-                  </Badge>
-                ))}
+              {/* Sentiment */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2">Sentiment Analysis</h4>
+                <Badge className={getSentimentColor(insights.sentiment)}>
+                  {insights.sentiment}
+                </Badge>
+              </div>
+
+              {/* Key Themes */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2">Key Themes</h4>
+                <div className="flex flex-wrap gap-2">
+                  {insights.keyThemes.map((theme, index) => (
+                    <Badge key={index} variant="outline" className="bg-purple-50 text-purple-700">
+                      {theme}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2">AI Recommendations</h4>
+                <div className="space-y-2">
+                  {insights.recommendations.map((rec, index) => (
+                    <div key={index} className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
+                      <p className="text-gray-700 text-sm">{rec}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-
-            {/* Recommendations */}
-            <div>
-              <h4 className="font-semibold text-gray-800 mb-2">AI Recommendations</h4>
-              <div className="space-y-2">
-                {insights.recommendations.map((rec, index) => (
-                  <div key={index} className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
-                    <p className="text-gray-700 text-sm">{rec}</p>
-                  </div>
-                ))}
-              </div>
+          ) : (
+            <div className="text-center py-8">
+              <Brain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">
+                Complete your Ikigai discovery to get AI-powered insights and recommendations.
+              </p>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <Brain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">
-              Complete your Ikigai discovery to get AI-powered insights and recommendations.
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
