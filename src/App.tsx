@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Introspection from './pages/Introspection';
 import Ikigai from './pages/Ikigai';
@@ -13,14 +15,6 @@ import IndustryResearch from './pages/IndustryResearch';
 import { Toaster } from '@/components/ui/toaster';
 
 const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-  return <>{children}</>;
-};
 
 function App() {
   return (
@@ -32,6 +26,7 @@ function App() {
             <main>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

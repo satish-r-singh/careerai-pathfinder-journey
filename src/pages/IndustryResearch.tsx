@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,26 +46,52 @@ const IndustryResearch = () => {
   }, [user]);
 
   const loadIkigaiData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user found, cannot load Ikigai data');
+      return;
+    }
 
     try {
+      console.log('Loading Ikigai data for user:', user.id);
       const { data, error } = await supabase
         .from('ikigai_progress')
         .select('ikigai_data')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading Ikigai data:', error);
+        throw error;
+      }
+
+      console.log('Loaded Ikigai data:', data);
 
       if (data?.ikigai_data) {
-        setIkigaiData(data.ikigai_data);
+        // Check if we have at least some data in the ikigai_data
+        const ikigaiValues = data.ikigai_data;
+        const hasAnyData = Object.values(ikigaiValues).some((arr: any) => 
+          Array.isArray(arr) && arr.length > 0
+        );
+
+        if (hasAnyData) {
+          setIkigaiData(data.ikigai_data);
+        } else {
+          console.log('Ikigai data exists but is empty');
+          toast({
+            title: "Incomplete Ikigai Data",
+            description: "Please complete more sections of your Ikigai discovery first.",
+            variant: "destructive",
+          });
+          navigate('/ikigai');
+        }
       } else {
+        console.log('No Ikigai data found');
         toast({
           title: "No Ikigai Data Found",
           description: "Please complete your Ikigai discovery first.",
           variant: "destructive",
         });
-        navigate('/introspection');
+        navigate('/ikigai');
       }
     } catch (error) {
       console.error('Error loading Ikigai data:', error);
@@ -79,7 +104,14 @@ const IndustryResearch = () => {
   };
 
   const startResearch = async () => {
-    if (!ikigaiData) return;
+    if (!ikigaiData) {
+      toast({
+        title: "No Data Available",
+        description: "Please complete your Ikigai discovery first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -89,7 +121,10 @@ const IndustryResearch = () => {
         body: { ikigaiData }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
       console.log('Research results received:', data);
       setResearchResults(data.research);
@@ -286,6 +321,11 @@ const IndustryResearch = () => {
                   'Start Industry Research'
                 )}
               </Button>
+              {!ikigaiData && (
+                <p className="text-sm text-gray-500 mt-2 text-center">
+                  Complete your Ikigai discovery first to enable research
+                </p>
+              )}
             </CardContent>
           </Card>
         ) : (
