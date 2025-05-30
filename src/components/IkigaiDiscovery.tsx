@@ -121,7 +121,7 @@ const IkigaiDiscovery = () => {
         .from('ikigai_progress')
         .upsert({
           user_id: user.id,
-          ikigai_data: ikigaiData as any,
+          ikigai_data: ikigaiData as unknown as any,
           current_step: currentStep,
           is_completed: isCompleted,
           updated_at: new Date().toISOString()
@@ -160,17 +160,25 @@ const IkigaiDiscovery = () => {
     console.log('Next step clicked, current step:', currentStep);
     console.log('Current ikigaiData:', ikigaiData);
     
-    if (currentStep < ikigaiQuestions.length - 1) {
-      const newStep = currentStep + 1;
-      setCurrentStep(newStep);
-      console.log('Moving to step:', newStep);
+    try {
+      if (currentStep < ikigaiQuestions.length - 1) {
+        const newStep = currentStep + 1;
+        setCurrentStep(newStep);
+        console.log('Moving to step:', newStep);
+      } else {
+        console.log('Completing discovery...');
+        setIsCompleted(true);
+      }
       
-      // Save progress after moving to next step
+      // Save progress after updating state
       await saveProgress();
-    } else {
-      console.log('Completing discovery...');
-      setIsCompleted(true);
-      await saveProgress();
+    } catch (error) {
+      console.error('Error in nextStep:', error);
+      toast({
+        title: "Error",
+        description: "Failed to proceed to next step. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
