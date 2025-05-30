@@ -96,7 +96,9 @@ const IkigaiDiscovery = () => {
       }
 
       if (data) {
-        setIkigaiData(data.ikigai_data as IkigaiData || {
+        // Safely cast the Json data to our IkigaiData interface
+        const savedIkigaiData = data.ikigai_data as unknown as IkigaiData;
+        setIkigaiData(savedIkigaiData || {
           passion: [],
           mission: [],
           profession: [],
@@ -119,7 +121,7 @@ const IkigaiDiscovery = () => {
         .from('ikigai_progress')
         .upsert({
           user_id: user.id,
-          ikigai_data: ikigaiData,
+          ikigai_data: ikigaiData as any,
           current_step: currentStep,
           is_completed: isCompleted,
           updated_at: new Date().toISOString()
