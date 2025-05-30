@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,43 +13,56 @@ import { supabase } from '@/integrations/supabase/client';
 const Dashboard = () => {
   const [currentPhase, setCurrentPhase] = useState(1);
   const [phaseProgress, setPhaseProgress] = useState(0);
+  const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    loadIkigaiProgress();
+    loadIntrospectionProgress();
   }, [user]);
 
-  const loadIkigaiProgress = async () => {
+  const loadIntrospectionProgress = async () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // Load Ikigai progress
+      const { data: ikigaiData, error: ikigaiError } = await supabase
         .from('ikigai_progress')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error loading ikigai progress:', error);
+      if (ikigaiError) {
+        console.error('Error loading ikigai progress:', ikigaiError);
         return;
       }
 
-      if (data) {
-        // Calculate progress based on completed steps and completion status
-        if (data.is_completed) {
-          setPhaseProgress(100);
-        } else {
-          // Calculate progress based on current step (assuming 4 total steps)
-          const stepProgress = ((data.current_step + 1) / 4) * 100;
-          setPhaseProgress(Math.min(stepProgress, 95)); // Cap at 95% until fully completed
-        }
-      } else {
-        // No progress data found, set to 0%
-        setPhaseProgress(0);
+      // Calculate overall introspection phase progress
+      let totalProgress = 0;
+      const totalActivities = 4; // Ikigai + 3 other key activities
+
+      // 1. Ikigai assessment (40% of total progress)
+      if (ikigaiData?.is_completed) {
+        totalProgress += 40;
+      } else if (ikigaiData?.current_step > 0) {
+        // Partial progress based on current step (assuming 4 total steps)
+        const stepProgress = ((ikigaiData.current_step + 1) / 4) * 40;
+        totalProgress += Math.min(stepProgress, 35); // Cap at 35% until fully completed
       }
+
+      // 2. Target roles research (20% of total progress)
+      // For now, we'll simulate this - in a real app, you'd track this separately
+      // This could be tracked via a separate table or additional fields
+      
+      // 3. Career goals definition (20% of total progress)
+      // This could be tracked when user completes profile or separate goal-setting flow
+      
+      // 4. Industry research (20% of total progress)
+      // This could be tracked via reading articles, completing courses, etc.
+
+      setPhaseProgress(Math.round(totalProgress));
     } catch (error) {
-      console.error('Error loading saved progress:', error);
+      console.error('Error loading introspection progress:', error);
     }
   };
   
@@ -101,6 +115,14 @@ const Dashboard = () => {
     { id: 2, task: 'Research 3 target AI companies', priority: 'medium', estimated: '45 min' },
     { id: 3, task: 'Read industry trend article', priority: 'low', estimated: '15 min' }
   ];
+
+  const handleTaskToggle = (taskId: number) => {
+    setCompletedTasks(prev => 
+      prev.includes(taskId) 
+        ? prev.filter(id => id !== taskId)
+        : [...prev, taskId]
+    );
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -185,9 +207,16 @@ const Dashboard = () => {
                   {todaysTasks.map((task) => (
                     <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                       <div className="flex items-center space-x-3">
-                        <input type="checkbox" className="rounded" />
+                        <input 
+                          type="checkbox" 
+                          className="rounded" 
+                          checked={completedTasks.includes(task.id)}
+                          onChange={() => handleTaskToggle(task.id)}
+                        />
                         <div>
-                          <p className="font-medium">{task.task}</p>
+                          <p className={`font-medium ${completedTasks.includes(task.id) ? 'line-through text-gray-500' : ''}`}>
+                            {task.task}
+                          </p>
                           <p className="text-sm text-gray-500">Estimated: {task.estimated}</p>
                         </div>
                       </div>
@@ -235,7 +264,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Tasks Completed</span>
-                  <span className="font-semibold">8/32</span>
+                  <span className="font-semibold">{completedTasks.length + 8}/32</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Phase Progress</span>
