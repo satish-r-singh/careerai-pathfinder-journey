@@ -100,9 +100,9 @@ const AICareerIntegration = () => {
       setIkigaiData(ikigaiResult.ikigai_data);
       setIndustryResearch(researchResult.research_data);
       
-      // Set existing roadmap if found
+      // Set existing roadmap if found - cast the JSON to CareerRoadmap type
       if (roadmapResult?.roadmap_data) {
-        setRoadmap(roadmapResult.roadmap_data);
+        setRoadmap(roadmapResult.roadmap_data as CareerRoadmap);
       }
 
     } catch (error) {
