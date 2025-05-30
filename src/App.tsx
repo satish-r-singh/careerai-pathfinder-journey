@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Introspection from './pages/Introspection';
 import Ikigai from './pages/Ikigai';
 import IndustryResearch from './pages/IndustryResearch';
+import AICareerIntegration from './pages/AICareerIntegration';
 import { Toaster } from '@/components/ui/toaster';
 
 const queryClient = new QueryClient();

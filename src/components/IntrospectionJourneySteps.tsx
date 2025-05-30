@@ -88,6 +88,7 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: In
               className="w-full" 
               disabled={!industryResearchCompleted}
               variant={industryResearchCompleted ? "default" : "outline"}
+              onClick={() => navigate('/ai-career-integration')}
             >
               {industryResearchCompleted ? 'Start Integration' : 'Locked'}
               <ArrowRight className="w-4 h-4 ml-2" />
