@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ikigaiQuestions } from '@/constants/ikigaiQuestions';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 interface IkigaiData {
   passion: string[];
@@ -18,6 +18,18 @@ interface IkigaiSidebarProps {
 }
 
 const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
+  // Use ref to track previous values to prevent unnecessary updates
+  const prevCurrentStepRef = useRef(currentStep);
+  const prevIkigaiDataRef = useRef(ikigaiData);
+  
+  // Only update refs if values actually changed
+  if (prevCurrentStepRef.current !== currentStep) {
+    prevCurrentStepRef.current = currentStep;
+  }
+  if (JSON.stringify(prevIkigaiDataRef.current) !== JSON.stringify(ikigaiData)) {
+    prevIkigaiDataRef.current = ikigaiData;
+  }
+
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'passion':
@@ -33,22 +45,30 @@ const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
     }
   };
 
-  // Memoize the sidebar data to prevent unnecessary re-renders
+  // Memoize the sidebar data with stable dependencies
   const sidebarItems = useMemo(() => {
+    console.log('IkigaiSidebar: Regenerating sidebar items for step:', currentStep);
+    
     return ikigaiQuestions.map((step, index) => {
       const categoryData = ikigaiData[step.category as keyof IkigaiData] || [];
       const isCurrentStep = index === currentStep;
       const isCompleted = categoryData.length > 0;
       
+      console.log(`Step ${index} (${step.category}):`, {
+        isCurrentStep,
+        dataLength: categoryData.length,
+        isCompleted
+      });
+      
       return {
         step,
         index,
-        categoryData,
+        categoryData: [...categoryData], // Create a new array to ensure stable reference
         isCurrentStep,
         isCompleted
       };
     });
-  }, [ikigaiData, currentStep]);
+  }, [currentStep, JSON.stringify(ikigaiData)]); // Use JSON.stringify for deep comparison
 
   return (
     <div className="w-80 space-y-4">
@@ -60,8 +80,8 @@ const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
           <ScrollArea className="h-[600px] pr-4">
             {sidebarItems.map(({ step, index, categoryData, isCurrentStep, isCompleted }) => (
               <div
-                key={step.category}
-                className={`mb-4 p-3 rounded-lg border transition-all duration-200 ${
+                key={`${step.category}-${index}`} // More stable key
+                className={`mb-4 p-3 rounded-lg border transition-all duration-300 ${
                   isCurrentStep 
                     ? 'border-primary bg-primary/5 shadow-sm' 
                     : 'border-gray-200 bg-white'
@@ -69,7 +89,7 @@ const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors duration-200 ${
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors duration-300 ${
                       isCurrentStep 
                         ? 'bg-primary text-primary-foreground' 
                         : isCompleted 
@@ -78,7 +98,7 @@ const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
                     }`}>
                       {index + 1}
                     </span>
-                    <h4 className={`font-medium text-sm transition-colors duration-200 ${
+                    <h4 className={`font-medium text-sm transition-colors duration-300 ${
                       isCurrentStep ? 'text-primary' : 'text-gray-700'
                     }`}>
                       {step.title}
@@ -103,7 +123,7 @@ const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {categoryData.map((response, responseIndex) => (
                         <div
-                          key={responseIndex}
+                          key={`${step.category}-${responseIndex}-${response.substring(0, 20)}`}
                           className="text-xs p-2 bg-gray-50 rounded border text-gray-700 leading-relaxed"
                         >
                           {response.length > 80 
