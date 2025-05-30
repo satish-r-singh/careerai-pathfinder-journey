@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Brain, TrendingUp, RefreshCw } from 'lucide-react';
+import { Brain, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -45,16 +44,11 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
       if (error) throw error;
 
       setInsights(data.insights);
-      
-      toast({
-        title: "Insights Generated",
-        description: "Your AI-powered Ikigai insights are ready!",
-      });
     } catch (error: any) {
       console.error('Error generating insights:', error);
       toast({
         title: "Error",
-        description: "Failed to generate insights. Please try again.",
+        description: "Failed to generate insights. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -65,7 +59,7 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
   useEffect(() => {
     // Auto-generate insights if we have complete Ikigai data
     const hasCompleteData = Object.values(ikigaiData).every(arr => arr.length > 0);
-    if (hasCompleteData && !insights) {
+    if (hasCompleteData) {
       generateInsights();
     }
   }, [ikigaiData]);
@@ -85,28 +79,18 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
   return (
     <Card className="premium-card">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="gradient-text flex items-center">
-            <Brain className="w-5 h-5 mr-2" />
-            AI-Powered Insights
-          </CardTitle>
-          <Button
-            onClick={generateInsights}
-            disabled={loading}
-            variant="outline"
-            size="sm"
-          >
-            {loading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Sparkles className="w-4 h-4" />
-            )}
-            {loading ? 'Analyzing...' : 'Regenerate'}
-          </Button>
-        </div>
+        <CardTitle className="gradient-text flex items-center">
+          <Brain className="w-5 h-5 mr-2" />
+          AI-Powered Insights
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {insights ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Generating your personalized insights...</p>
+          </div>
+        ) : insights ? (
           <div className="space-y-6">
             {/* Summary */}
             <div>
@@ -152,21 +136,9 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
         ) : (
           <div className="text-center py-8">
             <Brain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600">
               Complete your Ikigai discovery to get AI-powered insights and recommendations.
             </p>
-            <Button 
-              onClick={generateInsights} 
-              disabled={loading || Object.values(ikigaiData).every(arr => arr.length === 0)}
-              className="premium-button"
-            >
-              {loading ? (
-                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Sparkles className="w-4 h-4 mr-2" />
-              )}
-              Generate Insights
-            </Button>
           </div>
         )}
       </CardContent>
