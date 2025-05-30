@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +7,50 @@ import PhaseCard from '@/components/PhaseCard';
 import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard = () => {
-  const [currentPhase] = useState(1);
+  const [currentPhase, setCurrentPhase] = useState(1);
+  const [phaseProgress, setPhaseProgress] = useState(0);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    loadIkigaiProgress();
+  }, [user]);
+
+  const loadIkigaiProgress = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ikigai_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading ikigai progress:', error);
+        return;
+      }
+
+      if (data) {
+        // Calculate progress based on completed steps and completion status
+        if (data.is_completed) {
+          setPhaseProgress(100);
+        } else {
+          // Calculate progress based on current step (assuming 4 total steps)
+          const stepProgress = ((data.current_step + 1) / 4) * 100;
+          setPhaseProgress(Math.min(stepProgress, 95)); // Cap at 95% until fully completed
+        }
+      } else {
+        // No progress data found, set to 0%
+        setPhaseProgress(0);
+      }
+    } catch (error) {
+      console.error('Error loading saved progress:', error);
+    }
+  };
   
   const handleSignOut = async () => {
     await signOut();
@@ -24,7 +63,7 @@ const Dashboard = () => {
       name: 'Introspection',
       description: 'Self-discovery and career alignment',
       status: 'current' as const,
-      progress: 25,
+      progress: phaseProgress,
       estimatedTime: '1-2 weeks',
       keyActivities: ['Complete Ikigai assessment', 'Research target roles', 'Define career goals']
     },
@@ -200,7 +239,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Phase Progress</span>
-                  <span className="font-semibold">25%</span>
+                  <span className="font-semibold">{Math.round(phaseProgress)}%</span>
                 </div>
               </CardContent>
             </Card>
