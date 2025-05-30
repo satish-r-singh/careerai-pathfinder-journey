@@ -136,7 +136,7 @@ const IkigaiSidebar = ({ ikigaiData, currentStep }: IkigaiSidebarProps) => {
                   </div>
                 ) : (
                   <div className="text-xs text-gray-400 italic">
-                    {isCurrentStep ? 'Add your responses above' : 'No responses yet'}
+                    {isCurrentStep ? 'Currently working on this step' : 'Not yet completed'}
                   </div>
                 )}
               </div>
