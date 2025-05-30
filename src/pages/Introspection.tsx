@@ -54,14 +54,6 @@ const Introspection = () => {
 
       if (industryError) throw industryError;
 
-      // Reset career roadmaps (since they're based on Ikigai + Industry Research)
-      const { error: roadmapError } = await supabase
-        .from('career_roadmaps')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (roadmapError) throw roadmapError;
-
       // Reset outreach templates (since they're personalized based on Ikigai)
       const { error: templatesError } = await supabase
         .from('outreach_templates')
