@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
+import Index from './pages/Index';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -22,19 +23,16 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <div className="min-h-screen bg-background">
-            <Header />
-            <main>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={<Navigate to="/dashboard" />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/introspection" element={<ProtectedRoute><Introspection /></ProtectedRoute>} />
-                <Route path="/ikigai" element={<ProtectedRoute><Ikigai /></ProtectedRoute>} />
-                <Route path="/industry-research" element={<ProtectedRoute><IndustryResearch /></ProtectedRoute>} />
-              </Routes>
-            </main>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/introspection" element={<ProtectedRoute><Introspection /></ProtectedRoute>} />
+              <Route path="/ikigai" element={<ProtectedRoute><Ikigai /></ProtectedRoute>} />
+              <Route path="/industry-research" element={<ProtectedRoute><IndustryResearch /></ProtectedRoute>} />
+            </Routes>
             <Toaster />
           </div>
         </AuthProvider>

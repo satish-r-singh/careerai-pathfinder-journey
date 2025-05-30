@@ -4,9 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Users, Brain, Target, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const features = [
     {
@@ -73,7 +83,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-lg px-8 py-3"
-                onClick={() => navigate('/onboarding')}
+                onClick={() => navigate('/auth')}
               >
                 Start Your Journey
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -166,7 +176,7 @@ const Index = () => {
             size="lg" 
             variant="secondary" 
             className="text-lg px-8 py-3"
-            onClick={() => navigate('/onboarding')}
+            onClick={() => navigate('/auth')}
           >
             Start Your Journey Today
             <ArrowRight className="ml-2 w-5 h-5" />
