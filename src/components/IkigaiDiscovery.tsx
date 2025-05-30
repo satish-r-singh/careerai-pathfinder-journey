@@ -17,6 +17,16 @@ interface IkigaiData {
   vocation: string[];
 }
 
+interface IkigaiProgressRow {
+  id: string;
+  user_id: string;
+  ikigai_data: IkigaiData;
+  current_step: number;
+  is_completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const ikigaiQuestions = [
   {
     category: 'passion',
@@ -86,7 +96,7 @@ const IkigaiDiscovery = () => {
     
     try {
       const { data, error } = await supabase
-        .from('ikigai_progress')
+        .from('ikigai_progress' as any)
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -96,14 +106,15 @@ const IkigaiDiscovery = () => {
       }
 
       if (data) {
-        setIkigaiData(data.ikigai_data || {
+        const progressData = data as IkigaiProgressRow;
+        setIkigaiData(progressData.ikigai_data || {
           passion: [],
           mission: [],
           profession: [],
           vocation: []
         });
-        setCurrentStep(data.current_step || 0);
-        setIsCompleted(data.is_completed || false);
+        setCurrentStep(progressData.current_step || 0);
+        setIsCompleted(progressData.is_completed || false);
       }
     } catch (error) {
       console.error('Error loading saved progress:', error);
@@ -116,14 +127,14 @@ const IkigaiDiscovery = () => {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('ikigai_progress')
+        .from('ikigai_progress' as any)
         .upsert({
           user_id: user.id,
           ikigai_data: ikigaiData,
           current_step: currentStep,
           is_completed: isCompleted,
           updated_at: new Date().toISOString()
-        });
+        } as any);
 
       if (error) throw error;
 
