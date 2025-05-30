@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +35,7 @@ interface ResearchResults {
 
 const IndustryResearch = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -328,6 +328,24 @@ const IndustryResearch = () => {
     </div>
   );
 
+  const handleBackNavigation = () => {
+    // Check if there's a previous page in history and it's within our app
+    if (window.history.length > 1) {
+      // Check if we came from a route within our app
+      const referrer = document.referrer;
+      const currentOrigin = window.location.origin;
+      
+      if (referrer && referrer.startsWith(currentOrigin)) {
+        navigate(-1);
+      } else {
+        // If no safe referrer, go to dashboard
+        navigate('/dashboard');
+      }
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -345,11 +363,11 @@ const IndustryResearch = () => {
         <div className="mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/dashboard')}
+            onClick={handleBackNavigation}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            Back
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Industry Research</h1>
           <p className="text-gray-600">
