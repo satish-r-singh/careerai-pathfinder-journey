@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,12 +24,14 @@ export const useIkigaiProgress = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const lastSavedDataRef = useRef<string>('');
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
     loadSavedProgress();
   }, [user]);
 
-  // Auto-save when ikigaiData changes, but only if it's actually different
+  // Debounced auto-save when ikigaiData changes
   useEffect(() => {
     if (!user) return;
     
@@ -39,11 +41,30 @@ export const useIkigaiProgress = () => {
     
     // Only save if data has actually changed and we have some data
     if (hasData && currentDataString !== lastSavedDataRef.current) {
-      console.log('Auto-saving progress due to data change:', ikigaiData);
-      lastSavedDataRef.current = currentDataString;
-      saveProgress();
+      // Clear any existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      // Debounce the save operation
+      saveTimeoutRef.current = setTimeout(() => {
+        if (!isSavingRef.current) {
+          console.log('Auto-saving progress due to data change:', ikigaiData);
+          lastSavedDataRef.current = currentDataString;
+          saveProgress();
+        }
+      }, 500); // 500ms debounce
     }
   }, [ikigaiData, user]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const loadSavedProgress = async () => {
     if (!user) return;
@@ -81,10 +102,12 @@ export const useIkigaiProgress = () => {
     }
   };
 
-  const saveProgress = async () => {
-    if (!user) return;
+  const saveProgress = useCallback(async () => {
+    if (!user || isSavingRef.current) return;
     
+    isSavingRef.current = true;
     setLoading(true);
+    
     try {
       console.log('Saving progress with data:', ikigaiData);
       
@@ -134,8 +157,9 @@ export const useIkigaiProgress = () => {
       });
     } finally {
       setLoading(false);
+      isSavingRef.current = false;
     }
-  };
+  }, [ikigaiData, currentStep, isCompleted, user, toast]);
 
   const handleStepData = (category: string, responses: string[]) => {
     console.log('Updating step data for category:', category, 'with responses:', responses);
