@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Search, Target, FileText, Sparkles, CheckCircle } from 'lucide-react';
+import { ArrowRight, FileText, Sparkles, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface IntrospectionJourneyStepsProps {
@@ -21,36 +21,6 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted }: IntrospectionJ
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="p-6 border rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50/50 to-cyan-50/50 border-blue-200">
-            <div className="flex items-center space-x-3 mb-4">
-              <Search className="w-8 h-8 text-blue-500" />
-              <h3 className="text-lg font-semibold">Target Role Research</h3>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Research specific AI roles that align with your Ikigai discovery. 
-              Understand job requirements, salary ranges, and career paths.
-            </p>
-            <Button className="w-full" variant="outline">
-              Start Role Research
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-
-          <div className="p-6 border rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50/50 to-violet-50/50 border-purple-200">
-            <div className="flex items-center space-x-3 mb-4">
-              <Target className="w-8 h-8 text-purple-500" />
-              <h3 className="text-lg font-semibold">Define Career Goals</h3>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Set specific, measurable career goals based on your Ikigai insights. 
-              Create a roadmap for your AI career transition.
-            </p>
-            <Button className="w-full" variant="outline">
-              Set Career Goals
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-
           <div className={`p-6 border rounded-xl transition-all duration-300 ${
             industryResearchCompleted 
               ? 'bg-gradient-to-br from-green-50/50 to-emerald-50/50 border-green-200 shadow-lg' 
