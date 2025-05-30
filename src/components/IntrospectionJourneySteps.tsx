@@ -7,6 +7,7 @@ import PersonalizedOutreachCard from './PersonalizedOutreachCard';
 
 interface IntrospectionJourneyStepsProps {
   industryResearchCompleted: boolean;
+  careerRoadmapCompleted: boolean;
   ikigaiData: {
     passion: string[];
     mission: string[];
@@ -15,7 +16,7 @@ interface IntrospectionJourneyStepsProps {
   };
 }
 
-const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: IntrospectionJourneyStepsProps) => {
+const IntrospectionJourneySteps = ({ industryResearchCompleted, careerRoadmapCompleted, ikigaiData }: IntrospectionJourneyStepsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -63,15 +64,22 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: In
 
           {/* AI Career Integration Card */}
           <div className={`p-6 border rounded-xl transition-all duration-300 ${
-            industryResearchCompleted 
+            careerRoadmapCompleted
+              ? 'bg-gradient-to-br from-green-50/50 to-emerald-50/50 border-green-200 shadow-lg'
+              : industryResearchCompleted 
               ? 'bg-gradient-to-br from-violet-50/50 to-purple-50/50 border-violet-200 hover:shadow-lg' 
               : 'bg-gray-50/50 border-gray-200 opacity-60'
           }`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <Sparkles className={`w-8 h-8 ${industryResearchCompleted ? 'text-violet-500' : 'text-gray-400'}`} />
+                <Sparkles className={`w-8 h-8 ${careerRoadmapCompleted ? 'text-green-500' : industryResearchCompleted ? 'text-violet-500' : 'text-gray-400'}`} />
                 <h3 className="text-lg font-semibold">AI Career Integration</h3>
               </div>
+              {careerRoadmapCompleted && (
+                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+              )}
               {!industryResearchCompleted && (
                 <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
                   Complete Industry Analysis first
@@ -79,7 +87,9 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: In
               )}
             </div>
             <p className="text-gray-600 mb-4">
-              {industryResearchCompleted 
+              {careerRoadmapCompleted
+                ? 'Completed! Your personalized AI career roadmap has been generated and saved.'
+                : industryResearchCompleted 
                 ? 'Integrate your Ikigai insights with industry research to create your personalized AI career roadmap.'
                 : 'This step will become available after completing the Industry Analysis.'
               }
@@ -87,10 +97,10 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: In
             <Button 
               className="w-full" 
               disabled={!industryResearchCompleted}
-              variant={industryResearchCompleted ? "default" : "outline"}
+              variant={careerRoadmapCompleted ? "default" : industryResearchCompleted ? "default" : "outline"}
               onClick={() => navigate('/ai-career-integration')}
             >
-              {industryResearchCompleted ? 'Start Integration' : 'Locked'}
+              {careerRoadmapCompleted ? 'View Roadmap' : industryResearchCompleted ? 'Start Integration' : 'Locked'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>

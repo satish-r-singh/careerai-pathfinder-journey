@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface IntrospectionProgressBarProps {
   ikigaiCompleted: boolean;
   industryResearchCompleted: boolean;
+  careerRoadmapCompleted: boolean;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ const steps = [
 const IntrospectionProgressBar = ({ 
   ikigaiCompleted, 
   industryResearchCompleted, 
+  careerRoadmapCompleted,
   className 
 }: IntrospectionProgressBarProps) => {
   const getStepStatus = (stepKey: string) => {
@@ -27,13 +29,13 @@ const IntrospectionProgressBar = ({
       case 'industry':
         return industryResearchCompleted ? 'completed' : ikigaiCompleted ? 'current' : 'locked';
       case 'integration':
-        return industryResearchCompleted ? 'current' : 'locked';
+        return careerRoadmapCompleted ? 'completed' : industryResearchCompleted ? 'current' : 'locked';
       default:
         return 'locked';
     }
   };
 
-  const completedSteps = [ikigaiCompleted, industryResearchCompleted, false].filter(Boolean).length;
+  const completedSteps = [ikigaiCompleted, industryResearchCompleted, careerRoadmapCompleted].filter(Boolean).length;
   const progressPercentage = (completedSteps / steps.length) * 100;
 
   return (

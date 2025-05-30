@@ -14,6 +14,7 @@ export const useIntrospectionStatus = () => {
   const { user } = useAuth();
   const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
   const [industryResearchCompleted, setIndustryResearchCompleted] = useState(false);
+  const [careerRoadmapCompleted, setCareerRoadmapCompleted] = useState(false);
   const [ikigaiData, setIkigaiData] = useState<IkigaiData>({
     passion: [],
     mission: [],
@@ -91,6 +92,21 @@ export const useIntrospectionStatus = () => {
         console.log('Setting industryResearchCompleted to:', isResearchCompleted);
         setIndustryResearchCompleted(isResearchCompleted);
       }
+
+      // Check Career Roadmap completion
+      const { data: roadmapData, error: roadmapError } = await supabase
+        .from('career_roadmaps')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (roadmapError) {
+        console.error('Error checking Career Roadmap status:', roadmapError);
+      } else {
+        const isRoadmapCompleted = !!roadmapData;
+        console.log('Setting careerRoadmapCompleted to:', isRoadmapCompleted);
+        setCareerRoadmapCompleted(isRoadmapCompleted);
+      }
     } catch (error) {
       console.error('Error loading completion status:', error);
     } finally {
@@ -101,6 +117,7 @@ export const useIntrospectionStatus = () => {
   return {
     ikigaiCompleted,
     industryResearchCompleted,
+    careerRoadmapCompleted,
     ikigaiData,
     loading,
     checkCompletionStatus

@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      career_roadmaps: {
+        Row: {
+          created_at: string
+          id: string
+          roadmap_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          roadmap_data: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          roadmap_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ikigai_progress: {
         Row: {
           ai_insights: Json | null

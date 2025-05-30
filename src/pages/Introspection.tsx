@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import IntrospectionProgressBar from '@/components/IntrospectionProgressBar';
 import IkigaiAnswersDisplay from '@/components/IkigaiAnswersDisplay';
@@ -19,6 +20,7 @@ const Introspection = () => {
   const {
     ikigaiCompleted,
     industryResearchCompleted,
+    careerRoadmapCompleted,
     ikigaiData,
     loading,
     checkCompletionStatus
@@ -53,6 +55,14 @@ const Introspection = () => {
         .eq('user_id', user.id);
 
       if (industryError) throw industryError;
+
+      // Reset career roadmaps (since they're based on Ikigai and industry research)
+      const { error: roadmapError } = await supabase
+        .from('career_roadmaps')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (roadmapError) throw roadmapError;
 
       // Reset outreach templates (since they're personalized based on Ikigai)
       const { error: templatesError } = await supabase
@@ -93,7 +103,7 @@ const Introspection = () => {
     );
   }
 
-  console.log('Rendering Introspection page. ikigaiCompleted:', ikigaiCompleted, 'industryResearchCompleted:', industryResearchCompleted);
+  console.log('Rendering Introspection page. ikigaiCompleted:', ikigaiCompleted, 'industryResearchCompleted:', industryResearchCompleted, 'careerRoadmapCompleted:', careerRoadmapCompleted);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 relative overflow-hidden">
@@ -114,6 +124,7 @@ const Introspection = () => {
               <IntrospectionProgressBar 
                 ikigaiCompleted={ikigaiCompleted}
                 industryResearchCompleted={industryResearchCompleted}
+                careerRoadmapCompleted={careerRoadmapCompleted}
               />
             </CardContent>
           </Card>
@@ -127,6 +138,7 @@ const Introspection = () => {
               <IkigaiInsights ikigaiData={ikigaiData} />
               <IntrospectionJourneySteps 
                 industryResearchCompleted={industryResearchCompleted} 
+                careerRoadmapCompleted={careerRoadmapCompleted}
                 ikigaiData={ikigaiData}
               />
             </div>
