@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -345,11 +344,11 @@ const IndustryResearch = () => {
         <div className="mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/introspection')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Introspection
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Industry Research</h1>
           <p className="text-gray-600">
