@@ -17,24 +17,26 @@ interface IkigaiStepProps {
 }
 
 const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
-  const [responses, setResponses] = useState<string[]>(initialData || []);
+  const [responses, setResponses] = useState<string[]>([]);
   const [currentResponse, setCurrentResponse] = useState('');
 
-  // Use useCallback to memoize the onDataChange callback
-  const memoizedOnDataChange = useCallback(onDataChange, [onDataChange]);
-
+  // Initialize responses when step changes or initialData changes
   useEffect(() => {
+    console.log('IkigaiStep: Initializing responses for category:', step.category, 'with data:', initialData);
     setResponses(initialData || []);
-  }, [initialData, step.category]);
+    setCurrentResponse(''); // Clear the current input when switching steps
+  }, [step.category, JSON.stringify(initialData)]); // Use JSON.stringify for deep comparison
 
-  // Only call onDataChange when responses actually change, not on every render
+  // Only call onDataChange when responses actually change and are different from initialData
   useEffect(() => {
-    // Compare arrays to avoid unnecessary calls
-    const hasChanged = JSON.stringify(responses) !== JSON.stringify(initialData || []);
-    if (hasChanged) {
-      memoizedOnDataChange(responses);
+    const responsesString = JSON.stringify(responses);
+    const initialDataString = JSON.stringify(initialData || []);
+    
+    if (responsesString !== initialDataString && responses.length >= 0) {
+      console.log('IkigaiStep: Calling onDataChange for category:', step.category, 'with responses:', responses);
+      onDataChange(responses);
     }
-  }, [responses, memoizedOnDataChange, initialData]);
+  }, [responses, initialData, onDataChange, step.category]);
 
   const addResponse = useCallback(() => {
     if (currentResponse.trim()) {

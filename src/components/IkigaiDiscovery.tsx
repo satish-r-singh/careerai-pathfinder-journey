@@ -59,18 +59,17 @@ const IkigaiDiscovery = () => {
         await saveProgress();
       } else {
         console.log('Completing discovery...');
-        // First set completion state
-        setIsCompleted(true);
         
-        // Then manually save with the completed state
-        // We need to save manually here because the state update is async
+        // First save the current progress with completion
         await saveProgressWithCompletion();
         
-        // Navigate back to introspection to see the completed results
+        // Show success message
         toast({
           title: "Ikigai Discovery Complete!",
           description: "Congratulations! You've completed your Ikigai discovery journey.",
         });
+        
+        // Navigate back to introspection to see the completed results
         navigate('/introspection');
       }
     } catch (error) {
@@ -121,6 +120,9 @@ const IkigaiDiscovery = () => {
         if (error) throw error;
       }
 
+      // Update local state
+      setIsCompleted(true);
+      
       console.log('Completion saved successfully');
     } catch (error) {
       console.error('Error saving completion:', error);
@@ -138,10 +140,23 @@ const IkigaiDiscovery = () => {
     }
   };
 
-  // If completed, redirect to introspection instead of showing results inline
+  // If completed, show a completion message instead of redirecting immediately
   if (isCompleted) {
-    navigate('/introspection');
-    return null;
+    return (
+      <div className="max-w-7xl mx-auto flex items-center justify-center py-12">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Discovery Complete!</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 mb-4">
+              Your Ikigai discovery journey is complete. Redirecting you to see your results...
+            </p>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
