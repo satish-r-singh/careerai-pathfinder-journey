@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       ikigai_progress: {
         Row: {
+          ai_insights: Json | null
           created_at: string
           current_step: number
           id: string
@@ -20,6 +21,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_insights?: Json | null
           created_at?: string
           current_step?: number
           id?: string
@@ -29,6 +31,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_insights?: Json | null
           created_at?: string
           current_step?: number
           id?: string

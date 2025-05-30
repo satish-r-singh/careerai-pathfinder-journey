@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import IkigaiChart from './IkigaiChart';
 
 interface IkigaiData {
@@ -25,9 +27,50 @@ interface Insights {
 }
 
 const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
+  const { user } = useAuth();
   const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const loadStoredInsights = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('ikigai_progress')
+        .select('ai_insights')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data?.ai_insights) {
+        console.log('Loading stored insights:', data.ai_insights);
+        setInsights(data.ai_insights as Insights);
+        return true; // Found stored insights
+      }
+      return false; // No stored insights
+    } catch (error: any) {
+      console.error('Error loading stored insights:', error);
+      return false;
+    }
+  };
+
+  const saveInsights = async (newInsights: Insights) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('ikigai_progress')
+        .update({ ai_insights: newInsights })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      console.log('Insights saved successfully');
+    } catch (error: any) {
+      console.error('Error saving insights:', error);
+    }
+  };
 
   const generateInsights = async () => {
     setLoading(true);
@@ -43,7 +86,11 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
 
       if (error) throw error;
 
-      setInsights(data.insights);
+      const newInsights = data.insights;
+      setInsights(newInsights);
+      
+      // Save insights to database
+      await saveInsights(newInsights);
     } catch (error: any) {
       console.error('Error generating insights:', error);
       toast({
@@ -57,12 +104,22 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
   };
 
   useEffect(() => {
-    // Auto-generate insights if we have complete Ikigai data
-    const hasCompleteData = Object.values(ikigaiData).every(arr => arr.length > 0);
-    if (hasCompleteData) {
-      generateInsights();
-    }
-  }, [ikigaiData]);
+    const loadOrGenerateInsights = async () => {
+      // Check if we have complete Ikigai data
+      const hasCompleteData = Object.values(ikigaiData).every(arr => arr.length > 0);
+      if (!hasCompleteData) return;
+
+      // Try to load stored insights first
+      const hasStoredInsights = await loadStoredInsights();
+      
+      // If no stored insights, generate new ones
+      if (!hasStoredInsights) {
+        await generateInsights();
+      }
+    };
+
+    loadOrGenerateInsights();
+  }, [ikigaiData, user]);
 
   const getSentimentColor = (sentiment: string) => {
     const lowerSentiment = sentiment.toLowerCase();
