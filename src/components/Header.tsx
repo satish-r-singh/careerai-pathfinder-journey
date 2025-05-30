@@ -50,6 +50,10 @@ const Header = () => {
                 <Button variant="outline" onClick={() => navigate('/dashboard')}>
                   Dashboard
                 </Button>
+                <Button variant="outline" onClick={() => navigate('/profile')}>
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
                 <Button variant="outline" onClick={handleSignOut}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
@@ -94,6 +98,10 @@ const Header = () => {
                   <>
                     <Button variant="outline" onClick={() => navigate('/dashboard')}>
                       Dashboard
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/profile')}>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
                     </Button>
                     <Button variant="outline" onClick={handleSignOut}>
                       <LogOut className="w-4 h-4 mr-2" />
