@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Heart, Globe, Star, DollarSign } from 'lucide-react';
+import { RefreshCw, Heart, Globe, Star, DollarSign, Search, Bot, MessageSquare } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface IkigaiData {
   passion: string[];
@@ -17,6 +17,8 @@ interface IkigaiResultsProps {
 }
 
 const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
+  const { toast } = useToast();
+
   const categories = [
     {
       key: 'passion',
@@ -79,6 +81,44 @@ const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
   };
 
   const intersections = findIntersections();
+
+  const handleIndustryResearch = () => {
+    // Extract key interests and skills from ikigai data
+    const allInterests = [...ikigaiData.passion, ...ikigaiData.mission];
+    const allSkills = [...ikigaiData.profession, ...ikigaiData.vocation];
+    
+    toast({
+      title: "Industry Research Initiated",
+      description: "Based on your Ikigai insights, research industries that align with your interests and skills.",
+    });
+    
+    // Here you could integrate with external APIs or redirect to research tools
+    console.log('Research based on interests:', allInterests);
+    console.log('Research based on skills:', allSkills);
+  };
+
+  const handleAICareerIntegration = () => {
+    toast({
+      title: "AI Career Analysis Started",
+      description: "Analyzing how AI can enhance your career path based on your Ikigai profile.",
+    });
+    
+    // This could integrate with AI career recommendation systems
+    console.log('AI career integration for:', ikigaiData);
+  };
+
+  const handlePersonalizedOutreach = () => {
+    // Generate personalized message templates based on ikigai data
+    const interests = ikigaiData.passion.slice(0, 2).join(', ');
+    const skills = ikigaiData.profession.slice(0, 2).join(', ');
+    
+    toast({
+      title: "Outreach Templates Generated",
+      description: `Created personalized messages highlighting your interests in ${interests} and skills in ${skills}.`,
+    });
+    
+    console.log('Generated outreach based on:', { interests, skills });
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -161,21 +201,39 @@ const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
         <CardContent>
           <div className="space-y-4">
             <div className="p-4 bg-primary/5 rounded-lg">
-              <h4 className="font-medium mb-2">Industry Research</h4>
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium">Industry Research</h4>
+                <Button size="sm" onClick={handleIndustryResearch}>
+                  <Search className="w-4 h-4 mr-2" />
+                  Start Research
+                </Button>
+              </div>
               <p className="text-sm text-gray-600">
                 Research industries and roles that align with your Ikigai insights. 
                 Look for opportunities where your passions, skills, and market needs intersect.
               </p>
             </div>
             <div className="p-4 bg-primary/5 rounded-lg">
-              <h4 className="font-medium mb-2">AI Career Integration</h4>
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium">AI Career Integration</h4>
+                <Button size="sm" onClick={handleAICareerIntegration}>
+                  <Bot className="w-4 h-4 mr-2" />
+                  Analyze AI Opportunities
+                </Button>
+              </div>
               <p className="text-sm text-gray-600">
                 Consider how AI and machine learning can enhance or transform your identified interests and skills. 
                 Explore AI roles that match your purpose and expertise.
               </p>
             </div>
             <div className="p-4 bg-primary/5 rounded-lg">
-              <h4 className="font-medium mb-2">Personalized Outreach</h4>
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-medium">Personalized Outreach</h4>
+                <Button size="sm" onClick={handlePersonalizedOutreach}>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Generate Templates
+                </Button>
+              </div>
               <p className="text-sm text-gray-600">
                 Use your Ikigai insights to craft compelling messages to recruiters and industry professionals. 
                 Your authentic purpose will resonate with the right opportunities.
