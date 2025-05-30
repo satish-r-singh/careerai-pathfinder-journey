@@ -2,7 +2,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import IkigaiStep from './IkigaiStep';
-import IkigaiResults from './IkigaiResults';
 import IkigaiProgressHeader from './IkigaiProgressHeader';
 import IkigaiNavigationButtons from './IkigaiNavigationButtons';
 import IkigaiSidebar from './IkigaiSidebar';
@@ -10,6 +9,7 @@ import { useIkigaiProgress } from '@/hooks/useIkigaiProgress';
 import { ikigaiQuestions } from '@/constants/ikigaiQuestions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface IkigaiData {
   passion: string[];
@@ -21,6 +21,7 @@ interface IkigaiData {
 const IkigaiDiscovery = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     currentStep,
     setCurrentStep,
@@ -64,6 +65,13 @@ const IkigaiDiscovery = () => {
         // Then manually save with the completed state
         // We need to save manually here because the state update is async
         await saveProgressWithCompletion();
+        
+        // Navigate back to introspection to see the completed results
+        toast({
+          title: "Ikigai Discovery Complete!",
+          description: "Congratulations! You've completed your Ikigai discovery journey.",
+        });
+        navigate('/introspection');
       }
     } catch (error) {
       console.error('Error in nextStep:', error);
@@ -130,9 +138,10 @@ const IkigaiDiscovery = () => {
     }
   };
 
-  // If completed, show results
+  // If completed, redirect to introspection instead of showing results inline
   if (isCompleted) {
-    return <IkigaiResults ikigaiData={ikigaiData} onRestart={() => setIsCompleted(false)} />;
+    navigate('/introspection');
+    return null;
   }
 
   return (

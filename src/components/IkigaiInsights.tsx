@@ -1,6 +1,7 @@
 
 import IkigaiVisualizationCard from './IkigaiVisualizationCard';
 import IkigaiAIInsightsCard from './IkigaiAIInsightsCard';
+import IkigaiKeyThemes from './IkigaiKeyThemes';
 import { useIkigaiInsights } from '@/hooks/useIkigaiInsights';
 
 interface IkigaiData {
@@ -20,6 +21,7 @@ const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
   return (
     <div className="space-y-6">
       <IkigaiVisualizationCard />
+      <IkigaiKeyThemes ikigaiData={ikigaiData} />
       <IkigaiAIInsightsCard insights={insights} loading={loading} />
     </div>
   );

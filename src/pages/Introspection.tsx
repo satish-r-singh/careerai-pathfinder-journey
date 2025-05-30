@@ -8,14 +8,64 @@ import IkigaiDiscoveryIntro from '@/components/IkigaiDiscoveryIntro';
 import IkigaiCompletionBanner from '@/components/IkigaiCompletionBanner';
 import IntrospectionJourneySteps from '@/components/IntrospectionJourneySteps';
 import { useIntrospectionStatus } from '@/hooks/useIntrospectionStatus';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Introspection = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const {
     ikigaiCompleted,
     industryResearchCompleted,
     ikigaiData,
-    loading
+    loading,
+    checkCompletionStatus
   } = useIntrospectionStatus();
+
+  const handleRetakeAssessment = async () => {
+    if (!user) return;
+    
+    try {
+      // Reset the ikigai progress
+      const { error } = await supabase
+        .from('ikigai_progress')
+        .update({
+          is_completed: false,
+          current_step: 0,
+          ikigai_data: {
+            passion: [],
+            mission: [],
+            profession: [],
+            vocation: []
+          },
+          ai_insights: null
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Assessment Reset",
+        description: "Your Ikigai assessment has been reset. You can now start over.",
+      });
+
+      // Refresh the status
+      await checkCompletionStatus();
+      
+      // Navigate to the Ikigai page to restart
+      navigate('/ikigai');
+    } catch (error: any) {
+      console.error('Error resetting assessment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset the assessment. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -57,7 +107,7 @@ const Introspection = () => {
             <IkigaiDiscoveryIntro />
           ) : (
             <div className="space-y-6">
-              <IkigaiCompletionBanner />
+              <IkigaiCompletionBanner onRetakeAssessment={handleRetakeAssessment} />
               <IkigaiAnswersDisplay ikigaiData={ikigaiData} />
               <IkigaiInsights ikigaiData={ikigaiData} />
               <IntrospectionJourneySteps 
