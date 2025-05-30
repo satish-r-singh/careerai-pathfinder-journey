@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +36,6 @@ interface ResearchResults {
 
 const IndustryResearch = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -328,11 +328,6 @@ const IndustryResearch = () => {
     </div>
   );
 
-  const handleBackNavigation = () => {
-    // Go directly to Ikigai page where the AI Career Integration button is
-    navigate('/ikigai');
-  };
-
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -350,11 +345,11 @@ const IndustryResearch = () => {
         <div className="mb-8">
           <Button 
             variant="outline" 
-            onClick={handleBackNavigation}
+            onClick={() => navigate('/dashboard')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Dashboard
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Industry Research</h1>
           <p className="text-gray-600">

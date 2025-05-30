@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Heart, Globe, Star, DollarSign, Search, Bot, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 interface IkigaiData {
   passion: string[];
@@ -19,7 +18,6 @@ interface IkigaiResultsProps {
 
 const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const categories = [
     {
@@ -86,12 +84,17 @@ const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
 
   const handleIndustryResearch = () => {
     // Navigate to the new Industry Research page
-    navigate('/industry-research');
+    window.location.href = '/industry-research';
   };
 
   const handleAICareerIntegration = () => {
-    // Navigate directly to the Industry Research page for AI career analysis
-    navigate('/industry-research');
+    toast({
+      title: "AI Career Analysis Started",
+      description: "Analyzing how AI can enhance your career path based on your Ikigai profile.",
+    });
+    
+    // This could integrate with AI career recommendation systems
+    console.log('AI career integration for:', ikigaiData);
   };
 
   const handlePersonalizedOutreach = () => {
@@ -209,8 +212,8 @@ const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
                 </Button>
               </div>
               <p className="text-sm text-gray-600">
-                Get personalized AI career recommendations based on your Ikigai profile. 
-                Discover specific AI roles and opportunities that match your purpose and expertise.
+                Consider how AI and machine learning can enhance or transform your identified interests and skills. 
+                Explore AI roles that match your purpose and expertise.
               </p>
             </div>
             <div className="p-4 bg-primary/5 rounded-lg">
