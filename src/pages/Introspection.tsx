@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,9 +18,14 @@ const Introspection = () => {
   }, [user]);
 
   const checkIkigaiStatus = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
+      console.log('Checking Ikigai status for user:', user.id);
+      
       const { data, error } = await supabase
         .from('ikigai_progress')
         .select('is_completed')
@@ -30,10 +34,14 @@ const Introspection = () => {
 
       if (error) {
         console.error('Error checking Ikigai status:', error);
+        setLoading(false);
         return;
       }
 
-      setIkigaiCompleted(data?.is_completed || false);
+      console.log('Ikigai progress data:', data);
+      const isCompleted = data?.is_completed || false;
+      console.log('Setting ikigaiCompleted to:', isCompleted);
+      setIkigaiCompleted(isCompleted);
     } catch (error) {
       console.error('Error loading Ikigai status:', error);
     } finally {
@@ -51,6 +59,8 @@ const Introspection = () => {
       </div>
     );
   }
+
+  console.log('Rendering Introspection page. ikigaiCompleted:', ikigaiCompleted);
 
   return (
     <div className="min-h-screen bg-gray-50">
