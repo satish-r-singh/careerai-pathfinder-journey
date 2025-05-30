@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,12 +6,28 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import IkigaiChart from '@/components/IkigaiChart';
+import IntrospectionProgressBar from '@/components/IntrospectionProgressBar';
+import IkigaiAnswersDisplay from '@/components/IkigaiAnswersDisplay';
+import IkigaiInsights from '@/components/IkigaiInsights';
+
+interface IkigaiData {
+  passion: string[];
+  mission: string[];
+  profession: string[];
+  vocation: string[];
+}
 
 const Introspection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
   const [industryResearchCompleted, setIndustryResearchCompleted] = useState(false);
+  const [ikigaiData, setIkigaiData] = useState<IkigaiData>({
+    passion: [],
+    mission: [],
+    profession: [],
+    vocation: []
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,10 +43,10 @@ const Introspection = () => {
     try {
       console.log('Checking completion status for user:', user.id);
       
-      // Check Ikigai completion
+      // Check Ikigai completion and get data
       const { data: ikigaiData, error: ikigaiError } = await supabase
         .from('ikigai_progress')
-        .select('is_completed')
+        .select('is_completed, ikigai_data')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -41,6 +56,11 @@ const Introspection = () => {
         const isIkigaiCompleted = ikigaiData?.is_completed || false;
         console.log('Setting ikigaiCompleted to:', isIkigaiCompleted);
         setIkigaiCompleted(isIkigaiCompleted);
+        
+        // Set Ikigai data if available
+        if (ikigaiData?.ikigai_data) {
+          setIkigaiData(ikigaiData.ikigai_data as IkigaiData);
+        }
       }
 
       // Check Industry Research completion
@@ -112,6 +132,16 @@ const Introspection = () => {
         </div>
 
         <div className="space-y-8">
+          {/* Progress Bar */}
+          <Card className="premium-card">
+            <CardContent className="p-6">
+              <IntrospectionProgressBar 
+                ikigaiCompleted={ikigaiCompleted}
+                industryResearchCompleted={industryResearchCompleted}
+              />
+            </CardContent>
+          </Card>
+
           {!ikigaiCompleted ? (
             // Show Ikigai Discovery if not completed
             <Card className="premium-card">
@@ -164,7 +194,7 @@ const Introspection = () => {
               </CardContent>
             </Card>
           ) : (
-            // Show next steps if Ikigai is completed
+            // Show completed Ikigai results and next steps
             <div className="space-y-6">
               <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 shadow-xl">
                 <CardContent className="p-6">
@@ -175,12 +205,18 @@ const Introspection = () => {
                     <h3 className="text-lg font-semibold text-green-800">Ikigai Discovery Completed!</h3>
                   </div>
                   <p className="text-green-700">
-                    Excellent! You've completed your Ikigai discovery. Now let's continue with the next steps 
-                    in your introspection journey.
+                    Excellent! You've completed your Ikigai discovery. Review your results and AI insights below.
                   </p>
                 </CardContent>
               </Card>
 
+              {/* Display Ikigai Answers */}
+              <IkigaiAnswersDisplay ikigaiData={ikigaiData} />
+
+              {/* AI Insights */}
+              <IkigaiInsights ikigaiData={ikigaiData} />
+
+              {/* Continue Your Journey */}
               <Card className="premium-card">
                 <CardHeader>
                   <CardTitle className="gradient-text">Continue Your Journey</CardTitle>
