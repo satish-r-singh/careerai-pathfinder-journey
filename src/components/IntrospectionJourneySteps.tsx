@@ -94,35 +94,9 @@ const IntrospectionJourneySteps = ({ industryResearchCompleted, ikigaiData }: In
             </Button>
           </div>
 
-          {/* Personalised Outreach Card */}
-          <PersonalizedOutreachCard ikigaiData={ikigaiData} />
-
-          {/* Review Your Progress Card */}
-          <div className="p-6 border rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 border-indigo-200">
-            <div className="flex items-center space-x-3 mb-4">
-              <CheckCircle className="w-8 h-8 text-indigo-500" />
-              <h3 className="text-lg font-semibold">Review Your Progress</h3>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Revisit your Ikigai discovery results and track your overall introspection progress.
-            </p>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => navigate('/ikigai')}
-              >
-                View Ikigai Results
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button 
-                className="flex-1"
-                onClick={() => navigate('/dashboard')}
-              >
-                View Dashboard
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+          {/* Personalised Outreach Card - now spans full width */}
+          <div className="md:col-span-2">
+            <PersonalizedOutreachCard ikigaiData={ikigaiData} />
           </div>
         </div>
       </CardContent>

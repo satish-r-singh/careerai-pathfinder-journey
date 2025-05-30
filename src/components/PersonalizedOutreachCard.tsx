@@ -2,7 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, Copy, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { MessageSquare, Copy, RefreshCw, Briefcase } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,6 +22,7 @@ interface PersonalizedOutreachCardProps {
 const PersonalizedOutreachCard = ({ ikigaiData }: PersonalizedOutreachCardProps) => {
   const [outreachTemplates, setOutreachTemplates] = useState<string[]>([]);
   const [currentTemplate, setCurrentTemplate] = useState(0);
+  const [jobDescription, setJobDescription] = useState('');
   const { toast } = useToast();
 
   const generateOutreachTemplates = () => {
@@ -28,9 +31,24 @@ const PersonalizedOutreachCard = ({ ikigaiData }: PersonalizedOutreachCardProps)
     const missions = ikigaiData.mission.slice(0, 1);
     const vocations = ikigaiData.vocation.slice(0, 1);
 
+    const hasJobDescription = jobDescription.trim().length > 0;
+
     const templates = [
-      // Template 1: General networking
-      `Hi [Name],
+      // Template 1: General networking or job-specific
+      hasJobDescription 
+        ? `Hi [Name],
+
+I hope this message finds you well. I came across the ${jobDescription.includes('role') || jobDescription.includes('position') ? '' : 'role/position '}${jobDescription.slice(0, 100)}${jobDescription.length > 100 ? '...' : ''} and was immediately drawn to the opportunity.
+
+My passion for ${passions.join(' and ')} aligns perfectly with this role. My background in ${skills.join(' and ')} has given me a unique perspective on ${missions[0] || 'solving meaningful problems'}, which I believe would add significant value to your team.
+
+I'd love to discuss how my experience and enthusiasm could contribute to your organization's goals. Would you be open to a brief conversation?
+
+Thank you for your time!
+
+Best regards,
+[Your Name]`
+        : `Hi [Name],
 
 I hope this message finds you well. I came across your profile and was impressed by your work in the AI industry.
 
@@ -43,8 +61,24 @@ Thank you for your time!
 Best regards,
 [Your Name]`,
 
-      // Template 2: Specific opportunity inquiry
-      `Dear [Name],
+      // Template 2: Specific opportunity inquiry or targeted application
+      hasJobDescription
+        ? `Dear [Name],
+
+I'm writing to express my strong interest in the opportunity described: ${jobDescription.slice(0, 150)}${jobDescription.length > 150 ? '...' : ''}
+
+Through my Ikigai discovery process, I've identified that my sweet spot lies at the intersection of:
+• What I love: ${passions.join(', ')}
+• What I'm good at: ${skills.join(', ')}
+• What the world needs: ${missions[0] || 'innovative solutions'}
+
+This role appears to be perfectly aligned with my purpose and expertise. ${vocations[0] ? `My particular interest in ${vocations[0]}` : 'My passion for meaningful work'} makes this opportunity especially exciting.
+
+I would welcome the chance to discuss how my unique perspective and skills could contribute to your team's success.
+
+Warm regards,
+[Your Name]`
+        : `Dear [Name],
 
 I'm reaching out regarding opportunities in AI that align with my purpose and expertise.
 
@@ -60,8 +94,21 @@ Would you be available for a brief conversation?
 Warm regards,
 [Your Name]`,
 
-      // Template 3: Follow-up after meeting/event
-      `Hi [Name],
+      // Template 3: Follow-up after meeting/event or application follow-up
+      hasJobDescription
+        ? `Hi [Name],
+
+Thank you for taking the time to review my application for the ${jobDescription.includes('role') || jobDescription.includes('position') ? '' : 'position involving '}${jobDescription.slice(0, 100)}${jobDescription.length > 100 ? '...' : ''}.
+
+I wanted to follow up and reiterate my enthusiasm for this opportunity. The role aligns perfectly with my passion for ${passions.join(' and ')} and my expertise in ${skills.join(' and ')}.
+
+I'm particularly excited about the potential to contribute to ${missions[0] || 'meaningful initiatives'} within your organization. I believe my unique background and purpose-driven approach would bring valuable perspectives to your team.
+
+I'd welcome the opportunity to discuss how I can contribute to your goals. Thank you for your consideration.
+
+Best,
+[Your Name]`
+        : `Hi [Name],
 
 It was wonderful meeting you at [Event/Location]. Our conversation about ${missions[0] || 'AI applications'} really resonated with me.
 
@@ -83,7 +130,7 @@ Best,
     if (hasCompleteData) {
       generateOutreachTemplates();
     }
-  }, [ikigaiData]);
+  }, [ikigaiData, jobDescription]);
 
   const copyToClipboard = () => {
     if (outreachTemplates[currentTemplate]) {
@@ -131,16 +178,31 @@ Best,
       </div>
       
       <p className="text-gray-600 mb-4">
-        AI-generated outreach templates based on your Ikigai insights. Craft compelling messages that showcase your authentic purpose.
+        AI-generated outreach templates based on your Ikigai insights. Add a job description for more targeted messaging.
       </p>
+
+      {/* Job Description Input */}
+      <div className="mb-4">
+        <Label htmlFor="job-description" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+          <Briefcase className="w-4 h-4 mr-2" />
+          Job Description (Optional)
+        </Label>
+        <Textarea
+          id="job-description"
+          placeholder="Paste the job description here to generate more targeted outreach templates..."
+          value={jobDescription}
+          onChange={(e) => setJobDescription(e.target.value)}
+          className="min-h-[100px] text-sm"
+        />
+      </div>
 
       {outreachTemplates.length > 0 && (
         <Card className="mb-4">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-700">
-              {currentTemplate === 0 && "General Networking Template"}
-              {currentTemplate === 1 && "Opportunity Inquiry Template"}
-              {currentTemplate === 2 && "Follow-up Template"}
+              {currentTemplate === 0 && (jobDescription ? "Targeted Application Template" : "General Networking Template")}
+              {currentTemplate === 1 && (jobDescription ? "Detailed Interest Template" : "Opportunity Inquiry Template")}
+              {currentTemplate === 2 && (jobDescription ? "Application Follow-up Template" : "Follow-up Template")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
