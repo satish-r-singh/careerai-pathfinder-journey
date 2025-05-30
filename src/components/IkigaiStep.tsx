@@ -60,7 +60,7 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
           <ul className="space-y-2">
             {step.questions.map((question, index) => (
               <li key={index} className="flex items-start space-x-2">
-                <span className="w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-medium mt-0.5">
+                <span className="w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-medium mt-0.5 flex-shrink-0">
                   {index + 1}
                 </span>
                 <span className="text-gray-700">{question}</span>
@@ -77,7 +77,7 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
               onChange={(e) => setCurrentResponse(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Share your thoughts, ideas, or specific examples..."
-              className="min-h-[100px]"
+              className="min-h-[100px] resize-none"
             />
             <div className="flex justify-between items-center">
               <p className="text-sm text-gray-500">Press Ctrl+Enter to add</p>
@@ -88,27 +88,31 @@ const IkigaiStep = ({ step, initialData, onDataChange }: IkigaiStepProps) => {
             </div>
           </div>
 
-          {responses.length > 0 && (
-            <div className="space-y-2">
-              <label className="font-medium">Your responses:</label>
-              <div className="space-y-2">
-                {responses.map((response, index) => (
-                  <div key={index} className="flex items-start space-x-2 p-3 bg-gray-50 rounded-lg">
-                    <span className="flex-1 text-sm">{response}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeResponse(index)}
-                      className="text-gray-400 hover:text-red-500"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+          <div className="min-h-[60px]">
+            {responses.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="font-medium">Your responses:</label>
+                  <Badge variant="secondary">{responses.length} response{responses.length !== 1 ? 's' : ''} added</Badge>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {responses.map((response, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border">
+                      <span className="flex-1 text-sm leading-relaxed break-words">{response}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeResponse(index)}
+                        className="text-gray-400 hover:text-red-500 flex-shrink-0 h-8 w-8 p-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <Badge variant="secondary">{responses.length} response{responses.length !== 1 ? 's' : ''} added</Badge>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
