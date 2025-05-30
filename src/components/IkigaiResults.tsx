@@ -83,18 +83,8 @@ const IkigaiResults = ({ ikigaiData, onRestart }: IkigaiResultsProps) => {
   const intersections = findIntersections();
 
   const handleIndustryResearch = () => {
-    // Extract key interests and skills from ikigai data
-    const allInterests = [...ikigaiData.passion, ...ikigaiData.mission];
-    const allSkills = [...ikigaiData.profession, ...ikigaiData.vocation];
-    
-    toast({
-      title: "Industry Research Initiated",
-      description: "Based on your Ikigai insights, research industries that align with your interests and skills.",
-    });
-    
-    // Here you could integrate with external APIs or redirect to research tools
-    console.log('Research based on interests:', allInterests);
-    console.log('Research based on skills:', allSkills);
+    // Navigate to the new Industry Research page
+    window.location.href = '/industry-research';
   };
 
   const handleAICareerIntegration = () => {
