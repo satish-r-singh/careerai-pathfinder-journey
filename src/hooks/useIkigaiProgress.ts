@@ -28,6 +28,15 @@ export const useIkigaiProgress = () => {
     loadSavedProgress();
   }, [user]);
 
+  // Auto-save when ikigaiData changes
+  useEffect(() => {
+    if (user && (ikigaiData.passion.length > 0 || ikigaiData.mission.length > 0 || 
+        ikigaiData.profession.length > 0 || ikigaiData.vocation.length > 0)) {
+      console.log('Auto-saving progress due to data change:', ikigaiData);
+      saveProgress();
+    }
+  }, [ikigaiData, user]);
+
   const loadSavedProgress = async () => {
     if (!user) return;
     
@@ -44,6 +53,7 @@ export const useIkigaiProgress = () => {
 
       if (data) {
         const savedIkigaiData = data.ikigai_data as unknown as IkigaiData;
+        console.log('Loaded saved ikigai data:', savedIkigaiData);
         setIkigaiData(savedIkigaiData || {
           passion: [],
           mission: [],
@@ -63,6 +73,8 @@ export const useIkigaiProgress = () => {
     
     setLoading(true);
     try {
+      console.log('Saving progress with data:', ikigaiData);
+      
       // First check if a record exists
       const { data: existingData, error: selectError } = await supabase
         .from('ikigai_progress')
@@ -72,16 +84,18 @@ export const useIkigaiProgress = () => {
 
       if (selectError) throw selectError;
 
+      const progressData = {
+        ikigai_data: ikigaiData as unknown as any,
+        current_step: currentStep,
+        is_completed: isCompleted,
+        updated_at: new Date().toISOString()
+      };
+
       if (existingData) {
         // Update existing record
         const { error } = await supabase
           .from('ikigai_progress')
-          .update({
-            ikigai_data: ikigaiData as unknown as any,
-            current_step: currentStep,
-            is_completed: isCompleted,
-            updated_at: new Date().toISOString()
-          })
+          .update(progressData)
           .eq('user_id', user.id);
 
         if (error) throw error;
@@ -91,19 +105,13 @@ export const useIkigaiProgress = () => {
           .from('ikigai_progress')
           .insert({
             user_id: user.id,
-            ikigai_data: ikigaiData as unknown as any,
-            current_step: currentStep,
-            is_completed: isCompleted,
-            updated_at: new Date().toISOString()
+            ...progressData
           });
 
         if (error) throw error;
       }
 
-      toast({
-        title: "Progress saved!",
-        description: "Your Ikigai discovery progress has been saved.",
-      });
+      console.log('Progress saved successfully');
     } catch (error: any) {
       console.error('Error saving progress:', error);
       toast({
