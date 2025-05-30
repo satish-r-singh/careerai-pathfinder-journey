@@ -1,8 +1,13 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,14 +23,40 @@ serve(async (req) => {
   try {
     console.log('Industry research function called');
     
-    const { ikigaiData } = await req.json();
+    const { ikigaiData, userId } = await req.json();
     console.log('Received ikigai data:', ikigaiData);
+    console.log('User ID:', userId);
 
-    if (!ikigaiData) {
+    if (!ikigaiData || !userId) {
       return new Response(
-        JSON.stringify({ error: 'Ikigai data is required' }),
+        JSON.stringify({ error: 'Ikigai data and user ID are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Check if user already has research results
+    const { data: existingResearch, error: fetchError } = await supabase
+      .from('industry_research')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching existing research:', fetchError);
+      throw fetchError;
+    }
+
+    // If existing research found and it's recent (less than 7 days old), return it
+    if (existingResearch) {
+      const researchAge = Date.now() - new Date(existingResearch.created_at).getTime();
+      const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+      
+      if (researchAge < sevenDaysInMs) {
+        console.log('Returning existing research results');
+        return new Response(JSON.stringify({ research: existingResearch.research_data }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const prompt = `Based on the following Ikigai discovery results, provide comprehensive industry research and career recommendations:
@@ -131,6 +162,38 @@ Please provide at least 3-5 industries with 2-3 AI roles each.`;
         type: 'text'
       };
     }
+
+    // Save research results to database
+    if (existingResearch) {
+      // Update existing research
+      const { error: updateError } = await supabase
+        .from('industry_research')
+        .update({
+          research_data: researchResults,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (updateError) {
+        console.error('Error updating research:', updateError);
+        throw updateError;
+      }
+    } else {
+      // Insert new research
+      const { error: insertError } = await supabase
+        .from('industry_research')
+        .insert({
+          user_id: userId,
+          research_data: researchResults
+        });
+
+      if (insertError) {
+        console.error('Error inserting research:', insertError);
+        throw insertError;
+      }
+    }
+
+    console.log('Research results saved to database');
 
     return new Response(JSON.stringify({ research: researchResults }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,25 +39,69 @@ const IndustryResearch = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [researchResults, setResearchResults] = useState<ResearchResults | null>(null);
   const [ikigaiData, setIkigaiData] = useState(null);
 
   useEffect(() => {
-    loadIkigaiData();
+    loadData();
   }, [user]);
 
-  const loadIkigaiData = async () => {
+  const loadData = async () => {
     if (!user) {
-      console.log('No user found, cannot load Ikigai data');
+      console.log('No user found, cannot load data');
+      setInitialLoading(false);
       return;
     }
 
     try {
-      console.log('Loading Ikigai data for user:', user.id);
+      // Load existing research results first
+      await loadExistingResearch();
+      
+      // Then load Ikigai data
+      await loadIkigaiData();
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your data.",
+        variant: "destructive",
+      });
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const loadExistingResearch = async () => {
+    try {
+      console.log('Loading existing research for user:', user?.id);
+      const { data, error } = await supabase
+        .from('industry_research')
+        .select('research_data, created_at')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading existing research:', error);
+        return;
+      }
+
+      if (data?.research_data) {
+        console.log('Found existing research results');
+        setResearchResults(data.research_data as ResearchResults);
+      }
+    } catch (error) {
+      console.error('Error loading existing research:', error);
+    }
+  };
+
+  const loadIkigaiData = async () => {
+    try {
+      console.log('Loading Ikigai data for user:', user?.id);
       const { data, error } = await supabase
         .from('ikigai_progress')
         .select('ikigai_data')
-        .eq('user_id', user.id)
+        .eq('user_id', user?.id)
         .maybeSingle();
 
       if (error) {
@@ -104,7 +149,7 @@ const IndustryResearch = () => {
   };
 
   const startResearch = async () => {
-    if (!ikigaiData) {
+    if (!ikigaiData || !user) {
       toast({
         title: "No Data Available",
         description: "Please complete your Ikigai discovery first.",
@@ -118,7 +163,10 @@ const IndustryResearch = () => {
       console.log('Starting industry research with ikigai data:', ikigaiData);
 
       const { data, error } = await supabase.functions.invoke('industry-research', {
-        body: { ikigaiData }
+        body: { 
+          ikigaiData,
+          userId: user.id 
+        }
       });
 
       if (error) {
@@ -131,7 +179,7 @@ const IndustryResearch = () => {
 
       toast({
         title: "Research Complete!",
-        description: "Your personalized industry analysis is ready.",
+        description: "Your personalized industry analysis is ready and saved.",
       });
     } catch (error) {
       console.error('Error conducting research:', error);
@@ -277,6 +325,17 @@ const IndustryResearch = () => {
       )}
     </div>
   );
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading your research data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

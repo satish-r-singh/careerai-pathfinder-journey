@@ -39,6 +39,30 @@ export type Database = {
         }
         Relationships: []
       }
+      industry_research: {
+        Row: {
+          created_at: string
+          id: string
+          research_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          research_data: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          research_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ai_interest: string | null
