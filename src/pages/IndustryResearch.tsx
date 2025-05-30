@@ -329,21 +329,8 @@ const IndustryResearch = () => {
   );
 
   const handleBackNavigation = () => {
-    // Check if there's a previous page in history and it's within our app
-    if (window.history.length > 1) {
-      // Check if we came from a route within our app
-      const referrer = document.referrer;
-      const currentOrigin = window.location.origin;
-      
-      if (referrer && referrer.startsWith(currentOrigin)) {
-        navigate(-1);
-      } else {
-        // If no safe referrer, go to dashboard
-        navigate('/dashboard');
-      }
-    } else {
-      navigate('/dashboard');
-    }
+    // Go directly to Ikigai page where the AI Career Integration button is
+    navigate('/ikigai');
   };
 
   if (initialLoading) {
