@@ -308,8 +308,8 @@ const IndustryResearch = () => {
   );
 
   const handleBackNavigation = () => {
-    // Go directly to Ikigai page where the AI Career Integration button is
-    navigate('/ikigai');
+    // Go back to Introspection page where the Industry Research button is
+    navigate('/introspection');
   };
 
   if (initialLoading) {
