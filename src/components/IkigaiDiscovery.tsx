@@ -145,18 +145,32 @@ const IkigaiDiscovery = () => {
   };
 
   const handleStepData = (category: string, responses: string[]) => {
-    setIkigaiData(prev => ({
-      ...prev,
-      [category]: responses
-    }));
+    console.log('Updating step data for category:', category, 'with responses:', responses);
+    setIkigaiData(prev => {
+      const updated = {
+        ...prev,
+        [category]: responses
+      };
+      console.log('Updated ikigaiData:', updated);
+      return updated;
+    });
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
+    console.log('Next step clicked, current step:', currentStep);
+    console.log('Current ikigaiData:', ikigaiData);
+    
     if (currentStep < ikigaiQuestions.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+      console.log('Moving to step:', newStep);
+      
+      // Save progress after moving to next step
+      await saveProgress();
     } else {
+      console.log('Completing discovery...');
       setIsCompleted(true);
-      saveProgress();
+      await saveProgress();
     }
   };
 
@@ -213,8 +227,8 @@ const IkigaiDiscovery = () => {
               Previous
             </Button>
             
-            <Button onClick={nextStep}>
-              {currentStep === ikigaiQuestions.length - 1 ? 'Complete Discovery' : 'Next'}
+            <Button onClick={nextStep} disabled={loading}>
+              {currentStep === ikigaiQuestions.length - 1 ? 'Complete Discovery' : 'Continue'}
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
