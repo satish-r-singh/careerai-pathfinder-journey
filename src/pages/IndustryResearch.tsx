@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, TrendingUp, Briefcase, DollarSign, Target } from 'lucide-react';
+import { ArrowLeft, Loader2, TrendingUp, Briefcase, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -287,27 +287,6 @@ const IndustryResearch = () => {
           </CardContent>
         </Card>
       ))}
-
-      {results.next_steps && results.next_steps.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              Next Steps
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {results.next_steps.map((step, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-primary font-medium">{index + 1}.</span>
-                  {step}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
 
       {results.skill_gaps && results.skill_gaps.length > 0 && (
         <Card>
