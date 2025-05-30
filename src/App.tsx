@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Auth from "./pages/Auth";
+import Introspection from "./pages/Introspection";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,11 @@ const App = () => (
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/introspection" element={
+              <ProtectedRoute>
+                <Introspection />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={
