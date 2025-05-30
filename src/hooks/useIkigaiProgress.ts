@@ -92,11 +92,16 @@ export const useIkigaiProgress = () => {
 
   const handleStepData = (category: string, responses: string[]) => {
     console.log('Updating step data for category:', category, 'with responses:', responses);
+    
     setIkigaiData(prev => {
+      // Create a completely new object to avoid any reference issues
       const updated = {
-        ...prev,
-        [category]: responses
+        passion: category === 'passion' ? [...responses] : [...prev.passion],
+        mission: category === 'mission' ? [...responses] : [...prev.mission],
+        profession: category === 'profession' ? [...responses] : [...prev.profession],
+        vocation: category === 'vocation' ? [...responses] : [...prev.vocation]
       };
+      
       console.log('Updated ikigaiData:', updated);
       return updated;
     });
