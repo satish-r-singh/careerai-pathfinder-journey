@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,7 +87,9 @@ const IndustryResearch = () => {
 
       if (data?.research_data) {
         console.log('Found existing research results');
-        setResearchResults(data.research_data as ResearchResults);
+        // Safely cast the data with type checking
+        const researchData = data.research_data as unknown as ResearchResults;
+        setResearchResults(researchData);
       }
     } catch (error) {
       console.error('Error loading existing research:', error);
