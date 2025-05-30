@@ -8,6 +8,8 @@ import IkigaiNavigationButtons from './IkigaiNavigationButtons';
 import IkigaiSidebar from './IkigaiSidebar';
 import { useIkigaiProgress } from '@/hooks/useIkigaiProgress';
 import { ikigaiQuestions } from '@/constants/ikigaiQuestions';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface IkigaiData {
   passion: string[];
@@ -18,6 +20,7 @@ interface IkigaiData {
 
 const IkigaiDiscovery = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const {
     currentStep,
     setCurrentStep,
@@ -51,18 +54,71 @@ const IkigaiDiscovery = () => {
         const newStep = currentStep + 1;
         setCurrentStep(newStep);
         console.log('Moving to step:', newStep);
+        // Save progress after updating step
+        await saveProgress();
       } else {
         console.log('Completing discovery...');
+        // First set completion state
         setIsCompleted(true);
+        
+        // Then manually save with the completed state
+        // We need to save manually here because the state update is async
+        await saveProgressWithCompletion();
       }
-      
-      // Save progress after updating state
-      await saveProgress();
     } catch (error) {
       console.error('Error in nextStep:', error);
       toast({
         title: "Error",
         description: "Failed to proceed to next step. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const saveProgressWithCompletion = async () => {
+    // Custom save function that explicitly sets completion
+    try {
+      console.log('Saving completion state...');
+      
+      const { data: existingData, error: selectError } = await supabase
+        .from('ikigai_progress')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (selectError) throw selectError;
+
+      const progressData = {
+        ikigai_data: ikigaiData as unknown as any,
+        current_step: currentStep,
+        is_completed: true, // Explicitly set to true
+        updated_at: new Date().toISOString()
+      };
+
+      if (existingData) {
+        const { error } = await supabase
+          .from('ikigai_progress')
+          .update(progressData)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('ikigai_progress')
+          .insert({
+            user_id: user.id,
+            ...progressData
+          });
+
+        if (error) throw error;
+      }
+
+      console.log('Completion saved successfully');
+    } catch (error) {
+      console.error('Error saving completion:', error);
+      toast({
+        title: "Error saving progress",
+        description: "Failed to save completion status.",
         variant: "destructive",
       });
     }
