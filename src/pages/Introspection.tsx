@@ -30,6 +30,27 @@ const Introspection = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Helper function to safely convert JSON to IkigaiData
+  const parseIkigaiData = (data: any): IkigaiData => {
+    const defaultData: IkigaiData = {
+      passion: [],
+      mission: [],
+      profession: [],
+      vocation: []
+    };
+
+    if (!data || typeof data !== 'object') {
+      return defaultData;
+    }
+
+    return {
+      passion: Array.isArray(data.passion) ? data.passion : [],
+      mission: Array.isArray(data.mission) ? data.mission : [],
+      profession: Array.isArray(data.profession) ? data.profession : [],
+      vocation: Array.isArray(data.vocation) ? data.vocation : []
+    };
+  };
+
   useEffect(() => {
     checkCompletionStatus();
   }, [user]);
@@ -57,9 +78,10 @@ const Introspection = () => {
         console.log('Setting ikigaiCompleted to:', isIkigaiCompleted);
         setIkigaiCompleted(isIkigaiCompleted);
         
-        // Set Ikigai data if available
+        // Set Ikigai data if available with safe parsing
         if (ikigaiData?.ikigai_data) {
-          setIkigaiData(ikigaiData.ikigai_data as IkigaiData);
+          const parsedData = parseIkigaiData(ikigaiData.ikigai_data);
+          setIkigaiData(parsedData);
         }
       }
 
