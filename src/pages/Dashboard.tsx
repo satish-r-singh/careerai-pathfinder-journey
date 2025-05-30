@@ -15,6 +15,8 @@ const Dashboard = () => {
   const [phaseProgress, setPhaseProgress] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
+  const [industryResearchCompleted, setIndustryResearchCompleted] = useState(false);
+  const [careerRoadmapCompleted, setCareerRoadmapCompleted] = useState(false);
   const [ikigaiLoading, setIkigaiLoading] = useState(true);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -49,30 +51,63 @@ const Dashboard = () => {
       console.log('Dashboard - Setting ikigaiCompleted to:', isIkigaiCompleted);
       setIkigaiCompleted(isIkigaiCompleted);
 
-      // Calculate overall introspection phase progress
+      // Load Industry Research completion
+      const { data: researchData, error: researchError } = await supabase
+        .from('industry_research')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (researchError) {
+        console.error('Error checking Industry Research status:', researchError);
+      } else {
+        const isResearchCompleted = !!researchData;
+        console.log('Dashboard - Setting industryResearchCompleted to:', isResearchCompleted);
+        setIndustryResearchCompleted(isResearchCompleted);
+      }
+
+      // Load Career Roadmap completion
+      const { data: roadmapData, error: roadmapError } = await supabase
+        .from('career_roadmaps')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (roadmapError) {
+        console.error('Error checking Career Roadmap status:', roadmapError);
+      } else {
+        const isRoadmapCompleted = !!roadmapData;
+        console.log('Dashboard - Setting careerRoadmapCompleted to:', isRoadmapCompleted);
+        setCareerRoadmapCompleted(isRoadmapCompleted);
+      }
+
+      // Calculate overall introspection phase progress based on actual completion status
       let totalProgress = 0;
 
-      // 1. Ikigai assessment (40% of total progress)
+      // 1. Ikigai assessment (33% of total progress)
       if (isIkigaiCompleted) {
-        totalProgress += 40;
+        totalProgress += 33;
       } else if (ikigaiData?.current_step > 0) {
         // Partial progress based on current step (assuming 4 total steps)
-        const stepProgress = ((ikigaiData.current_step + 1) / 4) * 40;
-        totalProgress += Math.min(stepProgress, 35); // Cap at 35% until fully completed
+        const stepProgress = ((ikigaiData.current_step + 1) / 4) * 33;
+        totalProgress += Math.min(stepProgress, 30); // Cap at 30% until fully completed
       }
 
-      // 2. Target roles research (20% of total progress)
-      if (completedTasks.includes(2)) {
-        totalProgress += 20;
+      // 2. Industry research (33% of total progress)
+      if (!!researchData) {
+        totalProgress += 33;
       }
 
-      // 3. Career goals definition (20% of total progress)
-      // This could be tracked when user completes profile or separate goal-setting flow
-      
-      // 4. Industry research (20% of total progress)
-      if (completedTasks.includes(3)) {
-        totalProgress += 20;
+      // 3. Career roadmap (34% of total progress)
+      if (!!roadmapData) {
+        totalProgress += 34;
       }
+
+      console.log('Dashboard - Calculated progress:', totalProgress, {
+        ikigai: isIkigaiCompleted,
+        research: !!researchData,
+        roadmap: !!roadmapData
+      });
 
       setPhaseProgress(Math.round(totalProgress));
     } catch (error) {
@@ -112,7 +147,7 @@ const Dashboard = () => {
       status: 'current' as const,
       progress: phaseProgress,
       estimatedTime: '1-2 weeks',
-      keyActivities: ['Complete Ikigai assessment', 'Research target roles', 'Define career goals']
+      keyActivities: ['Complete Ikigai assessment', 'Research AI industry', 'Generate career roadmap']
     },
     {
       id: 2,
