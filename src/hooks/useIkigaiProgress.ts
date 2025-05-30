@@ -63,23 +63,49 @@ export const useIkigaiProgress = () => {
     
     setLoading(true);
     try {
-      const { error } = await supabase
+      // First check if a record exists
+      const { data: existingData, error: selectError } = await supabase
         .from('ikigai_progress')
-        .upsert({
-          user_id: user.id,
-          ikigai_data: ikigaiData as unknown as any,
-          current_step: currentStep,
-          is_completed: isCompleted,
-          updated_at: new Date().toISOString()
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (selectError) throw selectError;
+
+      if (existingData) {
+        // Update existing record
+        const { error } = await supabase
+          .from('ikigai_progress')
+          .update({
+            ikigai_data: ikigaiData as unknown as any,
+            current_step: currentStep,
+            is_completed: isCompleted,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('ikigai_progress')
+          .insert({
+            user_id: user.id,
+            ikigai_data: ikigaiData as unknown as any,
+            current_step: currentStep,
+            is_completed: isCompleted,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Progress saved!",
         description: "Your Ikigai discovery progress has been saved.",
       });
     } catch (error: any) {
+      console.error('Error saving progress:', error);
       toast({
         title: "Error saving progress",
         description: error.message,
