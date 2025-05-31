@@ -109,14 +109,19 @@ export const updateProjectSelection = async (
   projectId: string,
   isSelected: boolean
 ) => {
-  // Use a more explicit approach to avoid type inference issues
-  const query = supabase
-    .from('project_options')
-    .update({ is_selected: isSelected })
-    .eq('user_id', userId);
-  
-  // Add the JSONB query separately to avoid complex type chaining
-  const { error } = await query.eq('project_data->id', projectId);
+  // Simplified approach to avoid TypeScript inference issues
+  try {
+    const { error } = await supabase
+      .from('project_options')
+      .update({ is_selected: isSelected })
+      .match({ 
+        user_id: userId,
+        'project_data->>id': projectId 
+      });
 
-  if (error) throw error;
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating project selection:', error);
+    throw error;
+  }
 };
