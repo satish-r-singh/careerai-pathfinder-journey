@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -144,6 +143,35 @@ const Dashboard = () => {
     } else {
       // Navigate to ikigai discovery
       navigate('/ikigai');
+    }
+  };
+
+  const handlePhaseClick = (phase: any) => {
+    console.log(`Navigate to ${phase.name} phase`);
+    
+    switch (phase.name) {
+      case 'Introspection':
+        handleIntrospectionClick();
+        break;
+      case 'Exploration':
+        if (phase.status === 'current' || phase.status === 'completed') {
+          navigate('/exploration');
+        }
+        break;
+      case 'Reflection':
+        if (phase.status === 'current' || phase.status === 'completed') {
+          // TODO: Navigate to reflection page when implemented
+          console.log('Reflection phase not yet implemented');
+        }
+        break;
+      case 'Action':
+        if (phase.status === 'current' || phase.status === 'completed') {
+          // TODO: Navigate to action phase when implemented
+          console.log('Action phase not yet implemented');
+        }
+        break;
+      default:
+        console.log(`Unknown phase: ${phase.name}`);
     }
   };
 
@@ -334,13 +362,7 @@ const Dashboard = () => {
                   <PhaseCard 
                     key={phase.id} 
                     phase={phase}
-                    onClick={() => {
-                      if (phase.name === 'Introspection') {
-                        handleIntrospectionClick();
-                      } else {
-                        console.log(`Navigate to ${phase.name} phase`);
-                      }
-                    }}
+                    onClick={() => handlePhaseClick(phase)}
                   />
                 ))}
               </div>

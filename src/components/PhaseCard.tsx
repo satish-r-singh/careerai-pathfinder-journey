@@ -43,6 +43,12 @@ const PhaseCard = ({ phase, onClick }: PhaseCardProps) => {
     }
   };
 
+  const getButtonText = () => {
+    if (phase.status === 'completed') return 'Review';
+    if (phase.status === 'current') return 'Continue';
+    return 'Locked';
+  };
+
   return (
     <Card 
       className={cn(
@@ -102,7 +108,7 @@ const PhaseCard = ({ phase, onClick }: PhaseCardProps) => {
             className="w-full" 
             variant={phase.status === 'current' ? 'default' : 'outline'}
           >
-            {phase.status === 'current' ? 'Continue' : 'Review'}
+            {getButtonText()}
           </Button>
         )}
       </CardContent>

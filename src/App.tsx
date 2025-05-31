@@ -14,6 +14,7 @@ import Introspection from './pages/Introspection';
 import Ikigai from './pages/Ikigai';
 import IndustryResearch from './pages/IndustryResearch';
 import AICareerIntegration from './pages/AICareerIntegration';
+import Exploration from './pages/Exploration';
 import { Toaster } from '@/components/ui/toaster';
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ function App() {
               <Route path="/ikigai" element={<ProtectedRoute><Ikigai /></ProtectedRoute>} />
               <Route path="/industry-research" element={<ProtectedRoute><IndustryResearch /></ProtectedRoute>} />
               <Route path="/ai-career-integration" element={<ProtectedRoute><AICareerIntegration /></ProtectedRoute>} />
+              <Route path="/exploration" element={<ProtectedRoute><Exploration /></ProtectedRoute>} />
             </Routes>
             <Toaster />
           </div>
