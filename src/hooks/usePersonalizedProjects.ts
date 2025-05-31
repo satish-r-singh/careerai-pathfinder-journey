@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,27 +56,33 @@ export const usePersonalizedProjects = () => {
         console.log('Found existing projects in database:', projectOptions.length);
         
         // Convert database records to project format with proper type casting
-        const loadedProjects = projectOptions.map(option => {
+        const loadedProjects: ProjectOption[] = projectOptions.map(option => {
           // Cast through unknown first for safe type conversion
           const projectData = option.project_data as unknown as ProjectOption;
           return {
-            ...projectData,
-            id: projectData.id
+            id: projectData.id,
+            name: projectData.name,
+            description: projectData.description,
+            difficulty: projectData.difficulty,
+            duration: projectData.duration,
+            skills: projectData.skills,
+            icon: projectData.icon,
+            iconName: projectData.iconName,
+            reasoning: projectData.reasoning
           };
         });
         
         setProjects(loadedProjects);
         
         // Load selected projects
-        const selected = new Set(
-          projectOptions
-            .filter(option => option.is_selected)
-            .map(option => {
-              const projectData = option.project_data as unknown as ProjectOption;
-              return projectData.id;
-            })
-        );
-        setSelectedProjects(selected);
+        const selectedIds: string[] = projectOptions
+          .filter(option => option.is_selected)
+          .map(option => {
+            const projectData = option.project_data as unknown as ProjectOption;
+            return projectData.id;
+          });
+        
+        setSelectedProjects(new Set(selectedIds));
       } else {
         console.log('No existing projects found, generating new ones...');
         await generatePersonalizedProjects(false);
@@ -108,10 +113,20 @@ export const usePersonalizedProjects = () => {
 
       if (deleteError) throw deleteError;
 
-      // Insert new project options with proper type conversion
+      // Insert new project options
       const projectOptionsToInsert = projectsToSave.map(project => ({
         user_id: user.id,
-        project_data: project as any, // Cast to any to satisfy Json type
+        project_data: {
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          difficulty: project.difficulty,
+          duration: project.duration,
+          skills: project.skills,
+          icon: project.icon,
+          iconName: project.iconName,
+          reasoning: project.reasoning
+        },
         is_selected: selectedProjectIds.has(project.id)
       }));
 
