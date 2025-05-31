@@ -19,6 +19,7 @@ interface ProjectOption {
   duration: string;
   skills: string[];
   icon: any;
+  iconName?: string;
   reasoning: string;
 }
 
@@ -116,6 +117,7 @@ export const usePersonalizedProjects = () => {
         duration: '4-6 weeks',
         skills: ['Python/JavaScript', 'OpenAI API', 'Frontend Development', 'Database Management'],
         icon: Users,
+        iconName: 'Users',
         reasoning: 'A versatile project that demonstrates practical AI application in business contexts.'
       },
       {
@@ -126,6 +128,7 @@ export const usePersonalizedProjects = () => {
         duration: '6-8 weeks',
         skills: ['Machine Learning', 'Python', 'Data Analysis', 'Algorithm Design'],
         icon: Target,
+        iconName: 'Target',
         reasoning: 'Showcases advanced ML skills and data-driven decision making capabilities.'
       },
       {
@@ -136,6 +139,7 @@ export const usePersonalizedProjects = () => {
         duration: '3-4 weeks',
         skills: ['API Integration', 'Frontend Development', 'Content Strategy', 'UI/UX'],
         icon: Lightbulb,
+        iconName: 'Lightbulb',
         reasoning: 'Great starting point for those new to AI development with immediate practical value.'
       },
       {
@@ -146,6 +150,7 @@ export const usePersonalizedProjects = () => {
         duration: '5-7 weeks',
         skills: ['Data Visualization', 'Machine Learning', 'Database Design', 'Business Intelligence'],
         icon: Code,
+        iconName: 'Code',
         reasoning: 'Combines technical skills with business acumen, valuable for many AI roles.'
       }
     ];
