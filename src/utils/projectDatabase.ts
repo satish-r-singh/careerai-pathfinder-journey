@@ -109,9 +109,12 @@ export const updateProjectSelection = async (
   projectId: string,
   isSelected: boolean
 ) => {
+  // Simplify the query to avoid complex type inference
+  const updateData = { is_selected: isSelected };
+  
   const { error } = await supabase
     .from('project_options')
-    .update({ is_selected: isSelected })
+    .update(updateData)
     .eq('user_id', userId)
     .eq('project_data->id', projectId);
 
