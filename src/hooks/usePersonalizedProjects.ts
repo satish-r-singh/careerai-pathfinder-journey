@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,12 +27,13 @@ export const usePersonalizedProjects = () => {
   const { toast } = useToast();
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     generatePersonalizedProjects();
   }, [user]);
 
-  const generatePersonalizedProjects = async () => {
+  const generatePersonalizedProjects = async (keepSelected = false) => {
     if (!user) {
       setLoading(false);
       return;
@@ -71,27 +71,49 @@ export const usePersonalizedProjects = () => {
 
       if (!ikigaiData?.ikigai_data) {
         console.log('No Ikigai data found, using default projects');
-        setProjects(getDefaultProjects());
+        const defaultProjects = getDefaultProjects();
+        setProjects(defaultProjects);
+        setSelectedProjects(new Set());
         setLoading(false);
         return;
       }
 
-      // Call edge function to generate personalized projects
-      const { data: projectsResponse, error: projectsError } = await supabase.functions.invoke('generate-personalized-projects', {
-        body: {
-          ikigaiData: ikigaiData.ikigai_data,
-          industryData: industryData?.research_data || null,
-          profileData: profileData || null
+      let projectsToKeep: ProjectOption[] = [];
+      let numberOfProjectsToGenerate = 4;
+
+      if (keepSelected && selectedProjects.size > 0) {
+        projectsToKeep = projects.filter(p => selectedProjects.has(p.id));
+        numberOfProjectsToGenerate = 4 - projectsToKeep.length;
+      }
+
+      if (numberOfProjectsToGenerate > 0) {
+        // Call edge function to generate personalized projects
+        const { data: projectsResponse, error: projectsError } = await supabase.functions.invoke('generate-personalized-projects', {
+          body: {
+            ikigaiData: ikigaiData.ikigai_data,
+            industryData: industryData?.research_data || null,
+            profileData: profileData || null,
+            numberOfProjects: numberOfProjectsToGenerate,
+            existingProjects: projectsToKeep.map(p => ({ id: p.id, name: p.name }))
+          }
+        });
+
+        if (projectsError) throw projectsError;
+
+        if (projectsResponse?.projects) {
+          const newProjects = [...projectsToKeep, ...projectsResponse.projects];
+          setProjects(newProjects);
+          setSelectedProjects(new Set());
+        } else {
+          console.log('No personalized projects generated, using default');
+          const defaultProjects = getDefaultProjects();
+          setProjects(defaultProjects);
+          setSelectedProjects(new Set());
         }
-      });
-
-      if (projectsError) throw projectsError;
-
-      if (projectsResponse?.projects) {
-        setProjects(projectsResponse.projects);
       } else {
-        console.log('No personalized projects generated, using default');
-        setProjects(getDefaultProjects());
+        // If we're keeping all selected projects, just keep them
+        setProjects(projectsToKeep);
+        setSelectedProjects(new Set());
       }
     } catch (error: any) {
       console.error('Error generating personalized projects:', error);
@@ -99,9 +121,33 @@ export const usePersonalizedProjects = () => {
         title: "Using default projects",
         description: "Unable to generate personalized projects. Using standard options.",
       });
-      setProjects(getDefaultProjects());
+      const defaultProjects = getDefaultProjects();
+      setProjects(defaultProjects);
+      setSelectedProjects(new Set());
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleProjectSelection = (projectId: string) => {
+    setSelectedProjects(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId);
+      } else {
+        newSet.add(projectId);
+      }
+      return newSet;
+    });
+  };
+
+  const regenerateUnselected = () => {
+    if (selectedProjects.size === 0) {
+      // If nothing is selected, regenerate all
+      generatePersonalizedProjects(false);
+    } else {
+      // Regenerate only unselected projects
+      generatePersonalizedProjects(true);
     }
   };
 
@@ -156,5 +202,12 @@ export const usePersonalizedProjects = () => {
     ];
   };
 
-  return { projects, loading, regenerateProjects: generatePersonalizedProjects };
+  return { 
+    projects, 
+    loading, 
+    regenerateProjects: () => generatePersonalizedProjects(false),
+    selectedProjects,
+    toggleProjectSelection,
+    regenerateUnselected
+  };
 };

@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { ikigaiData, industryData, profileData } = await req.json();
+    const { ikigaiData, industryData, profileData, numberOfProjects = 4, existingProjects = [] } = await req.json();
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not found');
@@ -36,14 +36,21 @@ Background: ${profileData.background || 'Not specified'}
 Experience: ${profileData.experience || 'Not specified'}
 Goals: ${profileData.goals?.join(', ') || 'Not specified'}
 ` : ''}
+
+${existingProjects.length > 0 ? `
+Projects the user wants to keep:
+${existingProjects.map(p => `- ${p.name} (ID: ${p.id})`).join('\n')}
+
+Please generate ${numberOfProjects} NEW projects that are different from the existing ones.
+` : ''}
 `;
 
-    const prompt = `Based on the user's career transition profile below, generate 4 personalized AI project options that align with their interests, skills, and career goals.
+    const prompt = `Based on the user's career transition profile below, generate ${numberOfProjects} personalized AI project options that align with their interests, skills, and career goals.
 
 ${context}
 
 For each project, provide:
-1. A unique ID (kebab-case)
+1. A unique ID (kebab-case) - make sure it doesn't conflict with existing project IDs
 2. Project name
 3. Detailed description (2-3 sentences)
 4. Difficulty level (Beginner/Intermediate/Advanced)
@@ -52,6 +59,8 @@ For each project, provide:
 7. A brief reasoning for why this project fits their profile
 
 Make the projects diverse in scope and difficulty. Consider their passions, technical background, and career aspirations. Focus on practical AI applications that would be impressive to potential employers.
+
+${existingProjects.length > 0 ? 'IMPORTANT: Make sure the new projects are completely different from the existing ones the user wants to keep.' : ''}
 
 Respond with a JSON object in this exact format:
 {
