@@ -59,9 +59,14 @@ export const loadProjectsFromDatabase = async (userId: string) => {
     // Import icons dynamically
     const { getIconComponent } = await import('./iconUtils');
     
-    const loadedProjects: ProjectOption[] = projectOptions.map(option => {
+    // Explicitly type the result to avoid inference issues
+    const loadedProjects: ProjectOption[] = [];
+    const selectedIds: string[] = [];
+    
+    for (const option of projectOptions) {
       const projectData = option.project_data as any;
-      return {
+      
+      loadedProjects.push({
         id: projectData.id,
         name: projectData.name,
         description: projectData.description,
@@ -71,15 +76,12 @@ export const loadProjectsFromDatabase = async (userId: string) => {
         icon: getIconComponent(projectData.iconName || 'Code'),
         iconName: projectData.iconName,
         reasoning: projectData.reasoning
-      };
-    });
-    
-    const selectedIds: string[] = projectOptions
-      .filter(option => option.is_selected)
-      .map(option => {
-        const projectData = option.project_data as any;
-        return projectData.id;
       });
+      
+      if (option.is_selected) {
+        selectedIds.push(projectData.id);
+      }
+    }
     
     return {
       projects: loadedProjects,
