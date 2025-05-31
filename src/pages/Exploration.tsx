@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
 import { getIconComponent } from '@/utils/iconUtils';
+import LearningPlan from '@/components/LearningPlan';
 
 const Exploration = () => {
   const { user } = useAuth();
@@ -25,6 +27,7 @@ const Exploration = () => {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [learningPlanCreated, setLearningPlanCreated] = useState(false);
   const [publicBuildingStarted, setPublicBuildingStarted] = useState(false);
+  const [showLearningPlan, setShowLearningPlan] = useState(false);
 
   useEffect(() => {
     checkExplorationProgress();
@@ -40,7 +43,10 @@ const Exploration = () => {
       const savedPublicBuilding = localStorage.getItem(`public_building_${user.id}`);
       
       if (savedProject) setSelectedProject(savedProject);
-      if (savedLearningPlan) setLearningPlanCreated(true);
+      if (savedLearningPlan) {
+        setLearningPlanCreated(true);
+        setShowLearningPlan(true);
+      }
       if (savedPublicBuilding) setPublicBuildingStarted(true);
     } catch (error) {
       console.error('Error loading exploration progress:', error);
@@ -54,6 +60,7 @@ const Exploration = () => {
 
   const handleCreateLearningPlan = () => {
     setLearningPlanCreated(true);
+    setShowLearningPlan(true);
     localStorage.setItem(`learning_plan_${user.id}`, 'true');
   };
 
@@ -81,6 +88,10 @@ const Exploration = () => {
 
   const getIconComponentForProject = (iconName: string) => {
     return getIconComponent(iconName || 'Code');
+  };
+
+  const getSelectedProjectData = () => {
+    return projects.find(p => p.id === selectedProject);
   };
 
   const renderProjectCard = (project: any) => {
@@ -329,7 +340,7 @@ const Exploration = () => {
               </CardHeader>
               <CardContent>
                 {(() => {
-                  const project = projects.find(p => p.id === selectedProject);
+                  const project = getSelectedProjectData();
                   if (!project) return null;
                   const IconComponent = getIconComponentForProject(project.iconName || 'Code');
                   return (
@@ -384,12 +395,25 @@ const Exploration = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="font-medium text-green-800">Learning Plan Created!</span>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <span className="font-medium text-green-800">Learning Plan Created!</span>
+                      </div>
+                      <p className="text-green-700">Your personalized learning plan has been generated and is ready to guide your skill development journey.</p>
                     </div>
-                    <p className="text-green-700">Your personalized learning plan has been generated and is ready to guide your skill development journey.</p>
+                    
+                    {showLearningPlan && (() => {
+                      const project = getSelectedProjectData();
+                      return project ? (
+                        <LearningPlan 
+                          projectName={project.name}
+                          skills={project.skills}
+                          difficulty={project.difficulty}
+                        />
+                      ) : null;
+                    })()}
                   </div>
                 )}
               </CardContent>
