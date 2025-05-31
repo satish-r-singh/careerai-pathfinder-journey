@@ -110,6 +110,14 @@ const Dashboard = () => {
       });
 
       setPhaseProgress(Math.round(totalProgress));
+
+      // Update current phase based on completion
+      const introspectionCompleted = isIkigaiCompleted && !!researchData && !!roadmapData;
+      if (introspectionCompleted) {
+        setCurrentPhase(2); // Move to Exploration phase
+      } else {
+        setCurrentPhase(1); // Stay in Introspection phase
+      }
     } catch (error) {
       console.error('Error loading introspection progress:', error);
     } finally {
@@ -139,13 +147,20 @@ const Dashboard = () => {
     }
   };
 
+  // Determine phase statuses based on current phase
+  const getPhaseStatus = (phaseId: number) => {
+    if (phaseId < currentPhase) return 'completed';
+    if (phaseId === currentPhase) return 'current';
+    return 'locked';
+  };
+
   const phases = [
     {
       id: 1,
       name: 'Introspection',
       description: 'Self-discovery and career alignment',
-      status: 'current' as const,
-      progress: phaseProgress,
+      status: getPhaseStatus(1),
+      progress: currentPhase > 1 ? 100 : phaseProgress,
       estimatedTime: '1-2 weeks',
       keyActivities: ['Complete Ikigai assessment', 'Research AI industry', 'Generate career roadmap']
     },
@@ -153,8 +168,8 @@ const Dashboard = () => {
       id: 2,
       name: 'Exploration',
       description: 'Project identification and knowledge building',
-      status: 'locked' as const,
-      progress: 0,
+      status: getPhaseStatus(2),
+      progress: currentPhase > 2 ? 100 : 0,
       estimatedTime: '2-3 weeks',
       keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public']
     },
@@ -162,8 +177,8 @@ const Dashboard = () => {
       id: 3,
       name: 'Reflection',
       description: 'Skill validation through feedback',
-      status: 'locked' as const,
-      progress: 0,
+      status: getPhaseStatus(3),
+      progress: currentPhase > 3 ? 100 : 0,
       estimatedTime: '3-4 weeks',
       keyActivities: ['Get peer feedback', 'Connect with mentors', 'Build case studies']
     },
@@ -171,7 +186,7 @@ const Dashboard = () => {
       id: 4,
       name: 'Action',
       description: 'Active job hunting and applications',
-      status: 'locked' as const,
+      status: getPhaseStatus(4),
       progress: 0,
       estimatedTime: 'Ongoing',
       keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
@@ -204,6 +219,12 @@ const Dashboard = () => {
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  // Get current phase name for display
+  const getCurrentPhaseName = () => {
+    const currentPhaseData = phases.find(p => p.id === currentPhase);
+    return currentPhaseData?.name || 'Introspection';
   };
 
   return (
@@ -240,8 +261,11 @@ const Dashboard = () => {
             Welcome back, {user?.user_metadata?.full_name || user?.email}! 👋
           </h1>
           <p className="text-gray-600">
-            You're in the <span className="font-semibold text-primary">Introspection</span> phase. 
-            Let's continue building your AI career foundation.
+            You're in the <span className="font-semibold text-primary">{getCurrentPhaseName()}</span> phase. 
+            {currentPhase === 1 
+              ? " Let's continue building your AI career foundation."
+              : " Great progress! Continue with your career journey."
+            }
           </p>
         </div>
 
@@ -340,8 +364,14 @@ const Dashboard = () => {
                   <span className="font-semibold">{completedTasks.length + 8}/32</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Current Phase</span>
+                  <span className="font-semibold">{getCurrentPhaseName()}</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Phase Progress</span>
-                  <span className="font-semibold">{Math.round(phaseProgress)}%</span>
+                  <span className="font-semibold">
+                    {currentPhase === 1 ? `${Math.round(phaseProgress)}%` : '100%'}
+                  </span>
                 </div>
               </CardContent>
             </Card>
