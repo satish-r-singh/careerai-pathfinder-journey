@@ -11,10 +11,12 @@ import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
 import { getIconComponent } from '@/utils/iconUtils';
 import LearningPlan from '@/components/LearningPlan';
 import { generateLearningPlan, LearningPlan as LearningPlanType } from '@/utils/learningPlanGeneration';
+import { useToast } from '@/hooks/use-toast';
 
 const Exploration = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { 
     projects, 
     loading: projectsLoading, 
