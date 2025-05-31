@@ -32,8 +32,97 @@ export const usePersonalizedProjects = () => {
   const [regeneratingProjects, setRegeneratingProjects] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    generatePersonalizedProjects();
+    if (user) {
+      loadProjectsFromDatabase();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
+
+  const loadProjectsFromDatabase = async () => {
+    if (!user) return;
+
+    try {
+      console.log('Loading projects from database...');
+      
+      const { data: projectOptions, error } = await supabase
+        .from('project_options')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      if (projectOptions && projectOptions.length > 0) {
+        console.log('Found existing projects in database:', projectOptions.length);
+        
+        // Convert database records to project format
+        const loadedProjects = projectOptions.map(option => ({
+          ...option.project_data,
+          id: option.project_data.id
+        })) as ProjectOption[];
+        
+        setProjects(loadedProjects);
+        
+        // Load selected projects
+        const selected = new Set(
+          projectOptions
+            .filter(option => option.is_selected)
+            .map(option => option.project_data.id)
+        );
+        setSelectedProjects(selected);
+      } else {
+        console.log('No existing projects found, generating new ones...');
+        await generatePersonalizedProjects(false);
+      }
+    } catch (error: any) {
+      console.error('Error loading projects from database:', error);
+      toast({
+        title: "Error loading projects",
+        description: "Failed to load projects from database. Generating new ones.",
+      });
+      await generatePersonalizedProjects(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveProjectsToDatabase = async (projectsToSave: ProjectOption[], selectedProjectIds: Set<string>) => {
+    if (!user) return;
+
+    try {
+      console.log('Saving projects to database...');
+      
+      // Delete existing project options for this user
+      const { error: deleteError } = await supabase
+        .from('project_options')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new project options
+      const projectOptionsToInsert = projectsToSave.map(project => ({
+        user_id: user.id,
+        project_data: project,
+        is_selected: selectedProjectIds.has(project.id)
+      }));
+
+      const { error: insertError } = await supabase
+        .from('project_options')
+        .insert(projectOptionsToInsert);
+
+      if (insertError) throw insertError;
+
+      console.log('Projects saved to database successfully');
+    } catch (error: any) {
+      console.error('Error saving projects to database:', error);
+      toast({
+        title: "Error saving projects",
+        description: "Failed to save projects to database.",
+      });
+    }
+  };
 
   const generatePersonalizedProjects = async (keepSelected = false) => {
     if (!user) {
@@ -85,7 +174,9 @@ export const usePersonalizedProjects = () => {
         console.log('No Ikigai data found, using default projects');
         const defaultProjects = getDefaultProjects();
         setProjects(defaultProjects);
-        setSelectedProjects(new Set());
+        const newSelectedProjects = new Set<string>();
+        setSelectedProjects(newSelectedProjects);
+        await saveProjectsToDatabase(defaultProjects, newSelectedProjects);
         setLoading(false);
         setRegeneratingProjects(new Set());
         return;
@@ -116,17 +207,23 @@ export const usePersonalizedProjects = () => {
         if (projectsResponse?.projects) {
           const newProjects = [...projectsToKeep, ...projectsResponse.projects];
           setProjects(newProjects);
-          setSelectedProjects(new Set());
+          const newSelectedProjects = new Set<string>();
+          setSelectedProjects(newSelectedProjects);
+          await saveProjectsToDatabase(newProjects, newSelectedProjects);
         } else {
           console.log('No personalized projects generated, using default');
           const defaultProjects = getDefaultProjects();
           setProjects(defaultProjects);
-          setSelectedProjects(new Set());
+          const newSelectedProjects = new Set<string>();
+          setSelectedProjects(newSelectedProjects);
+          await saveProjectsToDatabase(defaultProjects, newSelectedProjects);
         }
       } else {
         // If we're keeping all selected projects, just keep them
         setProjects(projectsToKeep);
-        setSelectedProjects(new Set());
+        const newSelectedProjects = new Set<string>();
+        setSelectedProjects(newSelectedProjects);
+        await saveProjectsToDatabase(projectsToKeep, newSelectedProjects);
       }
     } catch (error: any) {
       console.error('Error generating personalized projects:', error);
@@ -136,23 +233,43 @@ export const usePersonalizedProjects = () => {
       });
       const defaultProjects = getDefaultProjects();
       setProjects(defaultProjects);
-      setSelectedProjects(new Set());
+      const newSelectedProjects = new Set<string>();
+      setSelectedProjects(newSelectedProjects);
+      await saveProjectsToDatabase(defaultProjects, newSelectedProjects);
     } finally {
       setLoading(false);
       setRegeneratingProjects(new Set());
     }
   };
 
-  const toggleProjectSelection = (projectId: string) => {
-    setSelectedProjects(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(projectId)) {
-        newSet.delete(projectId);
-      } else {
-        newSet.add(projectId);
+  const toggleProjectSelection = async (projectId: string) => {
+    const newSelectedProjects = new Set(selectedProjects);
+    if (newSelectedProjects.has(projectId)) {
+      newSelectedProjects.delete(projectId);
+    } else {
+      newSelectedProjects.add(projectId);
+    }
+    
+    setSelectedProjects(newSelectedProjects);
+    
+    // Update database with new selection state
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('project_options')
+          .update({ is_selected: newSelectedProjects.has(projectId) })
+          .eq('user_id', user.id)
+          .eq('project_data->id', projectId);
+
+        if (error) throw error;
+      } catch (error: any) {
+        console.error('Error updating project selection:', error);
+        toast({
+          title: "Error updating selection",
+          description: "Failed to save project selection.",
+        });
       }
-      return newSet;
-    });
+    }
   };
 
   const regenerateUnselected = () => {
