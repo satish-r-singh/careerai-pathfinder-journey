@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,25 @@ const Exploration = () => {
   const handleProjectSelect = (projectId: string) => {
     setSelectedProject(projectId);
     localStorage.setItem(`exploration_project_${user.id}`, projectId);
+  };
+
+  const handleBackNavigation = () => {
+    if (selectedProject) {
+      // If a project is selected, go back to project selection
+      setSelectedProject(null);
+      localStorage.removeItem(`exploration_project_${user.id}`);
+      // Also reset the learning plan and public building states
+      setLearningPlanCreated(false);
+      setPublicBuildingStarted(false);
+      setShowLearningPlan(false);
+      setGeneratedLearningPlan(null);
+      localStorage.removeItem(`learning_plan_${user.id}`);
+      localStorage.removeItem(`public_building_${user.id}`);
+      localStorage.removeItem(`generated_learning_plan_${user.id}`);
+    } else {
+      // If no project selected, go back to dashboard
+      navigate('/dashboard');
+    }
   };
 
   const handleCreateLearningPlan = async () => {
@@ -230,11 +250,11 @@ const Exploration = () => {
         <div className="mb-8">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/dashboard')}
+            onClick={handleBackNavigation}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            {selectedProject ? 'Back to Project Selection' : 'Back to Dashboard'}
           </Button>
           
           <h1 className="text-4xl font-bold gradient-text mb-4">
