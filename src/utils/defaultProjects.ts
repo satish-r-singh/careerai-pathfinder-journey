@@ -1,6 +1,6 @@
 
-import { Users, Target, Lightbulb, Code } from 'lucide-react';
 import { ProjectOption } from '@/types/projects';
+import { getIconComponent } from './iconUtils';
 
 export const getDefaultProjects = (): ProjectOption[] => {
   return [
@@ -11,7 +11,7 @@ export const getDefaultProjects = (): ProjectOption[] => {
       difficulty: 'Intermediate',
       duration: '4-6 weeks',
       skills: ['Python/JavaScript', 'OpenAI API', 'Frontend Development', 'Database Management'],
-      icon: Users,
+      icon: getIconComponent('Users'),
       iconName: 'Users',
       reasoning: 'A versatile project that demonstrates practical AI application in business contexts.'
     },
@@ -22,7 +22,7 @@ export const getDefaultProjects = (): ProjectOption[] => {
       difficulty: 'Advanced',
       duration: '6-8 weeks',
       skills: ['Machine Learning', 'Python', 'Data Analysis', 'Algorithm Design'],
-      icon: Target,
+      icon: getIconComponent('Target'),
       iconName: 'Target',
       reasoning: 'Showcases advanced ML skills and data-driven decision making capabilities.'
     },
@@ -33,7 +33,7 @@ export const getDefaultProjects = (): ProjectOption[] => {
       difficulty: 'Beginner',
       duration: '3-4 weeks',
       skills: ['API Integration', 'Frontend Development', 'Content Strategy', 'UI/UX'],
-      icon: Lightbulb,
+      icon: getIconComponent('Lightbulb'),
       iconName: 'Lightbulb',
       reasoning: 'Great starting point for those new to AI development with immediate practical value.'
     },
@@ -44,7 +44,7 @@ export const getDefaultProjects = (): ProjectOption[] => {
       difficulty: 'Intermediate',
       duration: '5-7 weeks',
       skills: ['Data Visualization', 'Machine Learning', 'Database Design', 'Business Intelligence'],
-      icon: Code,
+      icon: getIconComponent('Code'),
       iconName: 'Code',
       reasoning: 'Combines technical skills with business acumen, valuable for many AI roles.'
     }

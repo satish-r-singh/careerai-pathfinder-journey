@@ -8,6 +8,7 @@ import { ArrowLeft, BookOpen, Code, Lightbulb, Target, Users, CheckCircle, Clock
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
+import { getIconComponent } from '@/utils/iconUtils';
 
 const Exploration = () => {
   const { user } = useAuth();
@@ -78,18 +79,12 @@ const Exploration = () => {
     return completed;
   };
 
-  const getIconComponent = (iconName: string) => {
-    const iconMap: { [key: string]: any } = {
-      Users,
-      Target,
-      Lightbulb,
-      Code
-    };
-    return iconMap[iconName] || Code;
+  const getIconComponentForProject = (iconName: string) => {
+    return getIconComponent(iconName || 'Code');
   };
 
   const renderProjectCard = (project: any) => {
-    const IconComponent = getIconComponent(project.iconName || 'Code');
+    const IconComponent = getIconComponentForProject(project.iconName || 'Code');
     const isSelected = selectedProjects.has(project.id);
     const isRegenerating = regeneratingProjects.has(project.id);
 
@@ -336,7 +331,7 @@ const Exploration = () => {
                 {(() => {
                   const project = projects.find(p => p.id === selectedProject);
                   if (!project) return null;
-                  const IconComponent = getIconComponent(project.iconName || 'Code');
+                  const IconComponent = getIconComponentForProject(project.iconName || 'Code');
                   return (
                     <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-lg">
                       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">

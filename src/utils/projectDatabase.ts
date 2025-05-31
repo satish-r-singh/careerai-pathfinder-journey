@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ProjectOption, ProjectData } from '@/types/projects';
+import { ProjectOption } from '@/types/projects';
 
 export const saveProjectsToDatabase = async (
   userId: string,
@@ -17,7 +17,7 @@ export const saveProjectsToDatabase = async (
 
   if (deleteError) throw deleteError;
 
-  // Insert new project options
+  // Insert new project options - exclude the icon component, only store serializable data
   const projectOptionsToInsert = projectsToSave.map(project => ({
     user_id: userId,
     project_data: {
@@ -27,7 +27,6 @@ export const saveProjectsToDatabase = async (
       difficulty: project.difficulty,
       duration: project.duration,
       skills: project.skills,
-      icon: project.icon,
       iconName: project.iconName,
       reasoning: project.reasoning
     },
@@ -57,6 +56,9 @@ export const loadProjectsFromDatabase = async (userId: string) => {
   if (projectOptions && projectOptions.length > 0) {
     console.log('Found existing projects in database:', projectOptions.length);
     
+    // Import icons dynamically
+    const { getIconComponent } = await import('./iconUtils');
+    
     const loadedProjects: ProjectOption[] = projectOptions.map(option => {
       const projectData = option.project_data as any;
       return {
@@ -66,7 +68,7 @@ export const loadProjectsFromDatabase = async (userId: string) => {
         difficulty: projectData.difficulty,
         duration: projectData.duration,
         skills: projectData.skills,
-        icon: projectData.icon,
+        icon: getIconComponent(projectData.iconName || 'Code'),
         iconName: projectData.iconName,
         reasoning: projectData.reasoning
       };
