@@ -58,7 +58,8 @@ export const usePersonalizedProjects = () => {
         
         // Convert database records to project format with proper type casting
         const loadedProjects = projectOptions.map(option => {
-          const projectData = option.project_data as ProjectOption;
+          // Cast through unknown first for safe type conversion
+          const projectData = option.project_data as unknown as ProjectOption;
           return {
             ...projectData,
             id: projectData.id
@@ -72,7 +73,7 @@ export const usePersonalizedProjects = () => {
           projectOptions
             .filter(option => option.is_selected)
             .map(option => {
-              const projectData = option.project_data as ProjectOption;
+              const projectData = option.project_data as unknown as ProjectOption;
               return projectData.id;
             })
         );
