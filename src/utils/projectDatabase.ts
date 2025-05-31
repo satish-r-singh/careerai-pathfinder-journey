@@ -109,14 +109,14 @@ export const updateProjectSelection = async (
   projectId: string,
   isSelected: boolean
 ) => {
-  // Simplify the query to avoid complex type inference
-  const updateData = { is_selected: isSelected };
-  
-  const { error } = await supabase
+  // Use a more explicit approach to avoid type inference issues
+  const query = supabase
     .from('project_options')
-    .update(updateData)
-    .eq('user_id', userId)
-    .eq('project_data->id', projectId);
+    .update({ is_selected: isSelected })
+    .eq('user_id', userId);
+  
+  // Add the JSONB query separately to avoid complex type chaining
+  const { error } = await query.eq('project_data->id', projectId);
 
   if (error) throw error;
 };
