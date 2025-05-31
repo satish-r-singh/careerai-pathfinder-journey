@@ -1,16 +1,16 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookOpen, Code, Lightbulb, Target, Users, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, BookOpen, Code, Lightbulb, Target, Users, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
 
 const Exploration = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { projects, loading: projectsLoading, regenerateProjects } = usePersonalizedProjects();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [learningPlanCreated, setLearningPlanCreated] = useState(false);
   const [publicBuildingStarted, setPublicBuildingStarted] = useState(false);
@@ -24,8 +24,6 @@ const Exploration = () => {
     
     try {
       // Check if user has exploration progress saved
-      // For now, we'll use localStorage for demo purposes
-      // In a real app, you'd store this in the database
       const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
       const savedLearningPlan = localStorage.getItem(`learning_plan_${user.id}`);
       const savedPublicBuilding = localStorage.getItem(`public_building_${user.id}`);
@@ -37,45 +35,6 @@ const Exploration = () => {
       console.error('Error loading exploration progress:', error);
     }
   };
-
-  const projectOptions = [
-    {
-      id: 'ai-chatbot',
-      name: 'AI-Powered Customer Service Chatbot',
-      description: 'Build an intelligent chatbot that can handle customer inquiries using natural language processing.',
-      difficulty: 'Intermediate',
-      duration: '4-6 weeks',
-      skills: ['Python/JavaScript', 'OpenAI API', 'Frontend Development', 'Database Management'],
-      icon: Users
-    },
-    {
-      id: 'recommendation-engine',
-      name: 'Personalized Recommendation Engine',
-      description: 'Create a machine learning system that provides personalized recommendations for e-commerce or content.',
-      difficulty: 'Advanced',
-      duration: '6-8 weeks',
-      skills: ['Machine Learning', 'Python', 'Data Analysis', 'Algorithm Design'],
-      icon: Target
-    },
-    {
-      id: 'ai-content-generator',
-      name: 'AI Content Generation Tool',
-      description: 'Develop a tool that uses AI to generate blog posts, social media content, or marketing copy.',
-      difficulty: 'Beginner',
-      duration: '3-4 weeks',
-      skills: ['API Integration', 'Frontend Development', 'Content Strategy', 'UI/UX'],
-      icon: Lightbulb
-    },
-    {
-      id: 'data-analysis-dashboard',
-      name: 'AI-Enhanced Data Analytics Dashboard',
-      description: 'Build a dashboard that uses AI to provide insights and predictions from business data.',
-      difficulty: 'Intermediate',
-      duration: '5-7 weeks',
-      skills: ['Data Visualization', 'Machine Learning', 'Database Design', 'Business Intelligence'],
-      icon: Code
-    }
-  ];
 
   const handleProjectSelect = (projectId: string) => {
     setSelectedProject(projectId);
@@ -109,6 +68,16 @@ const Exploration = () => {
     return completed;
   };
 
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: any } = {
+      Users,
+      Target,
+      Lightbulb,
+      Code
+    };
+    return iconMap[iconName] || Code;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 relative overflow-hidden">
       {/* Animated background elements */}
@@ -134,7 +103,7 @@ const Exploration = () => {
             Exploration Phase
           </h1>
           <p className="text-gray-600 text-lg">
-            Choose your project, build your learning plan, and start building in public
+            Choose your personalized project, build your learning plan, and start building in public
           </p>
         </div>
 
@@ -209,55 +178,82 @@ const Exploration = () => {
         {!selectedProject && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Choose Your AI Project</CardTitle>
-              <CardDescription>
-                Select a project that aligns with your career goals and interests. This will be your main focus during the exploration phase.
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Your Personalized AI Projects</CardTitle>
+                  <CardDescription>
+                    These projects are tailored to your Ikigai profile, skills, and career goals from your introspection phase.
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={regenerateProjects}
+                  disabled={projectsLoading}
+                  className="flex items-center space-x-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${projectsLoading ? 'animate-spin' : ''}`} />
+                  <span>Regenerate</span>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
-                {projectOptions.map((project) => {
-                  const IconComponent = project.icon;
-                  return (
-                    <div
-                      key={project.id}
-                      className="p-6 border rounded-xl hover:shadow-lg transition-all cursor-pointer hover:border-primary/30"
-                      onClick={() => handleProjectSelect(project.id)}
-                    >
-                      <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <IconComponent className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-semibold text-lg">{project.name}</h3>
-                            <Badge className={getDifficultyColor(project.difficulty)}>
-                              {project.difficulty}
-                            </Badge>
+              {projectsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Generating personalized projects based on your profile...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {projects.map((project) => {
+                    const IconComponent = getIconComponent(project.iconName || 'Code');
+                    return (
+                      <div
+                        key={project.id}
+                        className="p-6 border rounded-xl hover:shadow-lg transition-all cursor-pointer hover:border-primary/30"
+                        onClick={() => handleProjectSelect(project.id)}
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <IconComponent className="w-6 h-6 text-primary" />
                           </div>
-                          <p className="text-gray-600 mb-4">{project.description}</p>
-                          <div className="space-y-2">
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Clock className="w-4 h-4 mr-2" />
-                              {project.duration}
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-semibold text-lg">{project.name}</h3>
+                              <Badge className={getDifficultyColor(project.difficulty)}>
+                                {project.difficulty}
+                              </Badge>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              {project.skills.map((skill, index) => (
-                                <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                  {skill}
-                                </span>
-                              ))}
+                            <p className="text-gray-600 mb-3">{project.description}</p>
+                            {project.reasoning && (
+                              <div className="mb-3 p-2 bg-blue-50 rounded text-sm text-blue-800">
+                                <strong>Why this fits you:</strong> {project.reasoning}
+                              </div>
+                            )}
+                            <div className="space-y-2">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Clock className="w-4 h-4 mr-2" />
+                                {project.duration}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {project.skills.map((skill, index) => (
+                                  <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
+                            <Button className="w-full mt-4">
+                              Select This Project
+                            </Button>
                           </div>
-                          <Button className="w-full mt-4">
-                            Select This Project
-                          </Button>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -275,9 +271,9 @@ const Exploration = () => {
               </CardHeader>
               <CardContent>
                 {(() => {
-                  const project = projectOptions.find(p => p.id === selectedProject);
+                  const project = projects.find(p => p.id === selectedProject);
                   if (!project) return null;
-                  const IconComponent = project.icon;
+                  const IconComponent = getIconComponent(project.iconName || 'Code');
                   return (
                     <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-lg">
                       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -286,6 +282,11 @@ const Exploration = () => {
                       <div>
                         <h3 className="font-semibold text-lg">{project.name}</h3>
                         <p className="text-gray-600">{project.description}</p>
+                        {project.reasoning && (
+                          <p className="text-sm text-green-700 mt-1">
+                            <strong>Perfect for you because:</strong> {project.reasoning}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
