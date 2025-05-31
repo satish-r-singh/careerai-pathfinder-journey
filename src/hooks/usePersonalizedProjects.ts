@@ -40,6 +40,7 @@ export const usePersonalizedProjects = () => {
     }
 
     try {
+      setLoading(true);
       console.log('Generating personalized projects...');
       
       // Get user's Ikigai data
