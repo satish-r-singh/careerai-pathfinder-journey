@@ -56,11 +56,14 @@ export const usePersonalizedProjects = () => {
       if (projectOptions && projectOptions.length > 0) {
         console.log('Found existing projects in database:', projectOptions.length);
         
-        // Convert database records to project format
-        const loadedProjects = projectOptions.map(option => ({
-          ...option.project_data,
-          id: option.project_data.id
-        })) as ProjectOption[];
+        // Convert database records to project format with proper type casting
+        const loadedProjects = projectOptions.map(option => {
+          const projectData = option.project_data as ProjectOption;
+          return {
+            ...projectData,
+            id: projectData.id
+          };
+        });
         
         setProjects(loadedProjects);
         
@@ -68,7 +71,10 @@ export const usePersonalizedProjects = () => {
         const selected = new Set(
           projectOptions
             .filter(option => option.is_selected)
-            .map(option => option.project_data.id)
+            .map(option => {
+              const projectData = option.project_data as ProjectOption;
+              return projectData.id;
+            })
         );
         setSelectedProjects(selected);
       } else {
@@ -101,10 +107,10 @@ export const usePersonalizedProjects = () => {
 
       if (deleteError) throw deleteError;
 
-      // Insert new project options
+      // Insert new project options with proper type conversion
       const projectOptionsToInsert = projectsToSave.map(project => ({
         user_id: user.id,
-        project_data: project,
+        project_data: project as any, // Cast to any to satisfy Json type
         is_selected: selectedProjectIds.has(project.id)
       }));
 
