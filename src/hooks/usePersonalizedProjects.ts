@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Users, Target, Lightbulb, Code } from 'lucide-react';
 
 interface IkigaiData {
   passion: string[];
@@ -305,8 +306,6 @@ export const usePersonalizedProjects = () => {
   };
 
   const getDefaultProjects = (): ProjectOption[] => {
-    const { Users, Target, Lightbulb, Code } = require('lucide-react');
-    
     return [
       {
         id: 'ai-chatbot',
