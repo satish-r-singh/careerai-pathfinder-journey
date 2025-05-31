@@ -1,95 +1,22 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, BookOpen, Target, Users } from 'lucide-react';
+import { CheckCircle, Clock, BookOpen, Target, Users, Globe, Lightbulb } from 'lucide-react';
+import { LearningPlan as LearningPlanType } from '@/utils/learningPlanGeneration';
 
 interface LearningPlanProps {
   projectName: string;
-  skills: string[];
-  difficulty: string;
+  learningPlan: LearningPlanType;
 }
 
-const LearningPlan = ({ projectName, skills, difficulty }: LearningPlanProps) => {
-  const getDifficultyWeeks = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner': return 4;
-      case 'Intermediate': return 6;
-      case 'Advanced': return 8;
-      default: return 6;
-    }
-  };
-
-  const getPhases = (skills: string[], weeks: number) => {
-    const phaseLength = Math.ceil(weeks / 3);
-    return [
-      {
-        phase: 1,
-        title: "Foundation & Setup",
-        duration: `Weeks 1-${phaseLength}`,
-        skills: skills.slice(0, 2),
-        activities: [
-          "Set up development environment",
-          "Learn basic concepts and syntax",
-          "Complete introductory tutorials",
-          "Build simple practice exercises"
-        ]
-      },
-      {
-        phase: 2,
-        title: "Core Development",
-        duration: `Weeks ${phaseLength + 1}-${phaseLength * 2}`,
-        skills: skills.slice(2, 4),
-        activities: [
-          "Implement core project features",
-          "Apply best practices and patterns",
-          "Handle data processing and storage",
-          "Build user interface components"
-        ]
-      },
-      {
-        phase: 3,
-        title: "Advanced Features & Polish",
-        duration: `Weeks ${phaseLength * 2 + 1}-${weeks}`,
-        skills: skills.slice(4),
-        activities: [
-          "Implement advanced functionality",
-          "Optimize performance and user experience",
-          "Add testing and documentation",
-          "Deploy and share your project"
-        ]
-      }
-    ];
-  };
-
-  const weeks = getDifficultyWeeks(difficulty);
-  const phases = getPhases(skills, weeks);
-
-  const resources = [
-    {
-      type: "Documentation",
-      items: ["Official documentation for each technology", "API references and guides"]
-    },
-    {
-      type: "Online Courses",
-      items: ["Platform-specific tutorials (YouTube, Coursera, Udemy)", "Interactive coding platforms"]
-    },
-    {
-      type: "Practice",
-      items: ["Coding challenges and exercises", "Small projects to reinforce learning"]
-    },
-    {
-      type: "Community",
-      items: ["Stack Overflow for troubleshooting", "Discord/Reddit communities for support"]
-    }
-  ];
-
+const LearningPlan = ({ projectName, learningPlan }: LearningPlanProps) => {
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Target className="w-5 h-5 text-primary" />
-            <span>Learning Plan Overview</span>
+            <span>AI-Generated Learning Plan</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -100,28 +27,24 @@ const LearningPlan = ({ projectName, skills, difficulty }: LearningPlanProps) =>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
               <div className="font-semibold text-green-800">Duration</div>
-              <div className="text-sm text-green-600">{weeks} weeks</div>
+              <div className="text-sm text-green-600">{learningPlan.overview.estimatedDuration}</div>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="font-semibold text-purple-800">Difficulty</div>
-              <div className="text-sm text-purple-600">{difficulty}</div>
+              <div className="font-semibold text-purple-800">Weekly Commitment</div>
+              <div className="text-sm text-purple-600">{learningPlan.overview.weeklyCommitment}</div>
             </div>
           </div>
           
-          <div>
-            <h4 className="font-medium mb-2">Skills You'll Learn:</h4>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill, index) => (
-                <Badge key={index} variant="outline">{skill}</Badge>
-              ))}
-            </div>
+          <div className="mb-4">
+            <h4 className="font-medium mb-2">Learning Progression:</h4>
+            <p className="text-sm text-gray-600">{learningPlan.overview.difficultyProgression}</p>
           </div>
         </CardContent>
       </Card>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Learning Phases</h3>
-        {phases.map((phase) => (
+        {learningPlan.phases.map((phase) => (
           <Card key={phase.phase}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -134,27 +57,79 @@ const LearningPlan = ({ projectName, skills, difficulty }: LearningPlanProps) =>
                 <Badge variant="outline">{phase.duration}</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {phase.skills.length > 0 && (
-                <div className="mb-4">
+            <CardContent className="space-y-4">
+              {phase.focusSkills.length > 0 && (
+                <div>
                   <h5 className="font-medium text-sm mb-2">Focus Skills:</h5>
                   <div className="flex flex-wrap gap-1">
-                    {phase.skills.map((skill, index) => (
+                    {phase.focusSkills.map((skill, index) => (
                       <Badge key={index} className="text-xs">{skill}</Badge>
                     ))}
                   </div>
                 </div>
               )}
+              
+              <div>
+                <h5 className="font-medium text-sm mb-2">Learning Objectives:</h5>
+                <ul className="space-y-1">
+                  {phase.learningObjectives.map((objective, index) => (
+                    <li key={index} className="flex items-start space-x-2 text-sm">
+                      <Target className="w-3 h-3 mt-1 text-blue-500" />
+                      <span>{objective}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <div>
                 <h5 className="font-medium text-sm mb-2">Key Activities:</h5>
                 <ul className="space-y-1">
-                  {phase.activities.map((activity, index) => (
+                  {phase.keyActivities.map((activity, index) => (
                     <li key={index} className="flex items-start space-x-2 text-sm">
                       <Clock className="w-3 h-3 mt-1 text-gray-400" />
                       <span>{activity}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div>
+                <h5 className="font-medium text-sm mb-2">Milestones:</h5>
+                <ul className="space-y-1">
+                  {phase.milestones.map((milestone, index) => (
+                    <li key={index} className="flex items-start space-x-2 text-sm">
+                      <CheckCircle className="w-3 h-3 mt-1 text-green-500" />
+                      <span>{milestone}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4 pt-2">
+                <div>
+                  <h6 className="font-medium text-xs mb-1 text-blue-600">Tutorials</h6>
+                  <ul className="space-y-1">
+                    {phase.resources.tutorials.map((tutorial, index) => (
+                      <li key={index} className="text-xs text-gray-600">• {tutorial}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h6 className="font-medium text-xs mb-1 text-purple-600">Documentation</h6>
+                  <ul className="space-y-1">
+                    {phase.resources.documentation.map((doc, index) => (
+                      <li key={index} className="text-xs text-gray-600">• {doc}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h6 className="font-medium text-xs mb-1 text-green-600">Practice</h6>
+                  <ul className="space-y-1">
+                    {phase.resources.practice.map((practice, index) => (
+                      <li key={index} className="text-xs text-gray-600">• {practice}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -164,42 +139,104 @@ const LearningPlan = ({ projectName, skills, difficulty }: LearningPlanProps) =>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <BookOpen className="w-5 h-5 text-primary" />
-            <span>Recommended Resources</span>
+            <Users className="w-5 h-5 text-primary" />
+            <span>Building in Public Strategy</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
-            {resources.map((resource, index) => (
-              <div key={index} className="space-y-2">
-                <h5 className="font-medium text-sm">{resource.type}</h5>
-                <ul className="space-y-1">
-                  {resource.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="text-sm text-gray-600 flex items-start space-x-2">
-                      <div className="w-1 h-1 bg-gray-400 rounded-full mt-2"></div>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+            <div>
+              <h5 className="font-medium text-sm mb-2">Recommended Platforms:</h5>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {learningPlan.buildingInPublic.platforms.map((platform, index) => (
+                  <Badge key={index} variant="outline">{platform}</Badge>
+                ))}
               </div>
-            ))}
+              
+              <h5 className="font-medium text-sm mb-2">Content Ideas:</h5>
+              <ul className="space-y-1">
+                {learningPlan.buildingInPublic.contentIdeas.map((idea, index) => (
+                  <li key={index} className="text-sm text-gray-600 flex items-start space-x-2">
+                    <Lightbulb className="w-3 h-3 mt-1 text-yellow-500" />
+                    <span>{idea}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h5 className="font-medium text-sm mb-2">Milestone Sharing:</h5>
+              <ul className="space-y-1 mb-4">
+                {learningPlan.buildingInPublic.milestoneSharing.map((milestone, index) => (
+                  <li key={index} className="text-sm text-gray-600 flex items-start space-x-2">
+                    <Globe className="w-3 h-3 mt-1 text-blue-500" />
+                    <span>{milestone}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <h5 className="font-medium text-sm mb-2">Networking Tips:</h5>
+              <ul className="space-y-1">
+                {learningPlan.buildingInPublic.networkingTips.map((tip, index) => (
+                  <li key={index} className="text-sm text-gray-600 flex items-start space-x-2">
+                    <Users className="w-3 h-3 mt-1 text-purple-500" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-3">
-            <Users className="w-6 h-6 text-blue-600 mt-1" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <BookOpen className="w-5 h-5 text-primary" />
+            <span>Success Metrics & Additional Resources</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-semibold text-blue-800 mb-2">Building in Public Tips</h4>
-              <ul className="space-y-1 text-sm text-blue-700">
-                <li>• Share your daily progress and challenges on social media</li>
-                <li>• Document your learning process with blog posts or videos</li>
-                <li>• Join relevant communities and engage with other learners</li>
-                <li>• Ask for feedback and help when you get stuck</li>
-                <li>• Celebrate small wins and milestones publicly</li>
+              <h5 className="font-medium text-sm mb-2">Success Metrics:</h5>
+              <ul className="space-y-1">
+                {learningPlan.successMetrics.map((metric, index) => (
+                  <li key={index} className="text-sm text-gray-600 flex items-start space-x-2">
+                    <Target className="w-3 h-3 mt-1 text-green-500" />
+                    <span>{metric}</span>
+                  </li>
+                ))}
               </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <h6 className="font-medium text-xs mb-1 text-blue-600">Communities</h6>
+                <div className="flex flex-wrap gap-1">
+                  {learningPlan.additionalResources.communities.map((community, index) => (
+                    <span key={index} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{community}</span>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h6 className="font-medium text-xs mb-1 text-purple-600">Tools</h6>
+                <div className="flex flex-wrap gap-1">
+                  {learningPlan.additionalResources.tools.map((tool, index) => (
+                    <span key={index} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">{tool}</span>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h6 className="font-medium text-xs mb-1 text-green-600">Recommended Books</h6>
+                <div className="flex flex-wrap gap-1">
+                  {learningPlan.additionalResources.books.map((book, index) => (
+                    <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{book}</span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

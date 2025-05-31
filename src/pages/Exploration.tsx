@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
 import { getIconComponent } from '@/utils/iconUtils';
 import LearningPlan from '@/components/LearningPlan';
+import { generateLearningPlan, LearningPlan as LearningPlanType } from '@/utils/learningPlanGeneration';
 
 const Exploration = () => {
   const { user } = useAuth();
@@ -28,6 +28,8 @@ const Exploration = () => {
   const [learningPlanCreated, setLearningPlanCreated] = useState(false);
   const [publicBuildingStarted, setPublicBuildingStarted] = useState(false);
   const [showLearningPlan, setShowLearningPlan] = useState(false);
+  const [generatedLearningPlan, setGeneratedLearningPlan] = useState<LearningPlanType | null>(null);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
 
   useEffect(() => {
     checkExplorationProgress();
@@ -48,6 +50,11 @@ const Exploration = () => {
         setShowLearningPlan(true);
       }
       if (savedPublicBuilding) setPublicBuildingStarted(true);
+      
+      const savedGeneratedPlan = localStorage.getItem(`generated_learning_plan_${user.id}`);
+      if (savedGeneratedPlan) {
+        setGeneratedLearningPlan(JSON.parse(savedGeneratedPlan));
+      }
     } catch (error) {
       console.error('Error loading exploration progress:', error);
     }
@@ -58,10 +65,43 @@ const Exploration = () => {
     localStorage.setItem(`exploration_project_${user.id}`, projectId);
   };
 
-  const handleCreateLearningPlan = () => {
-    setLearningPlanCreated(true);
-    setShowLearningPlan(true);
-    localStorage.setItem(`learning_plan_${user.id}`, 'true');
+  const handleCreateLearningPlan = async () => {
+    const selectedProjectData = getSelectedProjectData();
+    if (!selectedProjectData) return;
+
+    setGeneratingPlan(true);
+    
+    try {
+      // Get user profile and ikigai data (you might need to fetch these from your database)
+      // For now, we'll pass them as undefined, but you can enhance this later
+      const userProfile = undefined; // TODO: Fetch from user profile
+      const ikigaiData = undefined; // TODO: Fetch from ikigai data
+      
+      const aiLearningPlan = await generateLearningPlan(
+        selectedProjectData,
+        userProfile,
+        ikigaiData
+      );
+      
+      if (aiLearningPlan) {
+        setGeneratedLearningPlan(aiLearningPlan);
+        setLearningPlanCreated(true);
+        setShowLearningPlan(true);
+        localStorage.setItem(`learning_plan_${user.id}`, 'true');
+        localStorage.setItem(`generated_learning_plan_${user.id}`, JSON.stringify(aiLearningPlan));
+      } else {
+        throw new Error('Failed to generate learning plan');
+      }
+    } catch (error) {
+      console.error('Error generating learning plan:', error);
+      toast({
+        title: "Error generating learning plan",
+        description: "There was an issue creating your personalized learning plan. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPlan(false);
+    }
   };
 
   const handleStartPublicBuilding = () => {
@@ -372,26 +412,38 @@ const Exploration = () => {
                   ) : (
                     <BookOpen className="w-5 h-5 text-primary" />
                   )}
-                  <span>Build Learning Plan</span>
+                  <span>AI-Generated Learning Plan</span>
                 </CardTitle>
                 <CardDescription>
-                  Create a structured learning plan based on your selected project
+                  Create a personalized learning plan powered by AI based on your selected project and profile
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {!learningPlanCreated ? (
                   <div className="space-y-4">
                     <p className="text-gray-600">
-                      Based on your selected project, we'll help you create a personalized learning plan that covers:
+                      Our AI will analyze your selected project, background, and goals to create a completely personalized learning plan that includes:
                     </p>
                     <ul className="list-disc list-inside space-y-2 text-gray-600">
-                      <li>Required technical skills and knowledge areas</li>
-                      <li>Recommended learning resources and tutorials</li>
-                      <li>Project milestones and timelines</li>
-                      <li>Hands-on exercises and practice projects</li>
+                      <li>Customized learning phases based on your experience level</li>
+                      <li>Project-specific skill development roadmap</li>
+                      <li>Curated resources and tutorials for your exact needs</li>
+                      <li>Personalized building-in-public strategy</li>
+                      <li>Success metrics tailored to your goals</li>
                     </ul>
-                    <Button onClick={handleCreateLearningPlan} className="w-full">
-                      Generate My Learning Plan
+                    <Button 
+                      onClick={handleCreateLearningPlan} 
+                      className="w-full"
+                      disabled={generatingPlan}
+                    >
+                      {generatingPlan ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating Your AI Learning Plan...
+                        </>
+                      ) : (
+                        'Generate My AI Learning Plan'
+                      )}
                     </Button>
                   </div>
                 ) : (
@@ -399,21 +451,17 @@ const Exploration = () => {
                     <div className="p-4 bg-green-50 rounded-lg">
                       <div className="flex items-center space-x-2 mb-2">
                         <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="font-medium text-green-800">Learning Plan Created!</span>
+                        <span className="font-medium text-green-800">AI Learning Plan Generated!</span>
                       </div>
-                      <p className="text-green-700">Your personalized learning plan has been generated and is ready to guide your skill development journey.</p>
+                      <p className="text-green-700">Your personalized learning plan has been created using AI and is tailored specifically to your project and goals.</p>
                     </div>
                     
-                    {showLearningPlan && (() => {
-                      const project = getSelectedProjectData();
-                      return project ? (
-                        <LearningPlan 
-                          projectName={project.name}
-                          skills={project.skills}
-                          difficulty={project.difficulty}
-                        />
-                      ) : null;
-                    })()}
+                    {showLearningPlan && generatedLearningPlan && (
+                      <LearningPlan 
+                        projectName={getSelectedProjectData()?.name || ''}
+                        learningPlan={generatedLearningPlan}
+                      />
+                    )}
                   </div>
                 )}
               </CardContent>
