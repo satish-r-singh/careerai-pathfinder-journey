@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +29,7 @@ export const usePersonalizedProjects = () => {
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
+  const [regeneratingProjects, setRegeneratingProjects] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     generatePersonalizedProjects();
@@ -40,7 +42,16 @@ export const usePersonalizedProjects = () => {
     }
 
     try {
-      setLoading(true);
+      if (!keepSelected) {
+        setLoading(true);
+      } else {
+        // Mark unselected projects as regenerating
+        const projectsToRegenerate = new Set(
+          projects.filter(p => !selectedProjects.has(p.id)).map(p => p.id)
+        );
+        setRegeneratingProjects(projectsToRegenerate);
+      }
+      
       console.log('Generating personalized projects...');
       
       // Get user's Ikigai data
@@ -76,6 +87,7 @@ export const usePersonalizedProjects = () => {
         setProjects(defaultProjects);
         setSelectedProjects(new Set());
         setLoading(false);
+        setRegeneratingProjects(new Set());
         return;
       }
 
@@ -127,6 +139,7 @@ export const usePersonalizedProjects = () => {
       setSelectedProjects(new Set());
     } finally {
       setLoading(false);
+      setRegeneratingProjects(new Set());
     }
   };
 
@@ -209,6 +222,7 @@ export const usePersonalizedProjects = () => {
     regenerateProjects: () => generatePersonalizedProjects(false),
     selectedProjects,
     toggleProjectSelection,
-    regenerateUnselected
+    regenerateUnselected,
+    regeneratingProjects
   };
 };
