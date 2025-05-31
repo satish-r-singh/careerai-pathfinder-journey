@@ -59,14 +59,24 @@ export const loadProjectsFromDatabase = async (userId: string) => {
     // Import icons dynamically
     const { getIconComponent } = await import('./iconUtils');
     
-    // Explicitly type the result to avoid inference issues
+    // Create results arrays with explicit typing
     const loadedProjects: ProjectOption[] = [];
     const selectedIds: string[] = [];
     
-    for (const option of projectOptions) {
-      const projectData = option.project_data as any;
+    // Process each option individually to avoid complex type inference
+    projectOptions.forEach(option => {
+      const projectData = option.project_data as {
+        id: string;
+        name: string;
+        description: string;
+        difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+        duration: string;
+        skills: string[];
+        iconName?: string;
+        reasoning: string;
+      };
       
-      loadedProjects.push({
+      const project: ProjectOption = {
         id: projectData.id,
         name: projectData.name,
         description: projectData.description,
@@ -76,12 +86,14 @@ export const loadProjectsFromDatabase = async (userId: string) => {
         icon: getIconComponent(projectData.iconName || 'Code'),
         iconName: projectData.iconName,
         reasoning: projectData.reasoning
-      });
+      };
+      
+      loadedProjects.push(project);
       
       if (option.is_selected) {
         selectedIds.push(projectData.id);
       }
-    }
+    });
     
     return {
       projects: loadedProjects,
