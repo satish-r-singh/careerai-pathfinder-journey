@@ -148,7 +148,7 @@ const Dashboard = () => {
   };
 
   // Determine phase statuses based on current phase
-  const getPhaseStatus = (phaseId: number) => {
+  const getPhaseStatus = (phaseId: number): 'completed' | 'current' | 'locked' => {
     if (phaseId < currentPhase) return 'completed';
     if (phaseId === currentPhase) return 'current';
     return 'locked';
