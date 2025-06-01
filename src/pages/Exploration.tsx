@@ -63,7 +63,7 @@ const Exploration = () => {
         if (error) {
           console.error('Error loading learning plan:', error);
         } else if (learningPlan) {
-          setGeneratedLearningPlan(learningPlan.learning_plan_data);
+          setGeneratedLearningPlan(learningPlan.learning_plan_data as LearningPlanType);
           setLearningPlanCreated(true);
           setShowLearningPlan(true);
         }
@@ -102,7 +102,7 @@ const Exploration = () => {
       if (error) {
         console.error('Error loading learning plan for project:', error);
       } else if (learningPlan) {
-        setGeneratedLearningPlan(learningPlan.learning_plan_data);
+        setGeneratedLearningPlan(learningPlan.learning_plan_data as LearningPlanType);
         setLearningPlanCreated(true);
         setShowLearningPlan(true);
       }
@@ -154,7 +154,7 @@ const Exploration = () => {
             user_id: user.id,
             project_id: selectedProjectData.id,
             project_name: selectedProjectData.name,
-            learning_plan_data: aiLearningPlan
+            learning_plan_data: aiLearningPlan as any
           });
 
         if (error) {
