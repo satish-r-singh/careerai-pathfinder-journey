@@ -70,18 +70,33 @@ const Exploration = () => {
           setShowLearningPlan(true);
         }
 
-        // Check for building in public plan
+        // Check for building in public plan using raw query to avoid type issues
         const { data: buildingPlan, error: buildingError } = await supabase
-          .from('building_in_public_plans')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('project_id', savedProject)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .rpc('get_building_plan', { 
+            p_user_id: user.id, 
+            p_project_id: savedProject 
+          })
+          .single();
 
         if (buildingError) {
-          console.error('Error loading building in public plan:', buildingError);
+          // If the function doesn't exist, try direct query approach
+          try {
+            const { data: directData, error: directError } = await supabase
+              .from('building_in_public_plans')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('project_id', savedProject)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            if (!directError && directData) {
+              setBuildingInPublicPlan(directData.plan_data);
+              setPublicBuildingStarted(true);
+            }
+          } catch (directQueryError) {
+            console.error('Error with direct query:', directQueryError);
+          }
         } else if (buildingPlan) {
           setBuildingInPublicPlan(buildingPlan.plan_data);
           setPublicBuildingStarted(true);
@@ -128,21 +143,23 @@ const Exploration = () => {
         setShowLearningPlan(true);
       }
 
-      // Also check for building in public plan
-      const { data: buildingPlan, error: buildingError } = await supabase
-        .from('building_in_public_plans')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Also check for building in public plan using direct query
+      try {
+        const { data: buildingPlan, error: buildingError } = await supabase
+          .from('building_in_public_plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (buildingError) {
-        console.error('Error loading building in public plan for project:', buildingError);
-      } else if (buildingPlan) {
-        setBuildingInPublicPlan(buildingPlan.plan_data);
-        setPublicBuildingStarted(true);
+        if (!buildingError && buildingPlan) {
+          setBuildingInPublicPlan(buildingPlan.plan_data);
+          setPublicBuildingStarted(true);
+        }
+      } catch (buildingQueryError) {
+        console.error('Error loading building in public plan for project:', buildingQueryError);
       }
     } catch (error) {
       console.error('Error checking learning plan for project:', error);
@@ -249,31 +266,40 @@ const Exploration = () => {
       }
 
       if (data) {
-        // Save to database
-        const { error: saveError } = await supabase
-          .from('building_in_public_plans')
-          .insert({
-            user_id: user.id,
-            project_id: selectedProjectData.id,
-            project_name: selectedProjectData.name,
-            plan_data: data
-          });
+        // Save to database using direct insert
+        try {
+          const { error: saveError } = await supabase
+            .from('building_in_public_plans')
+            .insert({
+              user_id: user.id,
+              project_id: selectedProjectData.id,
+              project_name: selectedProjectData.name,
+              plan_data: data as any
+            });
 
-        if (saveError) {
-          console.error('Error saving building in public plan to database:', saveError);
+          if (saveError) {
+            console.error('Error saving building in public plan to database:', saveError);
+            toast({
+              title: "Error saving building plan",
+              description: "The plan was generated but couldn't be saved. Please try again.",
+              variant: "destructive",
+            });
+          } else {
+            setBuildingInPublicPlan(data);
+            setPublicBuildingStarted(true);
+            localStorage.setItem(`public_building_${user.id}`, 'true');
+            
+            toast({
+              title: "Building in public plan created!",
+              description: "Your personalized building strategy has been generated and saved.",
+            });
+          }
+        } catch (insertError) {
+          console.error('Error with insert operation:', insertError);
           toast({
             title: "Error saving building plan",
-            description: "The plan was generated but couldn't be saved. Please try again.",
+            description: "There was an issue saving your building plan. Please try again.",
             variant: "destructive",
-          });
-        } else {
-          setBuildingInPublicPlan(data);
-          setPublicBuildingStarted(true);
-          localStorage.setItem(`public_building_${user.id}`, 'true');
-          
-          toast({
-            title: "Building in public plan created!",
-            description: "Your personalized building strategy has been generated and saved.",
           });
         }
       } else {

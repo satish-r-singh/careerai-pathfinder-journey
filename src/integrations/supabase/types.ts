@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      building_in_public_plans: {
+        Row: {
+          created_at: string
+          id: string
+          plan_data: Json
+          project_id: string
+          project_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_data: Json
+          project_id: string
+          project_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_data?: Json
+          project_id?: string
+          project_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       career_roadmaps: {
         Row: {
           created_at: string
