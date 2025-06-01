@@ -86,7 +86,7 @@ Respond with a JSON object in this exact format:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert in building personal brands and online presence for tech professionals. Create engaging, authentic building-in-public strategies that help people share their learning journey effectively.'
+            content: 'You are an expert in building personal brands and online presence for tech professionals. Create engaging, authentic building-in-public strategies that help people share their learning journey effectively. Respond ONLY with valid JSON, no markdown formatting or code blocks.'
           },
           {
             role: 'user',
@@ -103,9 +103,17 @@ Respond with a JSON object in this exact format:
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    let content = data.choices[0].message.content;
     
     console.log('Generated building in public strategy:', content);
+    
+    // Clean up the response - remove markdown code blocks if present
+    content = content.trim();
+    if (content.startsWith('```json')) {
+      content = content.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (content.startsWith('```')) {
+      content = content.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
     
     try {
       const buildingStrategy = JSON.parse(content);
@@ -114,6 +122,7 @@ Respond with a JSON object in this exact format:
       });
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
+      console.error('Raw content:', content);
       throw new Error('Invalid response format from AI');
     }
 
