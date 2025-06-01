@@ -213,8 +213,7 @@ const Dashboard = () => {
         break;
       case 'Reflection':
         if (phase.status === 'current' || phase.status === 'completed') {
-          // TODO: Navigate to reflection page when implemented
-          console.log('Reflection phase not yet implemented');
+          navigate('/reflection');
         }
         break;
       case 'Action':
