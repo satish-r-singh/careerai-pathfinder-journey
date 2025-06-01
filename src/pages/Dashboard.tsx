@@ -219,8 +219,7 @@ const Dashboard = () => {
         break;
       case 'Action':
         if (phase.status === 'current' || phase.status === 'completed') {
-          // TODO: Navigate to action phase when implemented
-          console.log('Action phase not yet implemented');
+          navigate('/action');
         }
         break;
       default:
