@@ -165,7 +165,8 @@ const Dashboard = () => {
       return { phase: 2, progress: Math.round(totalProgress) };
     }
     
-    // Phase 3 or beyond (not implemented yet)
+    // After Exploration is complete, both Reflection and Action phases are available
+    // Default to Phase 3 (Reflection) but both can be accessed
     return { phase: 3, progress: 0 };
   };
 
@@ -227,10 +228,17 @@ const Dashboard = () => {
     }
   };
 
-  // Determine phase statuses based on current phase
+  // Determine phase statuses based on current phase - Updated logic for concurrent phases
   const getPhaseStatus = (phaseId: number): 'completed' | 'current' | 'locked' => {
     if (phaseId < currentPhase) return 'completed';
     if (phaseId === currentPhase) return 'current';
+    
+    // Special case: After Exploration (Phase 2) is complete, both Reflection (3) and Action (4) are available
+    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
+    if (explorationComplete && (phaseId === 3 || phaseId === 4)) {
+      return 'current';
+    }
+    
     return 'locked';
   };
 
@@ -258,16 +266,16 @@ const Dashboard = () => {
       name: 'Reflection',
       description: 'Skill validation through feedback',
       status: getPhaseStatus(3),
-      progress: currentPhase > 3 ? 100 : currentPhase === 3 ? phaseProgress : 0,
+      progress: 0, // Reflection progress is independent and ongoing
       estimatedTime: '3-4 weeks',
-      keyActivities: ['Get peer feedback', 'Connect with mentors', 'Build case studies']
+      keyActivities: ['Get peer feedback', 'Connect with mentors', 'Validate skills']
     },
     {
       id: 4,
       name: 'Action',
       description: 'Active job hunting and applications',
       status: getPhaseStatus(4),
-      progress: currentPhase === 4 ? phaseProgress : 0,
+      progress: 0, // Action progress is independent and ongoing
       estimatedTime: 'Ongoing',
       keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
     }
@@ -301,8 +309,14 @@ const Dashboard = () => {
     }
   };
 
-  // Get current phase name for display
+  // Get current phase name for display - Updated for concurrent phases
   const getCurrentPhaseName = () => {
+    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
+    
+    if (currentPhase === 1) return 'Introspection';
+    if (currentPhase === 2) return 'Exploration';
+    if (explorationComplete) return 'Reflection & Action';
+    
     const currentPhaseData = phases.find(p => p.id === currentPhase);
     return currentPhaseData?.name || 'Introspection';
   };
@@ -346,7 +360,7 @@ const Dashboard = () => {
               ? " Let's continue building your AI career foundation."
               : currentPhase === 2
               ? " Time to explore projects and build your skills!"
-              : " Great progress! Continue with your career journey."
+              : " You can now work on both reflection activities and job applications!"
             }
           </p>
         </div>
