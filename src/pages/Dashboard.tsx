@@ -17,22 +17,40 @@ const Dashboard = () => {
   const [industryResearchCompleted, setIndustryResearchCompleted] = useState(false);
   const [careerRoadmapCompleted, setCareerRoadmapCompleted] = useState(false);
   const [ikigaiLoading, setIkigaiLoading] = useState(true);
+  // Exploration progress states
+  const [explorationProject, setExplorationProject] = useState<string | null>(null);
+  const [explorationLearningPlan, setExplorationLearningPlan] = useState(false);
+  const [explorationPublicBuilding, setExplorationPublicBuilding] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    loadIntrospectionProgress();
+    loadProgressData();
   }, [user]);
 
-  const loadIntrospectionProgress = async () => {
+  const loadProgressData = async () => {
     if (!user) {
       setIkigaiLoading(false);
       return;
     }
     
     try {
-      console.log('Loading introspection progress for dashboard...');
+      console.log('Loading progress data for dashboard...');
       
+      // Load Introspection progress
+      await loadIntrospectionProgress();
+      
+      // Load Exploration progress
+      await loadExplorationProgress();
+    } catch (error) {
+      console.error('Error loading progress data:', error);
+    } finally {
+      setIkigaiLoading(false);
+    }
+  };
+
+  const loadIntrospectionProgress = async () => {
+    try {
       // Load Ikigai progress
       const { data: ikigaiData, error: ikigaiError } = await supabase
         .from('ikigai_progress')
@@ -79,50 +97,85 @@ const Dashboard = () => {
         console.log('Dashboard - Setting careerRoadmapCompleted to:', isRoadmapCompleted);
         setCareerRoadmapCompleted(isRoadmapCompleted);
       }
-
-      // Calculate overall introspection phase progress based on actual completion status
-      let totalProgress = 0;
-
-      // 1. Ikigai assessment (33% of total progress)
-      if (isIkigaiCompleted) {
-        totalProgress += 33;
-      } else if (ikigaiData?.current_step > 0) {
-        // Partial progress based on current step (assuming 4 total steps)
-        const stepProgress = ((ikigaiData.current_step + 1) / 4) * 33;
-        totalProgress += Math.min(stepProgress, 30); // Cap at 30% until fully completed
-      }
-
-      // 2. Industry research (33% of total progress)
-      if (!!researchData) {
-        totalProgress += 33;
-      }
-
-      // 3. Career roadmap (34% of total progress)
-      if (!!roadmapData) {
-        totalProgress += 34;
-      }
-
-      console.log('Dashboard - Calculated progress:', totalProgress, {
-        ikigai: isIkigaiCompleted,
-        research: !!researchData,
-        roadmap: !!roadmapData
-      });
-
-      setPhaseProgress(Math.round(totalProgress));
-
-      // Update current phase based on completion
-      const introspectionCompleted = isIkigaiCompleted && !!researchData && !!roadmapData;
-      if (introspectionCompleted) {
-        setCurrentPhase(2); // Move to Exploration phase
-      } else {
-        setCurrentPhase(1); // Stay in Introspection phase
-      }
     } catch (error) {
       console.error('Error loading introspection progress:', error);
-    } finally {
-      setIkigaiLoading(false);
     }
   };
+
+  const loadExplorationProgress = async () => {
+    try {
+      // Check for selected project from localStorage
+      const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
+      setExplorationProject(savedProject);
+
+      if (savedProject) {
+        // Check for learning plan
+        const { data: learningPlan, error: learningError } = await supabase
+          .from('learning_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('project_id', savedProject)
+          .maybeSingle();
+
+        if (!learningError && learningPlan) {
+          setExplorationLearningPlan(true);
+        }
+
+        // Check for building in public plan
+        const { data: buildingPlan, error: buildingError } = await supabase
+          .from('building_in_public_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('project_id', savedProject)
+          .maybeSingle();
+
+        if (!buildingError && buildingPlan) {
+          setExplorationPublicBuilding(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading exploration progress:', error);
+    }
+  };
+
+  const calculateCurrentPhaseAndProgress = () => {
+    // Check if Introspection is complete
+    const introspectionComplete = ikigaiCompleted && industryResearchCompleted && careerRoadmapCompleted;
+    
+    if (!introspectionComplete) {
+      // Phase 1: Introspection
+      let totalProgress = 0;
+      if (ikigaiCompleted) totalProgress += 33;
+      if (industryResearchCompleted) totalProgress += 33;
+      if (careerRoadmapCompleted) totalProgress += 34;
+      
+      return { phase: 1, progress: Math.round(totalProgress) };
+    }
+    
+    // Check if Exploration is complete
+    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
+    
+    if (!explorationComplete) {
+      // Phase 2: Exploration
+      let totalProgress = 0;
+      if (explorationProject) totalProgress += 33;
+      if (explorationLearningPlan) totalProgress += 33;
+      if (explorationPublicBuilding) totalProgress += 34;
+      
+      return { phase: 2, progress: Math.round(totalProgress) };
+    }
+    
+    // Phase 3 or beyond (not implemented yet)
+    return { phase: 3, progress: 0 };
+  };
+
+  const { phase, progress } = calculateCurrentPhaseAndProgress();
+  
+  // Update state if needed
+  useEffect(() => {
+    setCurrentPhase(phase);
+    setPhaseProgress(progress);
+  }, [phase, progress]);
   
   const handleSignOut = async () => {
     await signOut();
@@ -188,7 +241,7 @@ const Dashboard = () => {
       name: 'Introspection',
       description: 'Self-discovery and career alignment',
       status: getPhaseStatus(1),
-      progress: currentPhase > 1 ? 100 : phaseProgress,
+      progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
       estimatedTime: '1-2 weeks',
       keyActivities: ['Complete Ikigai assessment', 'Research AI industry', 'Generate career roadmap']
     },
@@ -197,7 +250,7 @@ const Dashboard = () => {
       name: 'Exploration',
       description: 'Project identification and knowledge building',
       status: getPhaseStatus(2),
-      progress: currentPhase > 2 ? 100 : 0,
+      progress: currentPhase > 2 ? 100 : currentPhase === 2 ? phaseProgress : 0,
       estimatedTime: '2-3 weeks',
       keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public']
     },
@@ -206,7 +259,7 @@ const Dashboard = () => {
       name: 'Reflection',
       description: 'Skill validation through feedback',
       status: getPhaseStatus(3),
-      progress: currentPhase > 3 ? 100 : 0,
+      progress: currentPhase > 3 ? 100 : currentPhase === 3 ? phaseProgress : 0,
       estimatedTime: '3-4 weeks',
       keyActivities: ['Get peer feedback', 'Connect with mentors', 'Build case studies']
     },
@@ -215,7 +268,7 @@ const Dashboard = () => {
       name: 'Action',
       description: 'Active job hunting and applications',
       status: getPhaseStatus(4),
-      progress: 0,
+      progress: currentPhase === 4 ? phaseProgress : 0,
       estimatedTime: 'Ongoing',
       keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
     }
@@ -234,7 +287,7 @@ const Dashboard = () => {
         : [...prev, taskId];
       
       // Recalculate progress when tasks change
-      setTimeout(() => loadIntrospectionProgress(), 100);
+      setTimeout(() => loadProgressData(), 100);
       
       return newCompleted;
     });
@@ -292,6 +345,8 @@ const Dashboard = () => {
             You're in the <span className="font-semibold text-primary">{getCurrentPhaseName()}</span> phase. 
             {currentPhase === 1 
               ? " Let's continue building your AI career foundation."
+              : currentPhase === 2
+              ? " Time to explore projects and build your skills!"
               : " Great progress! Continue with your career journey."
             }
           </p>
@@ -391,9 +446,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Phase Progress</span>
-                  <span className="font-semibold">
-                    {currentPhase === 1 ? `${Math.round(phaseProgress)}%` : '100%'}
-                  </span>
+                  <span className="font-semibold">{Math.round(phaseProgress)}%</span>
                 </div>
               </CardContent>
             </Card>
