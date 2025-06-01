@@ -90,6 +90,36 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_plans: {
+        Row: {
+          created_at: string
+          id: string
+          learning_plan_data: Json
+          project_id: string
+          project_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          learning_plan_data: Json
+          project_id: string
+          project_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          learning_plan_data?: Json
+          project_id?: string
+          project_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       outreach_templates: {
         Row: {
           created_at: string

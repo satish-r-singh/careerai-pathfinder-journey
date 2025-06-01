@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { getIconComponent } from '@/utils/iconUtils';
 import LearningPlan from '@/components/LearningPlan';
 import { generateLearningPlan, LearningPlan as LearningPlanType } from '@/utils/learningPlanGeneration';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Exploration = () => {
   const { user } = useAuth();
@@ -42,21 +42,31 @@ const Exploration = () => {
     if (!user) return;
     
     try {
-      // Check if user has exploration progress saved
+      // Check if user has exploration progress saved in localStorage (for backwards compatibility)
       const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
-      const savedLearningPlan = localStorage.getItem(`learning_plan_${user.id}`);
       const savedPublicBuilding = localStorage.getItem(`public_building_${user.id}`);
       
       if (savedProject) setSelectedProject(savedProject);
-      if (savedLearningPlan) {
-        setLearningPlanCreated(true);
-        setShowLearningPlan(true);
-      }
       if (savedPublicBuilding) setPublicBuildingStarted(true);
       
-      const savedGeneratedPlan = localStorage.getItem(`generated_learning_plan_${user.id}`);
-      if (savedGeneratedPlan) {
-        setGeneratedLearningPlan(JSON.parse(savedGeneratedPlan));
+      // Check for learning plan in database
+      if (savedProject) {
+        const { data: learningPlan, error } = await supabase
+          .from('learning_plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('project_id', savedProject)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading learning plan:', error);
+        } else if (learningPlan) {
+          setGeneratedLearningPlan(learningPlan.learning_plan_data);
+          setLearningPlanCreated(true);
+          setShowLearningPlan(true);
+        }
       }
     } catch (error) {
       console.error('Error loading exploration progress:', error);
@@ -66,6 +76,39 @@ const Exploration = () => {
   const handleProjectSelect = (projectId: string) => {
     setSelectedProject(projectId);
     localStorage.setItem(`exploration_project_${user.id}`, projectId);
+    
+    // Reset learning plan state when selecting a new project
+    setLearningPlanCreated(false);
+    setShowLearningPlan(false);
+    setGeneratedLearningPlan(null);
+    
+    // Check if this project already has a learning plan
+    checkLearningPlanForProject(projectId);
+  };
+
+  const checkLearningPlanForProject = async (projectId: string) => {
+    if (!user) return;
+    
+    try {
+      const { data: learningPlan, error } = await supabase
+        .from('learning_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading learning plan for project:', error);
+      } else if (learningPlan) {
+        setGeneratedLearningPlan(learningPlan.learning_plan_data);
+        setLearningPlanCreated(true);
+        setShowLearningPlan(true);
+      }
+    } catch (error) {
+      console.error('Error checking learning plan for project:', error);
+    }
   };
 
   const handleBackNavigation = () => {
@@ -78,9 +121,7 @@ const Exploration = () => {
       setPublicBuildingStarted(false);
       setShowLearningPlan(false);
       setGeneratedLearningPlan(null);
-      localStorage.removeItem(`learning_plan_${user.id}`);
       localStorage.removeItem(`public_building_${user.id}`);
-      localStorage.removeItem(`generated_learning_plan_${user.id}`);
     } else {
       // If no project selected, go back to dashboard
       navigate('/dashboard');
@@ -89,7 +130,7 @@ const Exploration = () => {
 
   const handleCreateLearningPlan = async () => {
     const selectedProjectData = getSelectedProjectData();
-    if (!selectedProjectData) return;
+    if (!selectedProjectData || !user) return;
 
     setGeneratingPlan(true);
     
@@ -106,11 +147,34 @@ const Exploration = () => {
       );
       
       if (aiLearningPlan) {
-        setGeneratedLearningPlan(aiLearningPlan);
-        setLearningPlanCreated(true);
-        setShowLearningPlan(true);
-        localStorage.setItem(`learning_plan_${user.id}`, 'true');
-        localStorage.setItem(`generated_learning_plan_${user.id}`, JSON.stringify(aiLearningPlan));
+        // Save to database
+        const { error } = await supabase
+          .from('learning_plans')
+          .insert({
+            user_id: user.id,
+            project_id: selectedProjectData.id,
+            project_name: selectedProjectData.name,
+            learning_plan_data: aiLearningPlan
+          });
+
+        if (error) {
+          console.error('Error saving learning plan to database:', error);
+          toast({
+            title: "Error saving learning plan",
+            description: "The plan was generated but couldn't be saved. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          setGeneratedLearningPlan(aiLearningPlan);
+          setLearningPlanCreated(true);
+          setShowLearningPlan(true);
+          localStorage.setItem(`learning_plan_${user.id}`, 'true'); // Keep for backwards compatibility
+          
+          toast({
+            title: "Learning plan created!",
+            description: "Your personalized AI learning plan has been generated and saved.",
+          });
+        }
       } else {
         throw new Error('Failed to generate learning plan');
       }
@@ -473,9 +537,9 @@ const Exploration = () => {
                     <div className="p-4 bg-green-50 rounded-lg">
                       <div className="flex items-center space-x-2 mb-2">
                         <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="font-medium text-green-800">AI Learning Plan Generated!</span>
+                        <span className="font-medium text-green-800">AI Learning Plan Generated & Saved!</span>
                       </div>
-                      <p className="text-green-700">Your personalized learning plan has been created using AI and is tailored specifically to your project and goals.</p>
+                      <p className="text-green-700">Your personalized learning plan has been created using AI and saved to your account. You can access it anytime.</p>
                     </div>
                     
                     {showLearningPlan && generatedLearningPlan && (
