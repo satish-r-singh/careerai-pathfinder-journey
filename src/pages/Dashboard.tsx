@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTodaysTasks } from '@/hooks/useTodaysTasks';
-
 const Dashboard = () => {
   const [currentPhase, setCurrentPhase] = useState(1);
   const [phaseProgress, setPhaseProgress] = useState(0);
@@ -26,11 +25,9 @@ const Dashboard = () => {
     signOut
   } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     loadProgressData();
   }, [user]);
-
   const loadProgressData = async () => {
     if (!user) {
       setIkigaiLoading(false);
@@ -324,12 +321,9 @@ const Dashboard = () => {
         {/* Welcome Section with background image */}
         <div className="mb-12 text-center relative overflow-hidden rounded-3xl">
           {/* Background image with overlay */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`,
-            }}
-          />
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`
+        }} />
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-blue-900/70 to-purple-900/80 backdrop-blur-sm" />
           
           {/* Content */}
@@ -347,12 +341,9 @@ const Dashboard = () => {
         {/* Progress Overview with background image */}
         <Card className="mb-12 premium-card animate-scale-in relative overflow-hidden">
           {/* Background image with overlay */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')`,
-            }}
-          />
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10" style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')`
+        }} />
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50" />
           
           <CardHeader className="relative z-10">
@@ -378,24 +369,16 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
-            {phases.map((phase, index) => (
-              <div 
-                key={phase.id} 
-                className="animate-fade-in transform hover:scale-[1.02] transition-all duration-300" 
-                style={{
-                  animationDelay: `${index * 0.15}s`
-                }}
-              >
+            {phases.map((phase, index) => <div key={phase.id} className="animate-fade-in transform hover:scale-[1.02] transition-all duration-300" style={{
+            animationDelay: `${index * 0.15}s`
+          }}>
                 <div className="relative group">
                   {/* Animated gradient border */}
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
                   
                   {/* Enhanced PhaseCard with better styling */}
                   <div className="relative">
-                    <PhaseCard 
-                      phase={phase} 
-                      onClick={() => handlePhaseClick(phase)} 
-                    />
+                    <PhaseCard phase={phase} onClick={() => handlePhaseClick(phase)} />
                   </div>
                   
                   {/* Phase number indicator */}
@@ -403,8 +386,7 @@ const Dashboard = () => {
                     {phase.id}
                   </div>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
 
@@ -484,7 +466,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 gradient-text">
                   <Calendar className="w-5 h-5" />
-                  <span>Upcoming</span>
+                  <span className="py-[4px]">Upcoming</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
