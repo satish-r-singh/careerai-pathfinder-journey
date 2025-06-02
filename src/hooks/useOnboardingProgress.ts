@@ -35,7 +35,7 @@ export const useOnboardingProgress = () => {
         currentStep: progress.current_step,
         data: {
           ...getInitialData(),
-          ...progress.onboarding_data,
+          ...(progress.onboarding_data as Partial<OnboardingData>),
           resumeFile: null, // File objects can't be persisted
         },
         isCompleted: progress.is_completed,
@@ -54,12 +54,24 @@ export const useOnboardingProgress = () => {
 
     setSaving(true);
     try {
+      // Convert OnboardingData to a plain object for JSON storage
+      const dataToSave = {
+        currentRole: data.currentRole,
+        experience: data.experience,
+        background: data.background,
+        aiInterest: data.aiInterest,
+        goals: data.goals,
+        timeline: data.timeline,
+        linkedinUrl: data.linkedinUrl
+        // Note: resumeFile is not saved as it's a File object
+      };
+
       const { error } = await supabase
         .from('onboarding_progress')
         .upsert({
           user_id: user.id,
           current_step: currentStep,
-          onboarding_data: data,
+          onboarding_data: dataToSave,
           resume_url: resumeUrl || null,
           is_completed: currentStep > 5
         });

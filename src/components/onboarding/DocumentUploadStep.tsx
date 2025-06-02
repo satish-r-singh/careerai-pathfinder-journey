@@ -60,7 +60,7 @@ const DocumentUploadStep = ({
   };
 
   // Check if at least one document is provided
-  const hasResume = data.resumeFile || hasExistingResume;
+  const hasResume = Boolean(data.resumeFile) || hasExistingResume;
   const hasLinkedIn = data.linkedinUrl && data.linkedinUrl.trim() !== '';
   const isValid = hasResume || hasLinkedIn;
 
