@@ -200,7 +200,7 @@ const IndustryResearch = () => {
     <Card className="premium-card animate-fade-in relative overflow-hidden">
       {/* Background pattern overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50" />
-      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5" 
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-2" 
            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')` }} />
       
       <CardHeader className="relative z-10">
@@ -224,7 +224,7 @@ const IndustryResearch = () => {
           
           {/* Background pattern */}
           <div className="absolute inset-0 bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 rounded-xl" />
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-3" 
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-1" 
                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80')` }} />
           
           <CardHeader className="relative z-10">
@@ -308,7 +308,7 @@ const IndustryResearch = () => {
       {results.skill_gaps && results.skill_gaps.length > 0 && (
         <Card className="premium-card animate-fade-in relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-red-50/50" />
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5" 
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-2" 
                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1920&q=80')` }} />
           
           <CardHeader className="relative z-10">
