@@ -11,6 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Upload, FileText, Linkedin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface OnboardingData {
   fullName: string;
@@ -27,6 +29,7 @@ interface OnboardingData {
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<OnboardingData>({
     fullName: '',
     email: '',
@@ -41,17 +44,53 @@ const Onboarding = () => {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleNext = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
+      handleComplete();
+    }
+  };
+
+  const handleComplete = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: data.fullName,
+          email: data.email || user.email,
+          user_role: data.currentRole,
+          experience: data.experience,
+          background: data.background,
+          ai_interest: data.aiInterest,
+          goals: data.goals,
+          timeline: data.timeline,
+          linkedin_url: data.linkedinUrl,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
       toast({
         title: "Welcome to CareerAI!",
         description: "Your personalized AI career journey begins now.",
       });
       navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Error saving onboarding data:', error);
+      toast({
+        title: "Error saving profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -309,7 +348,7 @@ const Onboarding = () => {
             onNext={handleNext}
             onPrevious={handlePrevious}
             isValid={isStepValid()}
-            nextLabel="Complete Setup"
+            nextLabel={loading ? "Completing..." : "Complete Setup"}
           >
             <div className="space-y-6">
               <Card className="border-dashed border-2 border-gray-300 hover:border-primary transition-colors">

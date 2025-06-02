@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +44,7 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You've been successfully logged in.",
           });
+          // Note: ProtectedRoute will handle checking if onboarding is needed
           navigate('/dashboard');
         }
       } else {
@@ -67,9 +67,10 @@ const Auth = () => {
         } else {
           toast({
             title: "Account created!",
-            description: "Please check your email to verify your account.",
+            description: "Let's get you set up with your AI career journey.",
           });
-          setIsLogin(true);
+          // Note: ProtectedRoute will redirect new users to onboarding
+          navigate('/onboarding');
         }
       }
     } catch (error) {
