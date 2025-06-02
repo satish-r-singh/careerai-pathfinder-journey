@@ -388,7 +388,7 @@ const Dashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Today's Tasks - Updated to be dynamic */}
+            {/* Today's Tasks - Updated layout for better alignment */}
             <Card className="premium-card animate-fade-in">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3 text-xl gradient-text">
@@ -406,39 +406,39 @@ const Dashboard = () => {
                   {todaysTasks.map((task) => (
                     <div 
                       key={task.id} 
-                      className={`group flex items-center justify-between p-6 border border-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm ${
+                      className={`group flex items-start gap-4 p-6 border border-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm ${
                         task.navigationPath ? 'hover:bg-white/30 hover:shadow-xl cursor-pointer' : 'hover:bg-white/20'
                       }`}
                       onClick={() => task.navigationPath && handleTaskClick(task)}
                     >
-                      <div className="flex items-center space-x-4">
-                        <input 
-                          type="checkbox" 
-                          className="w-5 h-5 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200" 
-                          checked={completedTasks.includes(task.id)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleTaskToggle(task.id);
-                          }}
-                        />
-                        <div>
-                          <p className={`font-medium text-lg transition-all duration-200 ${
-                            completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'
-                          }`}>
-                            {task.task}
-                          </p>
-                          <div className="flex items-center space-x-3 mt-1">
-                            <p className="text-sm text-gray-500">Estimated: {task.estimated}</p>
-                            <p className="text-xs text-gray-400">Phase {task.phase}</p>
-                          </div>
+                      <input 
+                        type="checkbox" 
+                        className="w-5 h-5 mt-1 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200 flex-shrink-0" 
+                        checked={completedTasks.includes(task.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleTaskToggle(task.id);
+                        }}
+                      />
+                      
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-medium text-lg transition-all duration-200 ${
+                          completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'
+                        }`}>
+                          {task.task}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <p className="text-sm text-gray-500">Estimated: {task.estimated}</p>
+                          <p className="text-xs text-gray-400">Phase {task.phase}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
+                      
+                      <div className="flex items-center gap-3 flex-shrink-0">
                         <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
                           {task.priority}
                         </Badge>
                         {task.navigationPath && (
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium whitespace-nowrap">
                             Click to start →
                           </div>
                         )}
