@@ -225,7 +225,7 @@ const Dashboard = () => {
     status: getPhaseStatus(1),
     progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
     estimatedTime: '1-2 weeks',
-    keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Personalized Outreach']
+    keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Career Roadmap and Personalized Outreach']
   }, {
     id: 2,
     name: 'Exploration',
