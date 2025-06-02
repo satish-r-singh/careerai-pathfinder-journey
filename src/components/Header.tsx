@@ -24,10 +24,11 @@ const Header = () => {
             className="flex items-center cursor-pointer" 
             onClick={() => navigate('/')}
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
-            </div>
-            <span className="ml-2 text-xl font-bold gradient-text">CareerAI</span>
+            <img 
+              src="/lovable-uploads/1654145e-5b81-4c82-b06b-60462d465f19.png" 
+              alt="CareerAI" 
+              className="h-8 w-auto"
+            />
           </div>
 
           {/* Desktop Navigation */}

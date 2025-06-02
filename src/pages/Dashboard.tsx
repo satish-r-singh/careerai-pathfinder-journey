@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProgressBar from '@/components/ProgressBar';
 import PhaseCard from '@/components/PhaseCard';
-import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut, Sparkles } from 'lucide-react';
+import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -334,10 +334,11 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="ml-3 text-2xl font-bold gradient-text">CareerAI</span>
+              <img 
+                src="/lovable-uploads/1654145e-5b81-4c82-b06b-60462d465f19.png" 
+                alt="CareerAI" 
+                className="h-10 w-auto"
+              />
             </div>
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="sm" className="hover:bg-white/20 transition-all duration-300">
