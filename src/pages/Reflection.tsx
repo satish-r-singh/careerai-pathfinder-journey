@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, MessageSquare, Star, Calendar, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import ReflectionHeader from '@/components/ReflectionHeader';
 import FeedbackCollection from '@/components/reflection/FeedbackCollection';
 import MentorConnection from '@/components/reflection/MentorConnection';
 import ReflectionProgress from '@/components/reflection/ReflectionProgress';
@@ -42,54 +43,37 @@ const Reflection = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate('/dashboard')}
-                className="mr-4"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Reflection Phase</h1>
-                <p className="text-sm text-gray-500">Skill validation through feedback</p>
-              </div>
-            </div>
-            <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-              Phase 3 of 4
-            </Badge>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 bg-indigo-200/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-200/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <ReflectionHeader />
+
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="mb-6">
+            <Card className="premium-card mb-6">
               <CardHeader>
-                <CardTitle className="text-lg">Your Progress</CardTitle>
+                <CardTitle className="text-lg gradient-text">Your Progress</CardTitle>
               </CardHeader>
               <CardContent>
                 <ReflectionProgress />
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="premium-card">
               <CardHeader>
-                <CardTitle className="text-lg">Activities</CardTitle>
+                <CardTitle className="text-lg gradient-text">Activities</CardTitle>
                 <CardDescription>Track your reflection journey</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {reflectionActivities.map((activity, index) => (
-                  <div key={index} className="border-l-4 border-gray-200 pl-4">
+                  <div key={index} className="border-l-4 border-purple-200 pl-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-sm">{activity.title}</h4>

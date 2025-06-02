@@ -1,9 +1,10 @@
-
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useExplorationProgress } from '@/hooks/useExplorationProgress';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
+import ExplorationHeader from '@/components/ExplorationHeader';
 import ExplorationProgress from '@/components/exploration/ExplorationProgress';
 import ProjectSelection from '@/components/exploration/ProjectSelection';
 import SelectedProjectSummary from '@/components/exploration/SelectedProjectSummary';
@@ -64,69 +65,58 @@ const Exploration = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        {/* Header */}
-        <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={handleBackNavigation}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {selectedProject ? 'Back to Project Selection' : 'Back to Dashboard'}
-          </Button>
-          
-          <h1 className="text-4xl font-bold gradient-text mb-4">
-            Exploration Phase
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Choose your personalized project, build your learning plan, and start building in public
-          </p>
+        <ExplorationHeader />
+
+        <div className="space-y-8">
+          {/* Progress Overview */}
+          <Card className="premium-card">
+            <CardContent className="p-6">
+              <ExplorationProgress
+                selectedProject={selectedProject}
+                learningPlanCreated={learningPlanCreated}
+                publicBuildingStarted={publicBuildingStarted}
+                progressPercentage={getProgressPercentage()}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Project Selection */}
+          {!selectedProject && (
+            <ProjectSelection onProjectSelect={handleProjectSelect} />
+          )}
+
+          {/* Selected Project & Next Steps */}
+          {selectedProject && (
+            <div className="space-y-6">
+              {/* Selected Project Summary */}
+              <SelectedProjectSummary project={getSelectedProjectData()} />
+
+              {/* Learning Plan */}
+              <LearningPlanSection
+                selectedProject={getSelectedProjectData()}
+                learningPlanCreated={learningPlanCreated}
+                showLearningPlan={showLearningPlan}
+                generatedLearningPlan={generatedLearningPlan}
+                onLearningPlanCreated={handleLearningPlanCreated}
+              />
+
+              {/* Building in Public */}
+              <BuildingInPublicSection
+                selectedProject={getSelectedProjectData()}
+                learningPlanCreated={learningPlanCreated}
+                publicBuildingStarted={publicBuildingStarted}
+                buildingInPublicPlan={buildingInPublicPlan}
+                generatedLearningPlan={generatedLearningPlan}
+                onBuildingPlanCreated={handleBuildingPlanCreated}
+              />
+            </div>
+          )}
+
+          {/* Completion Message */}
+          {selectedProject && learningPlanCreated && publicBuildingStarted && (
+            <ExplorationCompletion />
+          )}
         </div>
-
-        {/* Progress Overview */}
-        <ExplorationProgress
-          selectedProject={selectedProject}
-          learningPlanCreated={learningPlanCreated}
-          publicBuildingStarted={publicBuildingStarted}
-          progressPercentage={getProgressPercentage()}
-        />
-
-        {/* Project Selection */}
-        {!selectedProject && (
-          <ProjectSelection onProjectSelect={handleProjectSelect} />
-        )}
-
-        {/* Selected Project & Next Steps */}
-        {selectedProject && (
-          <div className="space-y-6">
-            {/* Selected Project Summary */}
-            <SelectedProjectSummary project={getSelectedProjectData()} />
-
-            {/* Learning Plan */}
-            <LearningPlanSection
-              selectedProject={getSelectedProjectData()}
-              learningPlanCreated={learningPlanCreated}
-              showLearningPlan={showLearningPlan}
-              generatedLearningPlan={generatedLearningPlan}
-              onLearningPlanCreated={handleLearningPlanCreated}
-            />
-
-            {/* Building in Public */}
-            <BuildingInPublicSection
-              selectedProject={getSelectedProjectData()}
-              learningPlanCreated={learningPlanCreated}
-              publicBuildingStarted={publicBuildingStarted}
-              buildingInPublicPlan={buildingInPublicPlan}
-              generatedLearningPlan={generatedLearningPlan}
-              onBuildingPlanCreated={handleBuildingPlanCreated}
-            />
-          </div>
-        )}
-
-        {/* Completion Message */}
-        {selectedProject && learningPlanCreated && publicBuildingStarted && (
-          <ExplorationCompletion />
-        )}
       </div>
     </div>
   );
