@@ -273,7 +273,7 @@ const AICareerIntegration = () => {
         }}>
               <div className="absolute inset-0 bg-gradient-to-br from-white via-green-50/30 to-emerald-50/30 rounded-lg" />
               <CardHeader className="relative z-10">
-                <CardTitle className="flex items-center gap-2 gradient-text">
+                <CardTitle className="flex items-center gap-2 gradient-text my-0 py-[10px]">
                   <TrendingUp className="w-5 h-5" />
                   Career Progression Path
                 </CardTitle>
