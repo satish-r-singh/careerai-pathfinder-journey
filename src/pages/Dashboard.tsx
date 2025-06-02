@@ -191,13 +191,8 @@ const Dashboard = () => {
       return;
     }
     
-    if (ikigaiCompleted) {
-      // Navigate to introspection page which will show next steps
-      navigate('/introspection');
-    } else {
-      // Navigate to ikigai discovery
-      navigate('/ikigai');
-    }
+    // Always navigate to introspection page first
+    navigate('/introspection');
   };
 
   const handlePhaseClick = (phase: any) => {
