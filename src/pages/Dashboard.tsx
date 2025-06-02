@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProgressBar from '@/components/ProgressBar';
 import PhaseCard from '@/components/PhaseCard';
-import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut } from 'lucide-react';
+import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -321,25 +321,32 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen gradient-bg relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+      </div>
+
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="relative z-10 glass-effect border-0 border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
+              <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="ml-2 text-xl font-bold gradient-text">CareerAI</span>
+              <span className="ml-3 text-2xl font-bold gradient-text">CareerAI</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
+            <div className="flex items-center space-x-3">
+              <Button variant="ghost" size="sm" className="hover:bg-white/20 transition-all duration-300">
                 <Bell className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="hover:bg-white/20 transition-all duration-300">
                 <User className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="hover:bg-white/20 transition-all duration-300">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -347,14 +354,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl font-bold gradient-text mb-4 animate-fade-in">
             Welcome back, {user?.user_metadata?.full_name || user?.email}! 👋
           </h1>
-          <p className="text-gray-600">
-            You're in the <span className="font-semibold text-primary">{getCurrentPhaseName()}</span> phase. 
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto animate-slide-up">
+            You're in the <span className="font-semibold gradient-text">{getCurrentPhaseName()}</span> phase. 
             {currentPhase === 1 
               ? " Let's continue building your AI career foundation."
               : currentPhase === 2
@@ -365,13 +372,13 @@ const Dashboard = () => {
         </div>
 
         {/* Progress Overview */}
-        <Card className="mb-8">
+        <Card className="mb-12 premium-card animate-scale-in">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
+            <CardTitle className="flex items-center space-x-3 text-2xl gradient-text">
+              <TrendingUp className="w-6 h-6 text-primary" />
               <span>Your Progress</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-lg">
               Track your journey through the 4-phase career transition program
             </CardDescription>
           </CardHeader>
@@ -382,37 +389,37 @@ const Dashboard = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             {/* Today's Tasks */}
-            <Card className="mb-8">
+            <Card className="premium-card animate-fade-in">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-3 text-xl gradient-text">
                   <CheckCircle className="w-5 h-5 text-primary" />
                   <span>Today's Focus</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-base">
                   Complete these tasks to progress in your current phase
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {todaysTasks.map((task) => (
-                    <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center space-x-3">
+                    <div key={task.id} className="group flex items-center justify-between p-6 border border-white/20 rounded-xl hover:bg-white/30 transition-all duration-300 hover:shadow-xl backdrop-blur-sm">
+                      <div className="flex items-center space-x-4">
                         <input 
                           type="checkbox" 
-                          className="rounded" 
+                          className="w-5 h-5 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200" 
                           checked={completedTasks.includes(task.id)}
                           onChange={() => handleTaskToggle(task.id)}
                         />
                         <div>
-                          <p className={`font-medium ${completedTasks.includes(task.id) ? 'line-through text-gray-500' : ''}`}>
+                          <p className={`font-medium text-lg transition-all duration-200 ${completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'}`}>
                             {task.task}
                           </p>
-                          <p className="text-sm text-gray-500">Estimated: {task.estimated}</p>
+                          <p className="text-sm text-gray-500 mt-1">Estimated: {task.estimated}</p>
                         </div>
                       </div>
-                      <Badge className={getPriorityColor(task.priority)}>
+                      <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
                         {task.priority}
                       </Badge>
                     </div>
@@ -422,87 +429,88 @@ const Dashboard = () => {
             </Card>
 
             {/* Phase Cards */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Your Career Journey</h2>
+            <div className="animate-slide-up">
+              <h2 className="text-3xl font-bold gradient-text mb-8">Your Career Journey</h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {phases.map((phase) => (
-                  <PhaseCard 
-                    key={phase.id} 
-                    phase={phase}
-                    onClick={() => handlePhaseClick(phase)}
-                  />
+                {phases.map((phase, index) => (
+                  <div key={phase.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <PhaseCard 
+                      phase={phase}
+                      onClick={() => handlePhaseClick(phase)}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Quick Stats */}
-            <Card>
+            <Card className="premium-card animate-scale-in">
               <CardHeader>
-                <CardTitle>Quick Stats</CardTitle>
+                <CardTitle className="gradient-text">Quick Stats</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Days Active</span>
-                  <span className="font-semibold">12</span>
+              <CardContent className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Days Active</span>
+                  <span className="text-xl font-bold gradient-text">12</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Tasks Completed</span>
-                  <span className="font-semibold">{completedTasks.length + 8}/32</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Tasks Completed</span>
+                  <span className="text-xl font-bold gradient-text">{completedTasks.length + 8}/32</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Current Phase</span>
-                  <span className="font-semibold">{getCurrentPhaseName()}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Current Phase</span>
+                  <span className="text-lg font-bold gradient-text">{getCurrentPhaseName()}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Phase Progress</span>
-                  <span className="font-semibold">{Math.round(phaseProgress)}%</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Phase Progress</span>
+                  <span className="text-xl font-bold gradient-text">{Math.round(phaseProgress)}%</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Upcoming */}
-            <Card>
+            <Card className="premium-card animate-fade-in">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
+                <CardTitle className="flex items-center space-x-2 gradient-text">
+                  <Calendar className="w-5 h-5" />
                   <span>Upcoming</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm">
-                  <p className="font-medium">Phase Assessment</p>
-                  <p className="text-gray-500">Due in 5 days</p>
+              <CardContent className="space-y-4">
+                <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100">
+                  <p className="font-medium text-gray-800">Phase Assessment</p>
+                  <p className="text-sm text-gray-600 mt-1">Due in 5 days</p>
                 </div>
-                <div className="text-sm">
-                  <p className="font-medium">Mentor Check-in</p>
-                  <p className="text-gray-500">Scheduled for Friday</p>
+                <div className="p-4 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border border-green-100">
+                  <p className="font-medium text-gray-800">Mentor Check-in</p>
+                  <p className="text-sm text-gray-600 mt-1">Scheduled for Friday</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Resources */}
-            <Card>
+            <Card className="premium-card animate-slide-up">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BookOpen className="w-4 h-4" />
+                <CardTitle className="flex items-center space-x-2 gradient-text">
+                  <BookOpen className="w-5 h-5" />
                   <span>Recommended</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm">
-                  <p className="font-medium text-primary cursor-pointer hover:underline">
+              <CardContent className="space-y-4">
+                <div className="p-4 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                  <p className="font-medium text-primary group-hover:text-purple-700 transition-colors">
                     AI Career Transition Guide
                   </p>
-                  <p className="text-gray-500">Essential reading for Phase 1</p>
+                  <p className="text-sm text-gray-600 mt-1">Essential reading for Phase 1</p>
                 </div>
-                <div className="text-sm">
-                  <p className="font-medium text-primary cursor-pointer hover:underline">
+                <div className="p-4 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-100 hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                  <p className="font-medium text-primary group-hover:text-blue-700 transition-colors">
                     Industry Trends Report 2024
                   </p>
-                  <p className="text-gray-500">Latest AI job market insights</p>
+                  <p className="text-sm text-gray-600 mt-1">Latest AI job market insights</p>
                 </div>
               </CardContent>
             </Card>
