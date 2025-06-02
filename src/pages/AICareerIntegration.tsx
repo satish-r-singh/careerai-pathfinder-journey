@@ -315,7 +315,7 @@ const AICareerIntegration = () => {
         }}>
               <div className="absolute inset-0 bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 rounded-lg" />
               <CardHeader className="relative z-10">
-                <CardTitle className="gradient-text">Skill Development Plan</CardTitle>
+                <CardTitle className="gradient-text py-[10px]">Skill Development Plan</CardTitle>
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="space-y-4">
