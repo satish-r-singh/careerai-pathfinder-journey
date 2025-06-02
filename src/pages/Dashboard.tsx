@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTodaysTasks } from '@/hooks/useTodaysTasks';
+
 const Dashboard = () => {
   const [currentPhase, setCurrentPhase] = useState(1);
   const [phaseProgress, setPhaseProgress] = useState(0);
@@ -25,9 +26,11 @@ const Dashboard = () => {
     signOut
   } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
     loadProgressData();
   }, [user]);
+
   const loadProgressData = async () => {
     if (!user) {
       setIkigaiLoading(false);
@@ -318,20 +321,41 @@ const Dashboard = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Section */}
-        <div className="mb-12 text-center">
-          <h1 className="text-5xl font-bold gradient-text mb-4 animate-fade-in">
-            Welcome back, {user?.user_metadata?.full_name || user?.email}! 👋
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto animate-slide-up">
-            You're in the <span className="font-semibold gradient-text">{getCurrentPhaseName()}</span> phase. 
-            {currentPhase === 1 ? " Let's continue building your AI career foundation." : currentPhase === 2 ? " Time to explore projects and build your skills!" : " You can now work on both reflection activities and job applications!"}
-          </p>
+        {/* Welcome Section with background image */}
+        <div className="mb-12 text-center relative overflow-hidden rounded-3xl">
+          {/* Background image with overlay */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-blue-900/70 to-purple-900/80 backdrop-blur-sm" />
+          
+          {/* Content */}
+          <div className="relative z-10 py-16 px-8">
+            <h1 className="text-5xl font-bold text-white mb-4 animate-fade-in drop-shadow-lg">
+              Welcome back, {user?.user_metadata?.full_name || user?.email}! 👋
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto animate-slide-up drop-shadow-md">
+              You're in the <span className="font-semibold text-accent-foreground bg-accent/20 px-2 py-1 rounded-lg">{getCurrentPhaseName()}</span> phase. 
+              {currentPhase === 1 ? " Let's continue building your AI career foundation." : currentPhase === 2 ? " Time to explore projects and build your skills!" : " You can now work on both reflection activities and job applications!"}
+            </p>
+          </div>
         </div>
 
-        {/* Progress Overview */}
-        <Card className="mb-12 premium-card animate-scale-in">
-          <CardHeader>
+        {/* Progress Overview with background image */}
+        <Card className="mb-12 premium-card animate-scale-in relative overflow-hidden">
+          {/* Background image with overlay */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50" />
+          
+          <CardHeader className="relative z-10">
             <CardTitle className="flex items-center space-x-3 text-2xl gradient-text">
               <TrendingUp className="w-6 h-6 text-primary" />
               <span>Your Progress</span>
@@ -340,7 +364,7 @@ const Dashboard = () => {
               Track your journey through the 4-phase career transition program
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             <ProgressBar currentPhase={currentPhase} totalPhases={4} />
           </CardContent>
         </Card>
