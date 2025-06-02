@@ -34,12 +34,6 @@ const IntrospectionHeader = () => {
           >
             ← Back to Dashboard
           </Button>
-          
-          <img 
-            src="/lovable-uploads/a82513ec-4139-4f2f-814a-7a8db8a59228.png" 
-            alt="CareerAI" 
-            className="h-10 w-auto"
-          />
         </div>
         
         <div className="text-center mb-8 space-y-6">
