@@ -64,7 +64,7 @@ export const useIkigaiInsights = (ikigaiData: IkigaiData) => {
     }
   };
 
-  const generateInsights = async () => {
+  const generateInsights = async (forceRegenerate = false) => {
     setLoading(true);
     
     try {
@@ -82,6 +82,13 @@ export const useIkigaiInsights = (ikigaiData: IkigaiData) => {
       setInsights(newInsights);
       
       await saveInsights(newInsights);
+
+      if (forceRegenerate) {
+        toast({
+          title: "Insights Regenerated",
+          description: "Your AI insights have been updated with fresh analysis.",
+        });
+      }
     } catch (error: any) {
       console.error('Error generating insights:', error);
       toast({
@@ -92,6 +99,10 @@ export const useIkigaiInsights = (ikigaiData: IkigaiData) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const regenerateInsights = () => {
+    generateInsights(true);
   };
 
   useEffect(() => {
@@ -112,6 +123,7 @@ export const useIkigaiInsights = (ikigaiData: IkigaiData) => {
   return {
     insights,
     loading,
-    generateInsights
+    generateInsights,
+    regenerateInsights
   };
 };

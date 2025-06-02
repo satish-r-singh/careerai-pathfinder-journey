@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Brain, RefreshCw } from 'lucide-react';
 import InsightsSummary from './InsightsSummary';
 import InsightsRecommendations from './InsightsRecommendations';
 
@@ -14,16 +15,31 @@ interface Insights {
 interface IkigaiAIInsightsCardProps {
   insights: Insights | null;
   loading: boolean;
+  onRegenerate: () => void;
 }
 
-const IkigaiAIInsightsCard = ({ insights, loading }: IkigaiAIInsightsCardProps) => {
+const IkigaiAIInsightsCard = ({ insights, loading, onRegenerate }: IkigaiAIInsightsCardProps) => {
   return (
     <Card className="premium-card">
       <CardHeader>
-        <CardTitle className="gradient-text flex items-center">
-          <Brain className="w-5 h-5 mr-2" />
-          AI-Powered Insights
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="gradient-text flex items-center">
+            <Brain className="w-5 h-5 mr-2" />
+            AI-Powered Insights
+          </CardTitle>
+          {insights && !loading && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRegenerate}
+              disabled={loading}
+              className="ml-2"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Regenerate
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (

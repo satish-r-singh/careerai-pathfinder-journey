@@ -16,13 +16,17 @@ interface IkigaiInsightsProps {
 }
 
 const IkigaiInsights = ({ ikigaiData }: IkigaiInsightsProps) => {
-  const { insights, loading } = useIkigaiInsights(ikigaiData);
+  const { insights, loading, regenerateInsights } = useIkigaiInsights(ikigaiData);
 
   return (
     <div className="space-y-6">
       <IkigaiVisualizationCard />
       <IkigaiKeyThemes ikigaiData={ikigaiData} />
-      <IkigaiAIInsightsCard insights={insights} loading={loading} />
+      <IkigaiAIInsightsCard 
+        insights={insights} 
+        loading={loading} 
+        onRegenerate={regenerateInsights}
+      />
     </div>
   );
 };
