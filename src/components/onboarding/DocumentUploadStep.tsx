@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, FileText, Linkedin, CheckCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle, Info } from 'lucide-react';
 import OnboardingStep from '@/components/OnboardingStep';
 import { OnboardingData } from '@/types/onboarding';
 import { useToast } from '@/hooks/use-toast';
@@ -30,12 +30,11 @@ const DocumentUploadStep = ({
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
+      // Validate file type - only PDF allowed
+      if (file.type !== 'application/pdf') {
         toast({
           title: "Invalid file type",
-          description: "Please upload a PDF, DOC, or DOCX file.",
+          description: "Please upload a PDF file only.",
           variant: "destructive",
         });
         return;
@@ -59,17 +58,16 @@ const DocumentUploadStep = ({
     }
   };
 
-  // Check if at least one document is provided
+  // Resume is now mandatory
   const hasResume = Boolean(data.resumeFile) || hasExistingResume;
-  const hasLinkedIn = data.linkedinUrl && data.linkedinUrl.trim() !== '';
-  const isValid = hasResume || hasLinkedIn;
+  const isValid = hasResume;
 
   return (
     <OnboardingStep
       stepNumber={5}
       totalSteps={5}
-      title="Upload Your Documents"
-      description="Please provide at least one: Resume/CV OR LinkedIn profile URL"
+      title="Upload Your Resume"
+      description="Please upload your resume/CV in PDF format (required)"
       onNext={onNext}
       onPrevious={onPrevious}
       isValid={isValid}
@@ -79,10 +77,31 @@ const DocumentUploadStep = ({
         {!isValid && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <p className="text-amber-800 text-sm">
-              ⚠️ Please provide at least one: Resume/CV or LinkedIn profile URL to continue.
+              ⚠️ Please upload your resume in PDF format to continue.
             </p>
           </div>
         )}
+
+        {/* LinkedIn PDF Download Instructions */}
+        <Card className="bg-blue-50 border border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium text-blue-900 mb-2">
+                  How to download your LinkedIn profile as PDF:
+                </h4>
+                <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                  <li>Click the <strong>Me</strong> icon at the top of your LinkedIn homepage</li>
+                  <li>Click <strong>View profile</strong></li>
+                  <li>Click the <strong>More</strong> button in the introduction section</li>
+                  <li>Select <strong>Save to PDF</strong> from the dropdown</li>
+                  <li>Upload the downloaded PDF file below</li>
+                </ol>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="border-dashed border-2 border-gray-300 hover:border-primary transition-colors">
           <CardContent className="p-6">
@@ -90,13 +109,13 @@ const DocumentUploadStep = ({
               <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <div className="space-y-2">
                 <h3 className="text-lg font-medium flex items-center justify-center gap-2">
-                  Upload Resume/CV
+                  Upload Resume/CV (PDF Required)
                   {(data.resumeFile || hasExistingResume) && (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   )}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  PDF, DOC, or DOCX up to 10MB
+                  PDF format only, up to 10MB
                 </p>
                 <Button
                   variant="outline"
@@ -104,12 +123,12 @@ const DocumentUploadStep = ({
                   disabled={loading}
                 >
                   <FileText className="mr-2 h-4 w-4" />
-                  {data.resumeFile ? 'Change File' : hasExistingResume ? 'Replace File' : 'Choose File'}
+                  {data.resumeFile ? 'Change File' : hasExistingResume ? 'Replace File' : 'Choose PDF File'}
                 </Button>
                 <input
                   id="resume-upload"
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -127,38 +146,6 @@ const DocumentUploadStep = ({
             </div>
           </CardContent>
         </Card>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">OR</span>
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="linkedinUrl" className="flex items-center gap-2">
-            LinkedIn Profile URL
-            {hasLinkedIn && <CheckCircle className="h-4 w-4 text-green-500" />}
-          </Label>
-          <div className="mt-1 relative">
-            <Linkedin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              id="linkedinUrl"
-              value={data.linkedinUrl}
-              onChange={(e) => setData({ ...data, linkedinUrl: e.target.value })}
-              placeholder="https://linkedin.com/in/yourprofile"
-              className="pl-10"
-              disabled={loading}
-            />
-          </div>
-          {hasLinkedIn && (
-            <p className="text-sm text-green-600 mt-1">
-              ✓ LinkedIn profile provided
-            </p>
-          )}
-        </div>
       </div>
     </OnboardingStep>
   );

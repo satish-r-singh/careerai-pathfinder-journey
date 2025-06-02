@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -22,8 +21,7 @@ const Onboarding = () => {
     aiInterest: '',
     goals: [],
     timeline: '',
-    resumeFile: null,
-    linkedinUrl: ''
+    resumeFile: null
   });
   const [hasExistingResume, setHasExistingResume] = useState(false);
   
@@ -119,7 +117,6 @@ const Onboarding = () => {
           ai_interest: data.aiInterest,
           goals: data.goals,
           timeline: data.timeline,
-          linkedin_url: data.linkedinUrl,
           resume_url: resumeUrl,
           updated_at: new Date().toISOString()
         });

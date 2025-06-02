@@ -61,9 +61,9 @@ export const useOnboardingProgress = () => {
         background: data.background,
         aiInterest: data.aiInterest,
         goals: data.goals,
-        timeline: data.timeline,
-        linkedinUrl: data.linkedinUrl
+        timeline: data.timeline
         // Note: resumeFile is not saved as it's a File object
+        // Note: linkedinUrl removed as we only support PDF upload now
       };
 
       const { error } = await supabase
@@ -123,6 +123,5 @@ const getInitialData = (): OnboardingData => ({
   aiInterest: '',
   goals: [],
   timeline: '',
-  resumeFile: null,
-  linkedinUrl: ''
+  resumeFile: null
 });

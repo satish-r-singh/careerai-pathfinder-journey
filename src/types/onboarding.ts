@@ -7,5 +7,4 @@ export interface OnboardingData {
   goals: string[];
   timeline: string;
   resumeFile: File | null;
-  linkedinUrl: string;
 }
