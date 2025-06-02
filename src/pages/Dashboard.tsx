@@ -228,7 +228,7 @@ const Dashboard = () => {
     status: getPhaseStatus(1),
     progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
     estimatedTime: '1-2 weeks',
-    keyActivities: ['Complete Ikigai assessment', 'Research AI industry', 'Generate career roadmap']
+    keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Personalized Outreach']
   }, {
     id: 2,
     name: 'Exploration',
@@ -369,15 +369,42 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Your Career Journey section - moved up */}
+        {/* Your Career Journey section - enhanced visual design */}
         <div className="mb-12 animate-slide-up">
-          <h2 className="text-3xl font-bold gradient-text mb-8">Your Career Journey</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {phases.map((phase, index) => <div key={phase.id} className="animate-fade-in" style={{
-            animationDelay: `${index * 0.1}s`
-          }}>
-                <PhaseCard phase={phase} onClick={() => handlePhaseClick(phase)} />
-              </div>)}
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold gradient-text mb-4">Your Career Journey</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Navigate through our comprehensive 4-phase program designed to accelerate your AI career transition
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {phases.map((phase, index) => (
+              <div 
+                key={phase.id} 
+                className="animate-fade-in transform hover:scale-[1.02] transition-all duration-300" 
+                style={{
+                  animationDelay: `${index * 0.15}s`
+                }}
+              >
+                <div className="relative group">
+                  {/* Animated gradient border */}
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+                  
+                  {/* Enhanced PhaseCard with better styling */}
+                  <div className="relative">
+                    <PhaseCard 
+                      phase={phase} 
+                      onClick={() => handlePhaseClick(phase)} 
+                    />
+                  </div>
+                  
+                  {/* Phase number indicator */}
+                  <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                    {phase.id}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
