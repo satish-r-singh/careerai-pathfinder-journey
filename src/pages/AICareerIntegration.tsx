@@ -172,7 +172,7 @@ const AICareerIntegration = () => {
             Back to Introspection
           </Button>
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold gradient-text py-[4px]">AI Career Integration</h1>
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text py-[4px] my-[4px]">AI Career Integration</h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Generate your personalized AI career roadmap by integrating your Ikigai insights with industry research
             </p>
