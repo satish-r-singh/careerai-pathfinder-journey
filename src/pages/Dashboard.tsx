@@ -410,24 +410,7 @@ const Dashboard = () => {
             {/* Quick Stats - Update task count to be dynamic */}
             <Card className="premium-card animate-scale-in">
               
-              <CardContent className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Days Active</span>
-                  <span className="text-xl font-bold gradient-text">12</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Tasks Completed</span>
-                  <span className="text-xl font-bold gradient-text">{completedTasks.length}/32</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Current Phase</span>
-                  <span className="text-lg font-bold gradient-text">{getCurrentPhaseName()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Phase Progress</span>
-                  <span className="text-xl font-bold gradient-text">{Math.round(phaseProgress)}%</span>
-                </div>
-              </CardContent>
+              
             </Card>
 
             {/* Upcoming */}
