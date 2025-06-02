@@ -369,6 +369,18 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Your Career Journey section - moved up */}
+        <div className="mb-12 animate-slide-up">
+          <h2 className="text-3xl font-bold gradient-text mb-8">Your Career Journey</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {phases.map((phase, index) => <div key={phase.id} className="animate-fade-in" style={{
+            animationDelay: `${index * 0.1}s`
+          }}>
+                <PhaseCard phase={phase} onClick={() => handlePhaseClick(phase)} />
+              </div>)}
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -415,18 +427,6 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Phase Cards */}
-            <div className="animate-slide-up">
-              <h2 className="text-3xl font-bold gradient-text mb-8">Your Career Journey</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {phases.map((phase, index) => <div key={phase.id} className="animate-fade-in" style={{
-                animationDelay: `${index * 0.1}s`
-              }}>
-                    <PhaseCard phase={phase} onClick={() => handlePhaseClick(phase)} />
-                  </div>)}
-              </div>
-            </div>
           </div>
 
           {/* Sidebar */}
@@ -434,7 +434,22 @@ const Dashboard = () => {
             {/* Quick Stats - Update task count to be dynamic */}
             <Card className="premium-card animate-scale-in">
               
-              
+            <CardHeader>
+                <CardTitle className="flex items-center space-x-2 gradient-text">
+                  <TrendingUp className="w-5 h-5" />
+                  <span>Quick Stats</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600">Tasks Completed</p>
+                  <p className="font-medium text-gray-800">{completedTasks.length} / {todaysTasks.length}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600">Current Phase</p>
+                  <p className="font-medium text-gray-800">{getCurrentPhaseName()}</p>
+                </div>
+              </CardContent>
             </Card>
 
             {/* Upcoming */}
