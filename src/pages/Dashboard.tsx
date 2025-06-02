@@ -8,11 +8,11 @@ import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut } from 
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useTodaysTasks } from '@/hooks/useTodaysTasks';
 
 const Dashboard = () => {
   const [currentPhase, setCurrentPhase] = useState(1);
   const [phaseProgress, setPhaseProgress] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
   const [industryResearchCompleted, setIndustryResearchCompleted] = useState(false);
   const [careerRoadmapCompleted, setCareerRoadmapCompleted] = useState(false);
@@ -280,24 +280,15 @@ const Dashboard = () => {
     }
   ];
 
-  const todaysTasks = [
-    { id: 1, task: 'Complete Ikigai questionnaire', priority: 'high', estimated: '30 min' },
-    { id: 2, task: 'Research 3 target AI companies', priority: 'medium', estimated: '45 min' },
-    { id: 3, task: 'Read industry trend article', priority: 'low', estimated: '15 min' }
-  ];
-
-  const handleTaskToggle = (taskId: number) => {
-    setCompletedTasks(prev => {
-      const newCompleted = prev.includes(taskId) 
-        ? prev.filter(id => id !== taskId)
-        : [...prev, taskId];
-      
-      // Recalculate progress when tasks change
-      setTimeout(() => loadProgressData(), 100);
-      
-      return newCompleted;
-    });
-  };
+  const { tasks: todaysTasks, completedTasks, handleTaskToggle } = useTodaysTasks(
+    currentPhase,
+    ikigaiCompleted,
+    industryResearchCompleted,
+    careerRoadmapCompleted,
+    explorationProject,
+    explorationLearningPlan,
+    explorationPublicBuilding
+  );
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -305,6 +296,12 @@ const Dashboard = () => {
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleTaskClick = (task: any) => {
+    if (task.navigationPath) {
+      navigate(task.navigationPath);
     }
   };
 
@@ -391,7 +388,7 @@ const Dashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Today's Tasks */}
+            {/* Today's Tasks - Updated to be dynamic */}
             <Card className="premium-card animate-fade-in">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3 text-xl gradient-text">
@@ -399,30 +396,53 @@ const Dashboard = () => {
                   <span>Today's Focus</span>
                 </CardTitle>
                 <CardDescription className="text-base">
-                  Complete these tasks to progress in your current phase
+                  {currentPhase === 1 && "Complete these introspection tasks to build your career foundation"}
+                  {currentPhase === 2 && "Focus on exploration and skill building activities"}
+                  {currentPhase >= 3 && "Balance reflection activities with active job searching"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {todaysTasks.map((task) => (
-                    <div key={task.id} className="group flex items-center justify-between p-6 border border-white/20 rounded-xl hover:bg-white/30 transition-all duration-300 hover:shadow-xl backdrop-blur-sm">
+                    <div 
+                      key={task.id} 
+                      className={`group flex items-center justify-between p-6 border border-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm ${
+                        task.navigationPath ? 'hover:bg-white/30 hover:shadow-xl cursor-pointer' : 'hover:bg-white/20'
+                      }`}
+                      onClick={() => task.navigationPath && handleTaskClick(task)}
+                    >
                       <div className="flex items-center space-x-4">
                         <input 
                           type="checkbox" 
                           className="w-5 h-5 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200" 
                           checked={completedTasks.includes(task.id)}
-                          onChange={() => handleTaskToggle(task.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleTaskToggle(task.id);
+                          }}
                         />
                         <div>
-                          <p className={`font-medium text-lg transition-all duration-200 ${completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                          <p className={`font-medium text-lg transition-all duration-200 ${
+                            completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'
+                          }`}>
                             {task.task}
                           </p>
-                          <p className="text-sm text-gray-500 mt-1">Estimated: {task.estimated}</p>
+                          <div className="flex items-center space-x-3 mt-1">
+                            <p className="text-sm text-gray-500">Estimated: {task.estimated}</p>
+                            <p className="text-xs text-gray-400">Phase {task.phase}</p>
+                          </div>
                         </div>
                       </div>
-                      <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
-                        {task.priority}
-                      </Badge>
+                      <div className="flex items-center space-x-3">
+                        <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
+                          {task.priority}
+                        </Badge>
+                        {task.navigationPath && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium">
+                            Click to start →
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -447,7 +467,7 @@ const Dashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-8">
-            {/* Quick Stats */}
+            {/* Quick Stats - Update task count to be dynamic */}
             <Card className="premium-card animate-scale-in">
               <CardHeader>
                 <CardTitle className="gradient-text">Quick Stats</CardTitle>
@@ -459,7 +479,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Tasks Completed</span>
-                  <span className="text-xl font-bold gradient-text">{completedTasks.length + 8}/32</span>
+                  <span className="text-xl font-bold gradient-text">{completedTasks.length}/32</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Current Phase</span>
