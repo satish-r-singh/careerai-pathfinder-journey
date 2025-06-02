@@ -94,10 +94,16 @@ const Introspection = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen gradient-bg flex items-center justify-center relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        </div>
+        
+        <div className="text-center relative z-10">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg font-medium">Loading your introspection journey...</p>
         </div>
       </div>
     );
@@ -106,21 +112,27 @@ const Introspection = () => {
   console.log('Rendering Introspection page. ikigaiCompleted:', ikigaiCompleted, 'industryResearchCompleted:', industryResearchCompleted, 'careerRoadmapCompleted:', careerRoadmapCompleted);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 bg-blue-200/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-200/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    <div className="min-h-screen gradient-bg relative overflow-hidden">
+      {/* Enhanced Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-40 right-20 w-96 h-96 bg-blue-200/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-200/10 rounded-full blur-3xl animate-pulse delay-2000" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <IntrospectionHeader />
 
         <div className="space-y-8">
-          {/* Progress Bar */}
-          <Card className="premium-card">
-            <CardContent className="p-6">
+          {/* Enhanced Progress Bar Card */}
+          <Card className="premium-card animate-fade-in relative overflow-hidden">
+            {/* Background gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white via-purple-50/50 to-blue-50/50" />
+            
+            <CardContent className="p-8 relative z-10">
               <IntrospectionProgressBar 
                 ikigaiCompleted={ikigaiCompleted}
                 industryResearchCompleted={industryResearchCompleted}
@@ -130,17 +142,30 @@ const Introspection = () => {
           </Card>
 
           {!ikigaiCompleted ? (
-            <IkigaiDiscoveryIntro />
+            <div className="animate-slide-up">
+              <IkigaiDiscoveryIntro />
+            </div>
           ) : (
-            <div className="space-y-6">
-              <IkigaiCompletionBanner onRetakeAssessment={handleRetakeAssessment} />
-              <IkigaiAnswersDisplay ikigaiData={ikigaiData} />
-              <IkigaiInsights ikigaiData={ikigaiData} />
-              <IntrospectionJourneySteps 
-                industryResearchCompleted={industryResearchCompleted} 
-                careerRoadmapCompleted={careerRoadmapCompleted}
-                ikigaiData={ikigaiData}
-              />
+            <div className="space-y-8">
+              <div className="animate-fade-in">
+                <IkigaiCompletionBanner onRetakeAssessment={handleRetakeAssessment} />
+              </div>
+              
+              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <IkigaiAnswersDisplay ikigaiData={ikigaiData} />
+              </div>
+              
+              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <IkigaiInsights ikigaiData={ikigaiData} />
+              </div>
+              
+              <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                <IntrospectionJourneySteps 
+                  industryResearchCompleted={industryResearchCompleted} 
+                  careerRoadmapCompleted={careerRoadmapCompleted}
+                  ikigaiData={ikigaiData}
+                />
+              </div>
             </div>
           )}
         </div>
