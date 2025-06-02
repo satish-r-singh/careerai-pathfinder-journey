@@ -16,6 +16,12 @@ serve(async (req) => {
 
   try {
     const { ikigaiData } = await req.json();
+    console.log('Received ikigaiData:', ikigaiData);
+
+    if (!openAIApiKey) {
+      console.error('OpenAI API key is missing');
+      throw new Error('OpenAI API key is not configured');
+    }
 
     const prompt = `
     Analyze the following Ikigai discovery data and provide insights:
@@ -33,6 +39,7 @@ serve(async (req) => {
     Focus on AI career opportunities and how their Ikigai aligns with the AI industry.
     `;
 
+    console.log('Making OpenAI API call...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -44,7 +51,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert career counselor and AI industry analyst. Provide insightful, actionable career guidance based on Ikigai principles. Always respond with valid JSON.' 
+            content: 'You are an expert career counselor and AI industry analyst. Provide insightful, actionable career guidance based on Ikigai principles. Always respond with valid JSON only, no additional text.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -53,14 +60,29 @@ serve(async (req) => {
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
+    console.log('OpenAI response data:', data);
+    
     const content = data.choices[0].message.content;
+    console.log('OpenAI content:', content);
     
     // Parse the JSON response
     let insights;
     try {
       insights = JSON.parse(content);
+      console.log('Successfully parsed insights:', insights);
     } catch (parseError) {
+      console.error('JSON parsing failed:', parseError);
+      console.error('Content that failed to parse:', content);
+      
       // Fallback if JSON parsing fails
       insights = {
         summary: "Your Ikigai responses show a thoughtful approach to career planning with clear interests and goals.",
