@@ -1,7 +1,5 @@
 
 export interface OnboardingData {
-  fullName: string;
-  email: string;
   currentRole: string;
   experience: string;
   background: string;

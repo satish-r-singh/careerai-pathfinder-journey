@@ -15,8 +15,6 @@ const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<OnboardingData>({
-    fullName: '',
-    email: '',
     currentRole: '',
     experience: '',
     background: '',
@@ -53,8 +51,6 @@ const Onboarding = () => {
         .from('profiles')
         .upsert({
           id: user.id,
-          full_name: data.fullName,
-          email: data.email || user.email,
           user_role: data.currentRole,
           experience: data.experience,
           background: data.background,

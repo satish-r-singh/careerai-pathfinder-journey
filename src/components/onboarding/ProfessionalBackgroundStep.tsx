@@ -1,5 +1,4 @@
 
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import OnboardingStep from '@/components/OnboardingStep';
@@ -13,29 +12,19 @@ interface ProfessionalBackgroundStepProps {
 }
 
 const ProfessionalBackgroundStep = ({ data, setData, onNext, onPrevious }: ProfessionalBackgroundStepProps) => {
-  const isValid = Boolean(data.currentRole && data.experience);
+  const isValid = Boolean(data.experience);
 
   return (
     <OnboardingStep
       stepNumber={2}
       totalSteps={5}
       title="Your Professional Background"
-      description="Help us understand your current situation"
+      description="Help us understand your experience level"
       onNext={onNext}
       onPrevious={onPrevious}
       isValid={isValid}
     >
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="currentRole">Current Role/Status *</Label>
-          <Input
-            id="currentRole"
-            value={data.currentRole}
-            onChange={(e) => setData({ ...data, currentRole: e.target.value })}
-            placeholder="e.g., Software Engineer, Student, Marketing Manager"
-            className="mt-1"
-          />
-        </div>
         <div>
           <Label>Years of Professional Experience *</Label>
           <RadioGroup

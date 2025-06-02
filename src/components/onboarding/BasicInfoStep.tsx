@@ -11,36 +11,25 @@ interface BasicInfoStepProps {
 }
 
 const BasicInfoStep = ({ data, setData, onNext }: BasicInfoStepProps) => {
-  const isValid = Boolean(data.fullName && data.email);
+  const isValid = Boolean(data.currentRole);
 
   return (
     <OnboardingStep
       stepNumber={1}
       totalSteps={5}
       title="Let's Get Started"
-      description="Tell us a bit about yourself"
+      description="Tell us about your current professional situation"
       onNext={onNext}
       isValid={isValid}
     >
       <div className="space-y-4">
         <div>
-          <Label htmlFor="fullName">Full Name *</Label>
+          <Label htmlFor="currentRole">Current Role/Status *</Label>
           <Input
-            id="fullName"
-            value={data.fullName}
-            onChange={(e) => setData({ ...data, fullName: e.target.value })}
-            placeholder="Enter your full name"
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label htmlFor="email">Email Address *</Label>
-          <Input
-            id="email"
-            type="email"
-            value={data.email}
-            onChange={(e) => setData({ ...data, email: e.target.value })}
-            placeholder="Enter your email address"
+            id="currentRole"
+            value={data.currentRole}
+            onChange={(e) => setData({ ...data, currentRole: e.target.value })}
+            placeholder="e.g., Software Engineer, Student, Marketing Manager"
             className="mt-1"
           />
         </div>
