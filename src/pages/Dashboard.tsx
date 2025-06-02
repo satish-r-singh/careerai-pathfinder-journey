@@ -335,7 +335,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center">
               <img 
-                src="/lovable-uploads/1654145e-5b81-4c82-b06b-60462d465f19.png" 
+                src="/lovable-uploads/a82513ec-4139-4f2f-814a-7a8db8a59228.png" 
                 alt="CareerAI" 
                 className="h-10 w-auto"
               />
