@@ -182,7 +182,7 @@ const AICareerIntegration = () => {
         {!roadmap ? <Card className="premium-card animate-fade-in">
             <div className="absolute inset-0 bg-gradient-to-br from-white via-purple-50/50 to-blue-50/50 rounded-lg" />
             <CardHeader className="relative z-10">
-              <CardTitle className="flex items-center gap-2 gradient-text">
+              <CardTitle className="flex items-center gap-2 gradient-text text-left py-[4px]">
                 <Target className="w-6 h-6" />
                 Generate Your Career Roadmap
               </CardTitle>
