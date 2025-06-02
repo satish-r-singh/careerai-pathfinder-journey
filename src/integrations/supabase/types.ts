@@ -150,6 +150,39 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_progress: {
+        Row: {
+          created_at: string
+          current_step: number
+          id: string
+          is_completed: boolean
+          onboarding_data: Json
+          resume_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_step?: number
+          id?: string
+          is_completed?: boolean
+          onboarding_data?: Json
+          resume_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_step?: number
+          id?: string
+          is_completed?: boolean
+          onboarding_data?: Json
+          resume_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       outreach_templates: {
         Row: {
           created_at: string
@@ -194,6 +227,7 @@ export type Database = {
           goals: string[] | null
           id: string
           linkedin_url: string | null
+          resume_url: string | null
           timeline: string | null
           updated_at: string
           user_role: string | null
@@ -208,6 +242,7 @@ export type Database = {
           goals?: string[] | null
           id: string
           linkedin_url?: string | null
+          resume_url?: string | null
           timeline?: string | null
           updated_at?: string
           user_role?: string | null
@@ -222,6 +257,7 @@ export type Database = {
           goals?: string[] | null
           id?: string
           linkedin_url?: string | null
+          resume_url?: string | null
           timeline?: string | null
           updated_at?: string
           user_role?: string | null

@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [profileLoading, setProfileLoading] = useState(true);
-  const [hasProfile, setHasProfile] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -22,36 +22,56 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const checkProfile = async () => {
+    const checkOnboardingStatus = async () => {
       if (user && !loading) {
         try {
-          const { data, error } = await supabase
+          // Check onboarding progress table first
+          const { data: onboardingProgress, error: onboardingError } = await supabase
+            .from('onboarding_progress')
+            .select('is_completed')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (onboardingError && onboardingError.code !== 'PGRST116') {
+            console.error('Error fetching onboarding progress:', onboardingError);
+          }
+
+          // If onboarding is explicitly completed, allow access
+          if (onboardingProgress?.is_completed) {
+            setHasCompletedOnboarding(true);
+            setProfileLoading(false);
+            return;
+          }
+
+          // Fallback: Check if profile has basic required fields
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('full_name, user_role, experience')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching profile:', error);
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('Error fetching profile:', profileError);
           }
 
           // Check if user has completed basic onboarding info
-          const profileComplete = data && data.full_name && data.user_role && data.experience;
-          setHasProfile(!!profileComplete);
-
-          // Redirect to onboarding if profile is incomplete and not already on onboarding page
-          if (!profileComplete && location.pathname !== '/onboarding') {
+          const profileComplete = profile && profile.full_name && profile.user_role && profile.experience;
+          
+          if (profileComplete) {
+            setHasCompletedOnboarding(true);
+          } else if (location.pathname !== '/onboarding') {
+            // Redirect to onboarding if profile is incomplete and not already on onboarding page
             navigate('/onboarding');
           }
         } catch (error) {
-          console.error('Error checking profile:', error);
+          console.error('Error checking onboarding status:', error);
         } finally {
           setProfileLoading(false);
         }
       }
     };
 
-    checkProfile();
+    checkOnboardingStatus();
   }, [user, loading, navigate, location.pathname]);
 
   if (loading || profileLoading) {
@@ -76,8 +96,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  // Require complete profile for all other protected routes
-  if (!hasProfile) {
+  // Require completed onboarding for all other protected routes
+  if (!hasCompletedOnboarding) {
     return null; // Will be redirected to onboarding
   }
 
