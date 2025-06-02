@@ -1,6 +1,7 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { BookOpen, CheckCircle, Clock, TrendingUp, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ExplorationProgressProps {
   selectedProject: string | null;
@@ -9,113 +10,120 @@ interface ExplorationProgressProps {
   progressPercentage: number;
 }
 
+const steps = [
+  { name: 'Choose Project', key: 'project', icon: BookOpen },
+  { name: 'Build Learning Plan', key: 'learning', icon: BookOpen },
+  { name: 'Start Building in Public', key: 'building', icon: Users },
+];
+
 const ExplorationProgress = ({ 
   selectedProject, 
   learningPlanCreated, 
   publicBuildingStarted, 
   progressPercentage 
 }: ExplorationProgressProps) => {
+  const getStepStatus = (stepKey: string) => {
+    switch (stepKey) {
+      case 'project':
+        return selectedProject ? 'completed' : 'current';
+      case 'learning':
+        return learningPlanCreated ? 'completed' : selectedProject ? 'current' : 'locked';
+      case 'building':
+        return publicBuildingStarted ? 'completed' : learningPlanCreated ? 'current' : 'locked';
+      default:
+        return 'locked';
+    }
+  };
+
+  const completedSteps = [selectedProject, learningPlanCreated, publicBuildingStarted].filter(Boolean).length;
+
   return (
-    <div className="relative">
-      {/* Background overlay for premium effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50 rounded-xl" />
+    <div className="w-full">
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-2xl font-bold gradient-text">Exploration Progress</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-gray-700">{completedSteps}/{steps.length}</span>
+            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">completed</span>
+          </div>
+        </div>
+        <Progress value={progressPercentage} className="h-4 bg-gray-100" />
+      </div>
       
-      <div className="relative z-10">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-2xl gradient-text">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            <span>Exploration Progress</span>
-          </CardTitle>
-          <CardDescription className="text-lg">
-            Complete these three key activities to finish the Exploration phase
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-gray-600">Overall Progress</span>
-            <span className="font-bold text-xl gradient-text">{progressPercentage}%</span>
-          </div>
-          <div className="w-full bg-gradient-to-r from-gray-200 to-gray-300 rounded-full h-4 mb-6 shadow-inner">
-            <div 
-              className="bg-gradient-to-r from-primary via-accent to-primary h-4 rounded-full transition-all duration-700 ease-out shadow-lg"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {steps.map((step, index) => {
+          const status = getStepStatus(step.key);
+          const IconComponent = step.icon;
           
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className={`group p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-xl ${
-              selectedProject 
-                ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg transform hover:scale-[1.02]' 
-                : 'border-gray-200 hover:border-primary/30 hover:bg-white/50'
-            }`}>
-              <div className="flex items-center space-x-3 mb-3">
-                {selectedProject ? (
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                  </div>
+          return (
+            <div key={step.key} className={cn(
+              "relative p-6 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg",
+              status === 'completed' 
+                ? "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-md" 
+                : status === 'current'
+                ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 shadow-md"
+                : "bg-gray-50 border-gray-200"
+            )}>
+              {/* Step number/icon */}
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 mb-4",
+                status === 'completed' 
+                  ? "bg-green-500 text-white shadow-lg" 
+                  : status === 'current'
+                  ? "bg-purple-500 text-white shadow-lg animate-pulse"
+                  : "bg-gray-300 text-gray-500"
+              )}>
+                {status === 'completed' ? (
+                  <CheckCircle className="w-6 h-6" />
+                ) : status === 'current' ? (
+                  <Clock className="w-6 h-6" />
                 ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Clock className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
-                  </div>
+                  <IconComponent className="w-5 h-5" />
                 )}
-                <span className="font-semibold text-lg">Choose Project</span>
               </div>
-              <p className="text-sm text-gray-600">Select your focus project from personalized recommendations</p>
-            </div>
-            
-            <div className={`group p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-xl ${
-              learningPlanCreated 
-                ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg transform hover:scale-[1.02]' 
-                : selectedProject 
-                  ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 hover:border-primary/50' 
-                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'
-            }`}>
-              <div className="flex items-center space-x-3 mb-3">
-                {learningPlanCreated ? (
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                  </div>
-                ) : selectedProject ? (
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-gray-400" />
-                  </div>
-                )}
-                <span className="font-semibold text-lg">Build Learning Plan</span>
+              
+              {/* Step content */}
+              <div>
+                <h4 className={cn(
+                  "font-bold text-lg mb-2",
+                  status === 'completed' ? "text-green-800" 
+                  : status === 'current' ? "text-purple-800" 
+                  : "text-gray-500"
+                )}>
+                  {step.name}
+                </h4>
+                
+                <div className={cn(
+                  "text-sm font-medium px-3 py-1 rounded-full inline-block",
+                  status === 'completed' ? "bg-green-100 text-green-700" 
+                  : status === 'current' ? "bg-purple-100 text-purple-700" 
+                  : "bg-gray-100 text-gray-500"
+                )}>
+                  {status === 'completed' ? 'Completed' 
+                   : status === 'current' ? 'In Progress' 
+                   : 'Locked'}
+                </div>
+
+                {/* Step descriptions */}
+                <p className="text-sm text-gray-600 mt-3">
+                  {step.key === 'project' && "Select your focus project from personalized recommendations"}
+                  {step.key === 'learning' && "Create your AI-powered skill development roadmap"}
+                  {step.key === 'building' && "Begin documenting and sharing your learning journey"}
+                </p>
               </div>
-              <p className="text-sm text-gray-600">Create your AI-powered skill development roadmap</p>
+              
+              {/* Connecting line for desktop */}
+              {index < steps.length - 1 && (
+                <div className="hidden md:block absolute top-1/2 -right-6 w-12 h-0.5 bg-gray-200 transform -translate-y-1/2">
+                  <div className={cn(
+                    "h-full transition-all duration-300",
+                    status === 'completed' ? "bg-green-300 w-full" : "bg-gray-200 w-0"
+                  )} />
+                </div>
+              )}
             </div>
-            
-            <div className={`group p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-xl ${
-              publicBuildingStarted 
-                ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg transform hover:scale-[1.02]' 
-                : learningPlanCreated 
-                  ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 hover:border-primary/50' 
-                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'
-            }`}>
-              <div className="flex items-center space-x-3 mb-3">
-                {publicBuildingStarted ? (
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                  </div>
-                ) : learningPlanCreated ? (
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-gray-400" />
-                  </div>
-                )}
-                <span className="font-semibold text-lg">Start Building in Public</span>
-              </div>
-              <p className="text-sm text-gray-600">Begin documenting and sharing your learning journey</p>
-            </div>
-          </div>
-        </CardContent>
+          );
+        })}
       </div>
     </div>
   );
