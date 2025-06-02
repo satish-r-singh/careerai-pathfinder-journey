@@ -434,14 +434,14 @@ const Dashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
-                          {task.priority}
-                        </Badge>
                         {task.navigationPath && (
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium whitespace-nowrap">
                             Click to start →
                           </div>
                         )}
+                        <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
+                          {task.priority}
+                        </Badge>
                       </div>
                     </div>
                   ))}
