@@ -58,8 +58,12 @@ const CareerJourney = ({
   };
 
   const getPhaseStatus = (phaseId: number): 'completed' | 'current' | 'locked' => {
-    if (phaseId < currentPhase) return 'completed';
-    if (phaseId === currentPhase) return 'current';
+    // For phases 1 and 2, use traditional progression logic
+    if (phaseId <= 2) {
+      if (phaseId < currentPhase) return 'completed';
+      if (phaseId === currentPhase) return 'current';
+      return 'locked';
+    }
 
     // Check if Exploration is complete
     const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
