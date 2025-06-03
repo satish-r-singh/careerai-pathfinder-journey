@@ -93,6 +93,51 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_requests: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          description: string | null
+          github_link: string | null
+          id: string
+          project_id: string | null
+          project_name: string | null
+          public_link: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          github_link?: string | null
+          id?: string
+          project_id?: string | null
+          project_name?: string | null
+          public_link?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          github_link?: string | null
+          id?: string
+          project_id?: string | null
+          project_name?: string | null
+          public_link?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ikigai_progress: {
         Row: {
           ai_insights: Json | null
