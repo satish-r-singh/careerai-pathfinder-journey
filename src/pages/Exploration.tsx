@@ -120,7 +120,10 @@ const Exploration = () => {
             <div className="space-y-8 animate-fade-in">
               {/* Selected Project Summary */}
               <div className="animate-scale-in">
-                <SelectedProjectSummary project={getSelectedProjectData()} />
+                <SelectedProjectSummary 
+                  project={getSelectedProjectData()} 
+                  onBackToProjects={backToProjectSelection}
+                />
               </div>
 
               {/* Learning Plan */}
