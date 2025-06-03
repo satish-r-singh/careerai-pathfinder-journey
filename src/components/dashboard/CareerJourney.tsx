@@ -68,9 +68,13 @@ const CareerJourney = ({
     // Check if Exploration is complete
     const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
     
-    // Both Reflection (3) and Action (4) phases should be available once Exploration is complete
-    if (explorationComplete && (phaseId === 3 || phaseId === 4)) {
-      return 'current';
+    // For phases 3 and 4, they become available once Exploration is complete
+    if (phaseId === 3 || phaseId === 4) {
+      if (explorationComplete) {
+        return 'current'; // Both phases are ongoing/available
+      } else {
+        return 'locked';
+      }
     }
     
     return 'locked';
