@@ -23,9 +23,12 @@ const Exploration = () => {
     showLearningPlan,
     generatedLearningPlan,
     buildingInPublicPlan,
+    projectProgress,
     handleProjectSelect,
+    backToProjectSelection,
     resetExploration,
     getProgressPercentage,
+    getProjectProgress,
     setGeneratedLearningPlan,
     setLearningPlanCreated,
     setShowLearningPlan,
@@ -35,7 +38,7 @@ const Exploration = () => {
 
   const handleBackNavigation = () => {
     if (selectedProject) {
-      resetExploration();
+      backToProjectSelection();
     } else {
       navigate('/dashboard');
     }
@@ -80,6 +83,17 @@ const Exploration = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-white via-purple-50/50 to-blue-50/50" />
             
             <CardContent className="p-8 relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <Button 
+                  variant="outline" 
+                  onClick={handleBackNavigation}
+                  className="flex items-center space-x-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>{selectedProject ? 'Back to Project Selection' : 'Back to Dashboard'}</span>
+                </Button>
+              </div>
+              
               <ExplorationProgress
                 selectedProject={selectedProject}
                 learningPlanCreated={learningPlanCreated}
@@ -92,7 +106,11 @@ const Exploration = () => {
           {/* Project Selection */}
           {!selectedProject && (
             <div className="animate-slide-up">
-              <ProjectSelection onProjectSelect={handleProjectSelect} />
+              <ProjectSelection 
+                onProjectSelect={handleProjectSelect}
+                projectProgress={projectProgress}
+                getProjectProgress={getProjectProgress}
+              />
             </div>
           )}
 

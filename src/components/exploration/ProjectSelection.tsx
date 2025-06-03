@@ -3,15 +3,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Clock, RefreshCw } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Clock, RefreshCw, CheckCircle } from 'lucide-react';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
 import { getIconComponent } from '@/utils/iconUtils';
 
 interface ProjectSelectionProps {
   onProjectSelect: (projectId: string) => void;
+  projectProgress: Record<string, { learningPlan: boolean; buildingPlan: boolean }>;
+  getProjectProgress: (projectId: string) => number;
 }
 
-const ProjectSelection = ({ onProjectSelect }: ProjectSelectionProps) => {
+const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress }: ProjectSelectionProps) => {
   const { 
     projects, 
     loading: projectsLoading, 
@@ -31,10 +34,25 @@ const ProjectSelection = ({ onProjectSelect }: ProjectSelectionProps) => {
     }
   };
 
+  const getProgressStatus = (projectId: string) => {
+    const progress = projectProgress[projectId];
+    if (!progress) return { text: 'Not Started', color: 'text-gray-500' };
+    
+    if (progress.learningPlan && progress.buildingPlan) {
+      return { text: 'Complete', color: 'text-green-600' };
+    } else if (progress.learningPlan) {
+      return { text: 'Learning Plan Created', color: 'text-blue-600' };
+    } else {
+      return { text: 'Not Started', color: 'text-gray-500' };
+    }
+  };
+
   const renderProjectCard = (project: any) => {
     const IconComponent = getIconComponent(project.iconName || 'Code');
     const isSelected = selectedProjects.has(project.id);
     const isRegenerating = regeneratingProjects.has(project.id);
+    const progressPercentage = getProjectProgress(project.id);
+    const progressStatus = getProgressStatus(project.id);
 
     if (isRegenerating) {
       return (
@@ -52,12 +70,19 @@ const ProjectSelection = ({ onProjectSelect }: ProjectSelectionProps) => {
     return (
       <div
         key={project.id}
-        className={`p-6 border rounded-xl transition-all ${
+        className={`p-6 border rounded-xl transition-all relative ${
           isSelected 
             ? 'border-blue-300 bg-blue-50' 
             : 'hover:shadow-lg hover:border-primary/30'
         }`}
       >
+        {/* Progress indicator */}
+        {progressPercentage > 0 && (
+          <div className="absolute top-4 right-4">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+          </div>
+        )}
+
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -89,6 +114,21 @@ const ProjectSelection = ({ onProjectSelect }: ProjectSelectionProps) => {
                 <strong>Why this fits you:</strong> {project.reasoning}
               </div>
             )}
+            
+            {/* Progress section */}
+            <div className="mb-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Exploration Progress</span>
+                <span className={`text-sm ${progressStatus.color}`}>{progressStatus.text}</span>
+              </div>
+              <Progress value={progressPercentage} className="h-2" />
+              <div className="text-xs text-gray-500">
+                {progressPercentage === 0 && "Click to start exploring this project"}
+                {progressPercentage > 0 && progressPercentage < 100 && "Continue where you left off"}
+                {progressPercentage === 100 && "Project fully explored"}
+              </div>
+            </div>
+            
             <div className="space-y-2">
               <div className="flex items-center text-sm text-gray-500">
                 <Clock className="w-4 h-4 mr-2" />
@@ -103,7 +143,7 @@ const ProjectSelection = ({ onProjectSelect }: ProjectSelectionProps) => {
               </div>
             </div>
             <Button className="w-full mt-4">
-              Select This Project
+              {progressPercentage > 0 ? 'Continue Exploring' : 'Select This Project'}
             </Button>
           </div>
         </div>
@@ -119,6 +159,7 @@ const ProjectSelection = ({ onProjectSelect }: ProjectSelectionProps) => {
             <CardTitle>Your Personalized AI Projects</CardTitle>
             <CardDescription>
               These projects are tailored to your Ikigai profile, skills, and career goals from your introspection phase.
+              Progress bars show which projects you've already started exploring.
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">

@@ -12,6 +12,7 @@ export const useExplorationProgress = () => {
   const [showLearningPlan, setShowLearningPlan] = useState(false);
   const [generatedLearningPlan, setGeneratedLearningPlan] = useState<LearningPlan | null>(null);
   const [buildingInPublicPlan, setBuildingInPublicPlan] = useState<any>(null);
+  const [projectProgress, setProjectProgress] = useState<Record<string, { learningPlan: boolean; buildingPlan: boolean }>>({});
 
   useEffect(() => {
     checkExplorationProgress();
@@ -26,6 +27,9 @@ export const useExplorationProgress = () => {
       
       if (savedProject) setSelectedProject(savedProject);
       if (savedPublicBuilding) setPublicBuildingStarted(true);
+      
+      // Load progress for all projects
+      await loadAllProjectsProgress();
       
       if (savedProject) {
         const { data: learningPlan, error } = await supabase
@@ -65,6 +69,48 @@ export const useExplorationProgress = () => {
       }
     } catch (error) {
       console.error('Error loading exploration progress:', error);
+    }
+  };
+
+  const loadAllProjectsProgress = async () => {
+    if (!user) return;
+
+    try {
+      // Load all learning plans for this user
+      const { data: learningPlans, error: learningError } = await supabase
+        .from('learning_plans')
+        .select('project_id')
+        .eq('user_id', user.id);
+
+      // Load all building plans for this user
+      const { data: buildingPlans, error: buildingError } = await supabase
+        .from('building_in_public_plans')
+        .select('project_id')
+        .eq('user_id', user.id);
+
+      if (!learningError && !buildingError) {
+        const progress: Record<string, { learningPlan: boolean; buildingPlan: boolean }> = {};
+        
+        // Mark projects with learning plans
+        learningPlans?.forEach(plan => {
+          if (!progress[plan.project_id]) {
+            progress[plan.project_id] = { learningPlan: false, buildingPlan: false };
+          }
+          progress[plan.project_id].learningPlan = true;
+        });
+
+        // Mark projects with building plans
+        buildingPlans?.forEach(plan => {
+          if (!progress[plan.project_id]) {
+            progress[plan.project_id] = { learningPlan: false, buildingPlan: false };
+          }
+          progress[plan.project_id].buildingPlan = true;
+        });
+
+        setProjectProgress(progress);
+      }
+    } catch (error) {
+      console.error('Error loading all projects progress:', error);
     }
   };
 
@@ -124,6 +170,17 @@ export const useExplorationProgress = () => {
     checkLearningPlanForProject(projectId);
   };
 
+  const backToProjectSelection = () => {
+    setSelectedProject(null);
+    localStorage.removeItem(`exploration_project_${user.id}`);
+    setLearningPlanCreated(false);
+    setPublicBuildingStarted(false);
+    setShowLearningPlan(false);
+    setGeneratedLearningPlan(null);
+    setBuildingInPublicPlan(null);
+    localStorage.removeItem(`public_building_${user.id}`);
+  };
+
   const resetExploration = () => {
     setSelectedProject(null);
     localStorage.removeItem(`exploration_project_${user.id}`);
@@ -143,6 +200,16 @@ export const useExplorationProgress = () => {
     return completed;
   };
 
+  const getProjectProgress = (projectId: string) => {
+    const progress = projectProgress[projectId];
+    if (!progress) return 0;
+    
+    let completed = 0;
+    if (progress.learningPlan) completed += 50;
+    if (progress.buildingPlan) completed += 50;
+    return completed;
+  };
+
   return {
     selectedProject,
     learningPlanCreated,
@@ -150,9 +217,12 @@ export const useExplorationProgress = () => {
     showLearningPlan,
     generatedLearningPlan,
     buildingInPublicPlan,
+    projectProgress,
     handleProjectSelect,
+    backToProjectSelection,
     resetExploration,
     getProgressPercentage,
+    getProjectProgress,
     setGeneratedLearningPlan,
     setLearningPlanCreated,
     setShowLearningPlan,
