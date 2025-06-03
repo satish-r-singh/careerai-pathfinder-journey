@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -331,7 +330,6 @@ const TargetFirmAlerts = () => {
                             <Switch
                               checked={firm.alertsEnabled}
                               onCheckedChange={() => toggleAlerts(firm.id)}
-                              size="sm"
                             />
                             <span className="text-xs text-gray-500">Alerts</span>
                           </div>
