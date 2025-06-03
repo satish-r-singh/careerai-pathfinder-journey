@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -323,12 +322,18 @@ const ProjectDashboard = () => {
                   </div>
                   <div>
                     <Label htmlFor="project">Project</Label>
-                    <Input
-                      id="project"
-                      value={newTask.project}
-                      onChange={(e) => setNewTask({...newTask, project: e.target.value})}
-                      placeholder="Enter project name"
-                    />
+                    <Select value={newTask.project} onValueChange={(value) => setNewTask({...newTask, project: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.name}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" onClick={() => setIsAddingTask(false)}>
