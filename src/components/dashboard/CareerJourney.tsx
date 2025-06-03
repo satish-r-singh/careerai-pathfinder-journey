@@ -68,42 +68,74 @@ const CareerJourney = ({
     return 'locked';
   };
 
+  const getPhaseProgress = (phaseId: number) => {
+    // For phases 1 and 2, use traditional progress
+    if (phaseId <= 2) {
+      return currentPhase > phaseId ? 100 : currentPhase === phaseId ? phaseProgress : 0;
+    }
+    
+    // For phases 3 and 4, return null to indicate activity-based tracking
+    return null;
+  };
+
+  const getActivityIndicators = (phaseId: number) => {
+    if (phaseId === 3) {
+      return {
+        feedbackCollected: 2,
+        mentorsConnected: 1,
+        skillsValidated: 3
+      };
+    }
+    if (phaseId === 4) {
+      return {
+        applicationsSubmitted: 8,
+        interviewsScheduled: 2,
+        networkingActivities: 5
+      };
+    }
+    return null;
+  };
+
   const phases = [
     {
       id: 1,
       name: 'Introspection',
       description: 'Self-discovery and career alignment',
       status: getPhaseStatus(1),
-      progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
+      progress: getPhaseProgress(1),
       estimatedTime: '1-2 weeks',
-      keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Career Roadmap and Personalized Outreach']
+      keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Career Roadmap and Personalized Outreach'],
+      activityIndicators: null
     },
     {
       id: 2,
       name: 'Exploration',
       description: 'Project identification and knowledge building',
       status: getPhaseStatus(2),
-      progress: currentPhase > 2 ? 100 : currentPhase === 2 ? phaseProgress : 0,
+      progress: getPhaseProgress(2),
       estimatedTime: '2-3 weeks',
-      keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public']
+      keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public'],
+      activityIndicators: null
     },
     {
       id: 3,
       name: 'Reflection',
       description: 'Skill validation through feedback',
       status: getPhaseStatus(3),
-      progress: 0,
-      estimatedTime: '3-4 weeks',
-      keyActivities: ['Get peer feedback', 'Connect with mentors', 'Validate skills']
+      progress: getPhaseProgress(3),
+      estimatedTime: 'Ongoing',
+      keyActivities: ['Get peer feedback', 'Connect with mentors', 'Validate skills'],
+      activityIndicators: getActivityIndicators(3)
     },
     {
       id: 4,
       name: 'Action',
       description: 'Active job hunting and applications',
       status: getPhaseStatus(4),
-      progress: 0,
+      progress: getPhaseProgress(4),
       estimatedTime: 'Ongoing',
-      keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
+      keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications'],
+      activityIndicators: getActivityIndicators(4)
     }
   ];
 

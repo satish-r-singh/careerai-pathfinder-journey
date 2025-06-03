@@ -2,8 +2,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, Lock, Sparkles, ArrowRight } from 'lucide-react';
+import { CheckCircle, Clock, Lock, Sparkles, ArrowRight, MessageSquare, Users, Award, Briefcase, Calendar, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface ActivityIndicators {
+  feedbackCollected?: number;
+  mentorsConnected?: number;
+  skillsValidated?: number;
+  applicationsSubmitted?: number;
+  interviewsScheduled?: number;
+  networkingActivities?: number;
+}
 
 interface PhaseCardProps {
   phase: {
@@ -11,9 +20,10 @@ interface PhaseCardProps {
     name: string;
     description: string;
     status: 'completed' | 'current' | 'locked';
-    progress: number;
+    progress: number | null;
     estimatedTime: string;
     keyActivities: string[];
+    activityIndicators?: ActivityIndicators | null;
   };
   onClick?: () => void;
 }
@@ -62,6 +72,114 @@ const PhaseCard = ({ phase, onClick }: PhaseCardProps) => {
     }
   };
 
+  const renderActivityIndicators = () => {
+    if (!phase.activityIndicators) return null;
+
+    const indicators = phase.activityIndicators;
+    
+    if (phase.id === 3) {
+      return (
+        <div className="space-y-3">
+          <div className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+            <div className="w-2 h-2 bg-primary rounded-full"></div>
+            <span>Recent Activity:</span>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <MessageSquare className="w-4 h-4 text-blue-600" />
+                <span className="text-sm text-blue-800">Feedback Collected</span>
+              </div>
+              <span className="text-sm font-bold text-blue-900">{indicators.feedbackCollected}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-green-800">Mentors Connected</span>
+              </div>
+              <span className="text-sm font-bold text-green-900">{indicators.mentorsConnected}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Award className="w-4 h-4 text-purple-600" />
+                <span className="text-sm text-purple-800">Skills Validated</span>
+              </div>
+              <span className="text-sm font-bold text-purple-900">{indicators.skillsValidated}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (phase.id === 4) {
+      return (
+        <div className="space-y-3">
+          <div className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
+            <div className="w-2 h-2 bg-primary rounded-full"></div>
+            <span>Recent Activity:</span>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Briefcase className="w-4 h-4 text-blue-600" />
+                <span className="text-sm text-blue-800">Applications</span>
+              </div>
+              <span className="text-sm font-bold text-blue-900">{indicators.applicationsSubmitted}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-green-800">Interviews</span>
+              </div>
+              <span className="text-sm font-bold text-green-900">{indicators.interviewsScheduled}</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <Network className="w-4 h-4 text-purple-600" />
+                <span className="text-sm text-purple-800">Networking</span>
+              </div>
+              <span className="text-sm font-bold text-purple-900">{indicators.networkingActivities}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const renderProgressSection = () => {
+    // Show progress bar for phases 1 and 2
+    if (phase.progress !== null && phase.status !== 'locked') {
+      return (
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600 font-medium">Progress</span>
+            <span className="font-bold text-gray-800">{phase.progress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div 
+              className={cn(
+                "h-3 rounded-full transition-all duration-1000 relative overflow-hidden",
+                phase.status === 'completed' 
+                  ? "bg-gradient-to-r from-green-400 to-green-600" 
+                  : "bg-gradient-to-r from-primary to-accent"
+              )}
+              style={{ width: `${phase.progress}%` }}
+            >
+              {phase.progress > 0 && (
+                <div className="absolute inset-0 bg-white/20 animate-shimmer"></div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show activity indicators for phases 3 and 4
+    return renderActivityIndicators();
+  };
+
   return (
     <Card 
       className={cn(
@@ -89,33 +207,11 @@ const PhaseCard = ({ phase, onClick }: PhaseCardProps) => {
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {phase.status !== 'locked' && (
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600 font-medium">Progress</span>
-              <span className="font-bold text-gray-800">{phase.progress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div 
-                className={cn(
-                  "h-3 rounded-full transition-all duration-1000 relative overflow-hidden",
-                  phase.status === 'completed' 
-                    ? "bg-gradient-to-r from-green-400 to-green-600" 
-                    : "bg-gradient-to-r from-primary to-accent"
-                )}
-                style={{ width: `${phase.progress}%` }}
-              >
-                {phase.progress > 0 && (
-                  <div className="absolute inset-0 bg-white/20 animate-shimmer"></div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {phase.status !== 'locked' && renderProgressSection()}
         
         <div className="flex items-center space-x-2 text-sm text-gray-600 bg-gray-50/50 rounded-lg p-3">
           <Clock className="w-4 h-4 text-primary" />
-          <span className="font-medium">Estimated time:</span>
+          <span className="font-medium">Duration:</span>
           <span className="font-semibold text-gray-800">{phase.estimatedTime}</span>
         </div>
         
