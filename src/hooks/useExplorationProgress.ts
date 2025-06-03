@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LearningPlan } from '@/utils/learningPlanGeneration';
@@ -46,32 +45,18 @@ export const useExplorationProgress = () => {
       const dbState = await loadExplorationState(user.id);
       console.log('Database state loaded:', dbState);
       
-      // Fallback to localStorage if no database state
-      const savedProject = dbState?.selectedProject || getSelectedProject(user.id);
+      // Only use database state for flags, don't auto-select a project
       const savedLearningPlan = dbState?.learningPlanCreated || false;
-      const savedPublicBuilding = dbState?.publicBuildingStarted || getPublicBuilding(user.id);
+      const savedPublicBuilding = dbState?.publicBuildingStarted || false;
       
-      console.log('Final state values:', { savedProject, savedLearningPlan, savedPublicBuilding });
+      console.log('Final state values:', { savedLearningPlan, savedPublicBuilding });
       
-      if (savedProject) setSelectedProject(savedProject);
       setLearningPlanCreated(savedLearningPlan);
-      if (savedPublicBuilding) setPublicBuildingStarted(true);
+      setPublicBuildingStarted(savedPublicBuilding);
       
-      if (savedProject) {
-        const learningPlan = await loadLearningPlan(user.id, savedProject);
-        
-        if (learningPlan) {
-          setGeneratedLearningPlan(learningPlan.learning_plan_data as unknown as LearningPlan);
-          setLearningPlanCreated(true);
-          setShowLearningPlan(true);
-        }
-
-        const buildingPlan = await loadBuildingPlan(user.id, savedProject);
-        if (buildingPlan) {
-          setBuildingInPublicPlan(buildingPlan);
-          setPublicBuildingStarted(true);
-        }
-      }
+      // Don't automatically select a project - let user choose from the project selection screen
+      setSelectedProject(null);
+      
     } catch (error) {
       console.error('Error loading exploration progress:', error);
     }
