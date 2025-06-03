@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LearningPlan } from '@/utils/learningPlanGeneration';
@@ -36,18 +37,25 @@ export const useExplorationProgress = () => {
     if (!user) return;
     
     try {
+      console.log('Checking exploration progress for user:', user.id);
+      
+      // Load progress for all projects first
+      await loadAllProjectsProgress();
+      
       // Load state from database first
       const dbState = await loadExplorationState(user.id);
+      console.log('Database state loaded:', dbState);
       
       // Fallback to localStorage if no database state
       const savedProject = dbState?.selectedProject || getSelectedProject(user.id);
+      const savedLearningPlan = dbState?.learningPlanCreated || false;
       const savedPublicBuilding = dbState?.publicBuildingStarted || getPublicBuilding(user.id);
       
-      if (savedProject) setSelectedProject(savedProject);
-      if (savedPublicBuilding) setPublicBuildingStarted(true);
+      console.log('Final state values:', { savedProject, savedLearningPlan, savedPublicBuilding });
       
-      // Load progress for all projects
-      await loadAllProjectsProgress();
+      if (savedProject) setSelectedProject(savedProject);
+      setLearningPlanCreated(savedLearningPlan);
+      if (savedPublicBuilding) setPublicBuildingStarted(true);
       
       if (savedProject) {
         const learningPlan = await loadLearningPlan(user.id, savedProject);
@@ -94,6 +102,7 @@ export const useExplorationProgress = () => {
         progress[plan.project_id].buildingPlan = true;
       });
 
+      console.log('Project progress loaded:', progress);
       setProjectProgress(progress);
     } catch (error) {
       console.error('Error loading all projects progress:', error);
@@ -128,11 +137,15 @@ export const useExplorationProgress = () => {
       saveSelectedProject(user.id, projectId);
       
       // Save state to database
-      await saveExplorationState(user.id, {
-        selectedProject: projectId,
-        learningPlanCreated,
-        publicBuildingStarted
-      });
+      try {
+        await saveExplorationState(user.id, {
+          selectedProject: projectId,
+          learningPlanCreated,
+          publicBuildingStarted
+        });
+      } catch (error) {
+        console.error('Error saving exploration state on project select:', error);
+      }
     }
     
     setLearningPlanCreated(false);
@@ -151,11 +164,15 @@ export const useExplorationProgress = () => {
       removePublicBuilding(user.id);
       
       // Update database state
-      await saveExplorationState(user.id, {
-        selectedProject: null,
-        learningPlanCreated,
-        publicBuildingStarted
-      });
+      try {
+        await saveExplorationState(user.id, {
+          selectedProject: null,
+          learningPlanCreated,
+          publicBuildingStarted
+        });
+      } catch (error) {
+        console.error('Error saving exploration state on back to project selection:', error);
+      }
     }
     setLearningPlanCreated(false);
     setPublicBuildingStarted(false);
@@ -171,11 +188,15 @@ export const useExplorationProgress = () => {
       removePublicBuilding(user.id);
       
       // Reset database state
-      await saveExplorationState(user.id, {
-        selectedProject: null,
-        learningPlanCreated: false,
-        publicBuildingStarted: false
-      });
+      try {
+        await saveExplorationState(user.id, {
+          selectedProject: null,
+          learningPlanCreated: false,
+          publicBuildingStarted: false
+        });
+      } catch (error) {
+        console.error('Error resetting exploration state:', error);
+      }
     }
     setLearningPlanCreated(false);
     setPublicBuildingStarted(false);
@@ -185,7 +206,9 @@ export const useExplorationProgress = () => {
   };
 
   const getProgressPercentage = () => {
-    return calculateProgressPercentage(projectProgress);
+    const percentage = calculateProgressPercentage(projectProgress);
+    console.log('Final progress percentage calculated:', percentage);
+    return percentage;
   };
 
   const getProjectProgressPercentage = (projectId: string) => {
