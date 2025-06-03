@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Lightbulb, AlertTriangle, TrendingUp, TrendingDown, Brain, Target } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Delta4Response {
   id: string;
@@ -18,6 +19,7 @@ interface Delta4Response {
 }
 
 const Delta4Analysis = () => {
+  const { toast } = useToast();
   const [responses, setResponses] = useState<Delta4Response[]>([
     {
       id: '1',
@@ -74,27 +76,50 @@ const Delta4Analysis = () => {
     }
   ];
 
-  const analyzeResponse = () => {
+  const analyzeResponse = async () => {
     if (!currentPrompt.trim()) return;
     
     setIsAnalyzing(true);
     
-    // Simulate AI analysis
-    setTimeout(() => {
+    try {
+      console.log('Sending response for Delta 4 analysis:', currentPrompt);
+      
+      const { data, error } = await supabase.functions.invoke('delta4-analysis', {
+        body: { userResponse: currentPrompt }
+      });
+
+      if (error) throw error;
+
+      console.log('Received analysis:', data);
+
+      const analysis = data.analysis;
       const newResponse: Delta4Response = {
         id: Date.now().toString(),
-        category: Math.random() > 0.5 ? 'friction' : 'delight',
-        title: 'New Insight Generated',
-        description: currentPrompt,
-        impact: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)] as any,
-        actionable: Math.random() > 0.5,
+        category: analysis.category,
+        title: analysis.title,
+        description: analysis.description,
+        impact: analysis.impact,
+        actionable: analysis.actionable,
         timestamp: new Date().toISOString()
       };
       
       setResponses([newResponse, ...responses]);
       setCurrentPrompt('');
+      
+      toast({
+        title: "Analysis Complete",
+        description: `Identified a ${analysis.category} point with ${analysis.impact} impact.`,
+      });
+    } catch (error) {
+      console.error('Error analyzing response:', error);
+      toast({
+        title: "Analysis Failed",
+        description: "Failed to analyze your response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
   const frictionPoints = responses.filter(r => r.category === 'friction');
@@ -203,7 +228,7 @@ const Delta4Analysis = () => {
             </div>
             {isAnalyzing && (
               <div className="space-y-2">
-                <div className="text-sm text-gray-600">Processing your response...</div>
+                <div className="text-sm text-gray-600">AI is analyzing your response...</div>
                 <Progress value={66} className="h-2" />
               </div>
             )}
