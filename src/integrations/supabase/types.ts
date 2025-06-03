@@ -63,6 +63,36 @@ export type Database = {
         }
         Relationships: []
       }
+      exploration_state: {
+        Row: {
+          created_at: string
+          id: string
+          learning_plan_created: boolean
+          public_building_started: boolean
+          selected_project: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          learning_plan_created?: boolean
+          public_building_started?: boolean
+          selected_project?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          learning_plan_created?: boolean
+          public_building_started?: boolean
+          selected_project?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ikigai_progress: {
         Row: {
           ai_insights: Json | null
