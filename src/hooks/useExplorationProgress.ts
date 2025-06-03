@@ -104,8 +104,39 @@ export const useExplorationProgress = () => {
 
       console.log('Project progress loaded:', progress);
       setProjectProgress(progress);
+
+      // Update exploration state based on actual progress
+      await updateExplorationStateFromProgress(progress);
     } catch (error) {
       console.error('Error loading all projects progress:', error);
+    }
+  };
+
+  const updateExplorationStateFromProgress = async (progress: Record<string, { learningPlan: boolean; buildingPlan: boolean }>) => {
+    if (!user) return;
+
+    try {
+      const hasAnyLearningPlan = Object.values(progress).some(p => p.learningPlan);
+      const hasAnyBuildingPlan = Object.values(progress).some(p => p.buildingPlan);
+
+      console.log('Updating exploration state:', { hasAnyLearningPlan, hasAnyBuildingPlan });
+
+      // Update local state
+      if (hasAnyLearningPlan && !learningPlanCreated) {
+        setLearningPlanCreated(true);
+      }
+      if (hasAnyBuildingPlan && !publicBuildingStarted) {
+        setPublicBuildingStarted(true);
+      }
+
+      // Save to database
+      await saveExplorationState(user.id, {
+        selectedProject: selectedProject,
+        learningPlanCreated: hasAnyLearningPlan,
+        publicBuildingStarted: hasAnyBuildingPlan
+      });
+    } catch (error) {
+      console.error('Error updating exploration state from progress:', error);
     }
   };
 
