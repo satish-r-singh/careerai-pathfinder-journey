@@ -65,8 +65,15 @@ const CareerJourney = ({
       return 'locked';
     }
 
-    // Check if Exploration is complete
-    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
+    // Check if Exploration is complete - only require learning plan and public building
+    // explorationProject can be null and that's okay
+    const explorationComplete = explorationLearningPlan && explorationPublicBuilding;
+    
+    console.log('Phase', phaseId, 'explorationComplete check:', {
+      explorationLearningPlan,
+      explorationPublicBuilding,
+      explorationComplete
+    });
     
     // For phases 3 and 4, they become available once Exploration is complete
     if (phaseId === 3 || phaseId === 4) {
