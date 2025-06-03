@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { projects, projectProgress, platform } = await req.json();
+    const { projects, projectProgress, platform, additionalContext } = await req.json();
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not found');
@@ -45,7 +45,10 @@ ${progressSummary.map((p: any) => `
   - Building Plan: ${p.hasBuildingPlan ? 'Created ✅' : 'Not started'}
 `).join('\n')}
 
-Platform Requirements:
+${additionalContext ? `Additional Context from User:
+${additionalContext}
+
+` : ''}Platform Requirements:
 - Platform: ${platform}
 ${platform === 'linkedin' || platform === 'both' ? '- LinkedIn: Professional, engaging, 1-3 paragraphs, include relevant hashtags' : ''}
 ${platform === 'twitter' || platform === 'both' ? '- X (formerly Twitter): Concise, under 280 characters, engaging, include 2-3 relevant hashtags' : ''}
@@ -57,6 +60,7 @@ Create authentic posts that:
 4. Use a personal, authentic tone
 5. Include call-to-action to engage the community
 6. Reference the AI-driven nature of the learning journey
+${additionalContext ? '7. Incorporate the additional context provided by the user naturally into the post' : ''}
 
 ${platform === 'both' ? 'Generate both LinkedIn and X versions.' : `Generate a ${platform === 'twitter' ? 'X' : platform} post.`}
 

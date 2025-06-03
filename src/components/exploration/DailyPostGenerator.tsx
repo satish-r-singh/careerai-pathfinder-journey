@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Calendar, Share2, Linkedin, RefreshCw, Copy, Hash } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +24,7 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
   const [linkedinPost, setLinkedinPost] = useState('');
   const [xPost, setXPost] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<'linkedin' | 'x' | 'both'>('both');
+  const [additionalContext, setAdditionalContext] = useState('');
 
   const getProjectsWithProgress = () => {
     return projects.filter(project => projectProgress[project.id]);
@@ -47,7 +50,8 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
         body: {
           projects: projectsWithProgress,
           projectProgress,
-          platform: selectedPlatform === 'x' ? 'twitter' : selectedPlatform
+          platform: selectedPlatform === 'x' ? 'twitter' : selectedPlatform,
+          additionalContext: additionalContext.trim()
         }
       });
 
@@ -131,6 +135,23 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Additional Context Input */}
+            <div>
+              <Label htmlFor="additional-context" className="text-sm font-medium">
+                Additional Context (Optional)
+              </Label>
+              <Input
+                id="additional-context"
+                value={additionalContext}
+                onChange={(e) => setAdditionalContext(e.target.value)}
+                placeholder="Add any specific details, wins, challenges, or updates you'd like to include..."
+                className="mt-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This will be included in your generated posts to make them more personal and specific.
+              </p>
             </div>
 
             {/* Platform Selection */}
