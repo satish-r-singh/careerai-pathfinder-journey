@@ -48,20 +48,20 @@ const ExplorationCompletion = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
-              onClick={() => navigate('/reflection')} 
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-            >
-              <ArrowRight className="w-5 h-5 mr-2" />
-              Continue to Reflection Phase
-            </Button>
-            
-            <Button 
               variant="outline"
               onClick={handleBackToProjects}
               className="border-blue-200 text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-xl transition-all duration-300"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Project Selection
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/reflection')} 
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              <ArrowRight className="w-5 h-5 mr-2" />
+              Continue to Reflection Phase
             </Button>
             
             <Button 
