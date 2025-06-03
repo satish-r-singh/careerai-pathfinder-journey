@@ -9,6 +9,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Calendar, User, Flag, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Task {
   id: string;
@@ -29,6 +42,104 @@ interface Project {
   milestones: number;
   completedMilestones: number;
 }
+
+interface SortableTaskProps {
+  task: Task;
+  onMoveTask: (taskId: string, newStatus: Task['status']) => void;
+}
+
+const SortableTask = ({ task, onMoveTask }: SortableTaskProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const columns = [
+    { id: 'todo', title: 'To Do' },
+    { id: 'in-progress', title: 'In Progress' },
+    { id: 'review', title: 'Review' },
+    { id: 'done', title: 'Done' }
+  ];
+
+  return (
+    <Card 
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`cursor-move hover:shadow-md transition-shadow duration-200 ${
+        isDragging ? 'opacity-50' : ''
+      }`}
+    >
+      <CardContent className="p-4">
+        <div className="space-y-2">
+          <div className="flex items-start justify-between">
+            <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
+            <Badge className={`text-xs ${getPriorityColor(task.priority)}`}>
+              {task.priority}
+            </Badge>
+          </div>
+          {task.description && (
+            <p className="text-xs text-gray-600 line-clamp-2">{task.description}</p>
+          )}
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center space-x-1">
+              <User className="w-3 h-3" />
+              <span>{task.assignee}</span>
+            </div>
+            {task.dueDate && (
+              <div className="flex items-center space-x-1">
+                <Calendar className="w-3 h-3" />
+                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+              </div>
+            )}
+          </div>
+          {task.project && (
+            <Badge variant="outline" className="text-xs">
+              {task.project}
+            </Badge>
+          )}
+          <div className="flex space-x-1 mt-2">
+            {columns.map((col) => (
+              col.id !== task.status && (
+                <Button
+                  key={col.id}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-6 px-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveTask(task.id, col.id as Task['status']);
+                  }}
+                >
+                  → {col.title}
+                </Button>
+              )
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ProjectDashboard = () => {
   const [tasks, setTasks] = useState<Task[]>([
@@ -118,21 +229,22 @@ const ProjectDashboard = () => {
     dueDate: ''
   });
 
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
   const columns = [
     { id: 'todo', title: 'To Do', icon: Clock, color: 'bg-gray-50 border-gray-200' },
     { id: 'in-progress', title: 'In Progress', icon: AlertTriangle, color: 'bg-blue-50 border-blue-200' },
     { id: 'review', title: 'Review', icon: Flag, color: 'bg-yellow-50 border-yellow-200' },
     { id: 'done', title: 'Done', icon: CheckCircle, color: 'bg-green-50 border-green-200' }
   ];
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
 
   const handleAddTask = () => {
     if (newTask.title.trim()) {
@@ -159,6 +271,52 @@ const ProjectDashboard = () => {
       task.id === taskId ? { ...task, status: newStatus } : task
     ));
   };
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string);
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Check if we're dropping over a column
+    const isOverAColumn = columns.some(col => col.id === overId);
+    
+    if (isOverAColumn) {
+      const task = tasks.find(t => t.id === activeId);
+      if (task && task.status !== overId) {
+        moveTask(activeId, overId as Task['status']);
+      }
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveId(null);
+    
+    const { active, over } = event;
+    
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Check if we're dropping over a column
+    const isOverAColumn = columns.some(col => col.id === overId);
+    
+    if (isOverAColumn) {
+      const task = tasks.find(t => t.id === activeId);
+      if (task && task.status !== overId) {
+        moveTask(activeId, overId as Task['status']);
+      }
+    }
+  }
+
+  const activeTask = activeId ? tasks.find(task => task.id === activeId) : null;
 
   return (
     <div className="space-y-6">
@@ -200,7 +358,7 @@ const ProjectDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="gradient-text">Project Kanban Board</CardTitle>
-              <CardDescription>Manage your job search tasks and milestones</CardDescription>
+              <CardDescription>Drag and drop tasks between different stages</CardDescription>
             </div>
             <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
               <DialogTrigger asChild>
@@ -280,76 +438,56 @@ const ProjectDashboard = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {columns.map((column) => {
-              const Icon = column.icon;
-              const columnTasks = tasks.filter(task => task.status === column.id);
-              
-              return (
-                <div key={column.id} className={`rounded-lg border-2 ${column.color} p-4`}>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Icon className="w-5 h-5" />
-                    <h3 className="font-semibold">{column.title}</h3>
-                    <Badge variant="secondary" className="ml-auto">
-                      {columnTasks.length}
-                    </Badge>
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {columns.map((column) => {
+                const Icon = column.icon;
+                const columnTasks = tasks.filter(task => task.status === column.id);
+                
+                return (
+                  <div 
+                    key={column.id} 
+                    className={`rounded-lg border-2 ${column.color} p-4 min-h-[400px]`}
+                    id={column.id}
+                  >
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Icon className="w-5 h-5" />
+                      <h3 className="font-semibold">{column.title}</h3>
+                      <Badge variant="secondary" className="ml-auto">
+                        {columnTasks.length}
+                      </Badge>
+                    </div>
+                    
+                    <SortableContext items={columnTasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-3">
+                        {columnTasks.map((task) => (
+                          <SortableTask
+                            key={task.id}
+                            task={task}
+                            onMoveTask={moveTask}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
                   </div>
-                  
-                  <div className="space-y-3">
-                    {columnTasks.map((task) => (
-                      <Card key={task.id} className="cursor-move hover:shadow-md transition-shadow duration-200">
-                        <CardContent className="p-4">
-                          <div className="space-y-2">
-                            <div className="flex items-start justify-between">
-                              <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
-                              <Badge className={`text-xs ${getPriorityColor(task.priority)}`}>
-                                {task.priority}
-                              </Badge>
-                            </div>
-                            {task.description && (
-                              <p className="text-xs text-gray-600 line-clamp-2">{task.description}</p>
-                            )}
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <div className="flex items-center space-x-1">
-                                <User className="w-3 h-3" />
-                                <span>{task.assignee}</span>
-                              </div>
-                              {task.dueDate && (
-                                <div className="flex items-center space-x-1">
-                                  <Calendar className="w-3 h-3" />
-                                  <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-                                </div>
-                              )}
-                            </div>
-                            {task.project && (
-                              <Badge variant="outline" className="text-xs">
-                                {task.project}
-                              </Badge>
-                            )}
-                            <div className="flex space-x-1 mt-2">
-                              {columns.map((col) => (
-                                col.id !== task.status && (
-                                  <Button
-                                    key={col.id}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xs h-6 px-2"
-                                    onClick={() => moveTask(task.id, col.id as Task['status'])}
-                                  >
-                                    → {col.title}
-                                  </Button>
-                                )
-                              ))}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            
+            <DragOverlay>
+              {activeTask ? (
+                <SortableTask
+                  task={activeTask}
+                  onMoveTask={moveTask}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </CardContent>
       </Card>
     </div>
