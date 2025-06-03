@@ -1,37 +1,12 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Plus, Building2, Users, TrendingUp, Calendar, ExternalLink, Settings } from 'lucide-react';
-
-interface TargetFirm {
-  id: string;
-  name: string;
-  industry: string;
-  size: string;
-  location: string;
-  priority: 'high' | 'medium' | 'low';
-  alertsEnabled: boolean;
-  lastUpdate: string;
-  website?: string;
-}
-
-interface Alert {
-  id: string;
-  firmId: string;
-  firmName: string;
-  type: 'job_posting' | 'news' | 'people_update' | 'funding';
-  title: string;
-  description: string;
-  timestamp: string;
-  isRead: boolean;
-  actionUrl?: string;
-}
+import { Bell, Building2 } from 'lucide-react';
+import { TargetFirm, Alert, NewFirmData } from '@/types/targetFirms';
+import TargetFirmCard from './TargetFirmCard';
+import AlertCard from './AlertCard';
+import AddFirmDialog from './AddFirmDialog';
 
 const TargetFirmAlerts = () => {
   const [targetFirms, setTargetFirms] = useState<TargetFirm[]>([
@@ -105,43 +80,14 @@ const TargetFirmAlerts = () => {
   ]);
 
   const [isAddingFirm, setIsAddingFirm] = useState(false);
-  const [newFirm, setNewFirm] = useState({
+  const [newFirm, setNewFirm] = useState<NewFirmData>({
     name: '',
     industry: '',
     size: '',
     location: '',
-    priority: 'medium' as const,
+    priority: 'medium',
     website: ''
   });
-
-  const getAlertIcon = (type: string) => {
-    switch (type) {
-      case 'job_posting': return '💼';
-      case 'news': return '📰';
-      case 'people_update': return '👥';
-      case 'funding': return '💰';
-      default: return '🔔';
-    }
-  };
-
-  const getAlertColor = (type: string) => {
-    switch (type) {
-      case 'job_posting': return 'bg-green-50 border-green-200 text-green-800';
-      case 'news': return 'bg-blue-50 border-blue-200 text-blue-800';
-      case 'people_update': return 'bg-purple-50 border-purple-200 text-purple-800';
-      case 'funding': return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-      default: return 'bg-gray-50 border-gray-200 text-gray-800';
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
 
   const handleAddFirm = () => {
     if (newFirm.name.trim()) {
@@ -216,142 +162,23 @@ const TargetFirmAlerts = () => {
                 <Building2 className="w-5 h-5" />
                 <span>Target Companies</span>
               </CardTitle>
-              <Dialog open={isAddingFirm} onOpenChange={setIsAddingFirm}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Company
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Target Company</DialogTitle>
-                    <DialogDescription>Add a company to monitor for job opportunities and updates</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="company-name">Company Name</Label>
-                      <Input
-                        id="company-name"
-                        value={newFirm.name}
-                        onChange={(e) => setNewFirm({...newFirm, name: e.target.value})}
-                        placeholder="Enter company name"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="industry">Industry</Label>
-                        <Input
-                          id="industry"
-                          value={newFirm.industry}
-                          onChange={(e) => setNewFirm({...newFirm, industry: e.target.value})}
-                          placeholder="e.g., Technology"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="size">Company Size</Label>
-                        <Select value={newFirm.size} onValueChange={(value) => setNewFirm({...newFirm, size: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select size" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1-50">1-50 employees</SelectItem>
-                            <SelectItem value="50-200">50-200 employees</SelectItem>
-                            <SelectItem value="200-1000">200-1,000 employees</SelectItem>
-                            <SelectItem value="1000-5000">1,000-5,000 employees</SelectItem>
-                            <SelectItem value="5000+">5,000+ employees</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={newFirm.location}
-                          onChange={(e) => setNewFirm({...newFirm, location: e.target.value})}
-                          placeholder="e.g., San Francisco, CA"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="priority">Priority</Label>
-                        <Select value={newFirm.priority} onValueChange={(value: any) => setNewFirm({...newFirm, priority: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="website">Website (Optional)</Label>
-                      <Input
-                        id="website"
-                        value={newFirm.website}
-                        onChange={(e) => setNewFirm({...newFirm, website: e.target.value})}
-                        placeholder="https://company.com"
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <Button variant="outline" onClick={() => setIsAddingFirm(false)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={handleAddFirm}>
-                        Add Company
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <AddFirmDialog
+                isOpen={isAddingFirm}
+                onOpenChange={setIsAddingFirm}
+                newFirm={newFirm}
+                onNewFirmChange={setNewFirm}
+                onAddFirm={handleAddFirm}
+              />
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {targetFirms.map((firm) => (
-                <Card key={firm.id} className="border hover:shadow-md transition-shadow duration-200">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-semibold text-sm">{firm.name}</h4>
-                          <p className="text-xs text-gray-600">{firm.industry} • {firm.size} employees</p>
-                          <p className="text-xs text-gray-500">{firm.location}</p>
-                        </div>
-                        <div className="flex flex-col items-end space-y-2">
-                          <Badge className={`text-xs ${getPriorityColor(firm.priority)}`}>
-                            {firm.priority} priority
-                          </Badge>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={firm.alertsEnabled}
-                              onCheckedChange={() => toggleAlerts(firm.id)}
-                            />
-                            <span className="text-xs text-gray-500">Alerts</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-gray-400">
-                        <span>Last updated: {new Date(firm.lastUpdate).toLocaleDateString()}</span>
-                        {firm.website && (
-                          <a 
-                            href={firm.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            <span>Visit</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TargetFirmCard
+                  key={firm.id}
+                  firm={firm}
+                  onToggleAlerts={toggleAlerts}
+                />
               ))}
             </div>
           </CardContent>
@@ -373,47 +200,11 @@ const TargetFirmAlerts = () => {
           <CardContent>
             <div className="space-y-3">
               {alerts.map((alert) => (
-                <Card 
-                  key={alert.id} 
-                  className={`cursor-pointer transition-all duration-200 ${
-                    alert.isRead ? 'opacity-75' : 'border-l-4 border-l-blue-500 shadow-sm'
-                  }`}
-                  onClick={() => markAsRead(alert.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-2">
-                          <span className="text-lg">{getAlertIcon(alert.type)}</span>
-                          <div>
-                            <h4 className="font-medium text-sm">{alert.title}</h4>
-                            <p className="text-xs text-gray-600">{alert.description}</p>
-                          </div>
-                        </div>
-                        <Badge className={`text-xs ${getAlertColor(alert.type)}`}>
-                          {alert.type.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-gray-400">
-                        <span>{alert.firmName}</span>
-                        <div className="flex items-center space-x-2">
-                          <span>{new Date(alert.timestamp).toLocaleDateString()}</span>
-                          {alert.actionUrl && (
-                            <a 
-                              href={alert.actionUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <AlertCard
+                  key={alert.id}
+                  alert={alert}
+                  onMarkAsRead={markAsRead}
+                />
               ))}
               {alerts.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
