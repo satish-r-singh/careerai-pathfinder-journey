@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,7 +62,7 @@ const FeedbackCollection = () => {
         .from('project_options')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_selected', true);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setProjects(data || []);
