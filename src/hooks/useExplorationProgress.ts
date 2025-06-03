@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LearningPlan } from '@/utils/learningPlanGeneration';
@@ -17,6 +16,7 @@ import {
   loadAllLearningPlans,
   loadAllBuildingPlans
 } from '@/services/explorationProgressService';
+import { saveExplorationState, loadExplorationState } from '@/services/explorationStateService';
 
 export const useExplorationProgress = () => {
   const { user } = useAuth();
@@ -36,8 +36,12 @@ export const useExplorationProgress = () => {
     if (!user) return;
     
     try {
-      const savedProject = getSelectedProject(user.id);
-      const savedPublicBuilding = getPublicBuilding(user.id);
+      // Load state from database first
+      const dbState = await loadExplorationState(user.id);
+      
+      // Fallback to localStorage if no database state
+      const savedProject = dbState?.selectedProject || getSelectedProject(user.id);
+      const savedPublicBuilding = dbState?.publicBuildingStarted || getPublicBuilding(user.id);
       
       if (savedProject) setSelectedProject(savedProject);
       if (savedPublicBuilding) setPublicBuildingStarted(true);
@@ -118,10 +122,17 @@ export const useExplorationProgress = () => {
     }
   };
 
-  const handleProjectSelect = (projectId: string) => {
+  const handleProjectSelect = async (projectId: string) => {
     setSelectedProject(projectId);
     if (user) {
       saveSelectedProject(user.id, projectId);
+      
+      // Save state to database
+      await saveExplorationState(user.id, {
+        selectedProject: projectId,
+        learningPlanCreated,
+        publicBuildingStarted
+      });
     }
     
     setLearningPlanCreated(false);
@@ -133,11 +144,18 @@ export const useExplorationProgress = () => {
     checkLearningPlanForProject(projectId);
   };
 
-  const backToProjectSelection = () => {
+  const backToProjectSelection = async () => {
     setSelectedProject(null);
     if (user) {
       removeSelectedProject(user.id);
       removePublicBuilding(user.id);
+      
+      // Update database state
+      await saveExplorationState(user.id, {
+        selectedProject: null,
+        learningPlanCreated,
+        publicBuildingStarted
+      });
     }
     setLearningPlanCreated(false);
     setPublicBuildingStarted(false);
@@ -146,11 +164,18 @@ export const useExplorationProgress = () => {
     setBuildingInPublicPlan(null);
   };
 
-  const resetExploration = () => {
+  const resetExploration = async () => {
     setSelectedProject(null);
     if (user) {
       removeSelectedProject(user.id);
       removePublicBuilding(user.id);
+      
+      // Reset database state
+      await saveExplorationState(user.id, {
+        selectedProject: null,
+        learningPlanCreated: false,
+        publicBuildingStarted: false
+      });
     }
     setLearningPlanCreated(false);
     setPublicBuildingStarted(false);
@@ -160,12 +185,7 @@ export const useExplorationProgress = () => {
   };
 
   const getProgressPercentage = () => {
-    return calculateProgressPercentage(
-      selectedProject,
-      learningPlanCreated,
-      publicBuildingStarted,
-      projectProgress
-    );
+    return calculateProgressPercentage(projectProgress);
   };
 
   const getProjectProgressPercentage = (projectId: string) => {

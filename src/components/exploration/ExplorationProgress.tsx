@@ -1,12 +1,8 @@
-
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, CheckCircle, Clock, TrendingUp, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ExplorationProgressProps {
-  selectedProject: string | null;
-  learningPlanCreated: boolean;
-  publicBuildingStarted: boolean;
   progressPercentage: number;
   projectProgress: Record<string, { learningPlan: boolean; buildingPlan: boolean }>;
 }
@@ -18,16 +14,10 @@ const steps = [
 ];
 
 const ExplorationProgress = ({ 
-  selectedProject, 
-  learningPlanCreated, 
-  publicBuildingStarted, 
   progressPercentage,
   projectProgress 
 }: ExplorationProgressProps) => {
   // Debug logging
-  console.log('ExplorationProgress - selectedProject:', selectedProject);
-  console.log('ExplorationProgress - learningPlanCreated:', learningPlanCreated);
-  console.log('ExplorationProgress - publicBuildingStarted:', publicBuildingStarted);
   console.log('ExplorationProgress - projectProgress:', projectProgress);
 
   // Check if user has any learning plans across all projects
@@ -43,28 +33,25 @@ const ExplorationProgress = ({
     console.log(`Getting status for step: ${stepKey}`);
     switch (stepKey) {
       case 'project':
-        // Consider project step completed if:
-        // 1. A project is currently selected, OR
-        // 2. User has explored any projects before (has progress on any project)
-        const projectCompleted = selectedProject || hasExploredAnyProject;
+        const projectCompleted = hasExploredAnyProject;
         const projectStatus = projectCompleted ? 'completed' : 'current';
-        console.log(`Project step status: ${projectStatus}, selectedProject: ${selectedProject}, hasExploredAnyProject: ${hasExploredAnyProject}`);
+        console.log(`Project step status: ${projectStatus}, hasExploredAnyProject: ${hasExploredAnyProject}`);
         return projectStatus;
       case 'learning':
-        if (hasAnyLearningPlan || learningPlanCreated) return 'completed';
-        return selectedProject || hasExploredAnyProject ? 'current' : 'locked';
+        if (hasAnyLearningPlan) return 'completed';
+        return hasExploredAnyProject ? 'current' : 'locked';
       case 'building':
-        if (hasAnyBuildingPlan || publicBuildingStarted) return 'completed';
-        return (hasAnyLearningPlan || learningPlanCreated) ? 'current' : 'locked';
+        if (hasAnyBuildingPlan) return 'completed';
+        return hasAnyLearningPlan ? 'current' : 'locked';
       default:
         return 'locked';
     }
   };
 
   const completedSteps = [
-    selectedProject || hasExploredAnyProject, 
-    hasAnyLearningPlan || learningPlanCreated, 
-    hasAnyBuildingPlan || publicBuildingStarted
+    hasExploredAnyProject, 
+    hasAnyLearningPlan, 
+    hasAnyBuildingPlan
   ].filter(Boolean).length;
 
   return (

@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -90,9 +89,6 @@ const Exploration = () => {
               </div>
               
               <ExplorationProgress
-                selectedProject={selectedProject}
-                learningPlanCreated={learningPlanCreated}
-                publicBuildingStarted={publicBuildingStarted}
                 progressPercentage={getProgressPercentage()}
                 projectProgress={projectProgress}
               />

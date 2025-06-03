@@ -1,14 +1,7 @@
-
 export const calculateProgressPercentage = (
-  selectedProject: string | null,
-  learningPlanCreated: boolean,
-  publicBuildingStarted: boolean,
   projectProgress: Record<string, { learningPlan: boolean; buildingPlan: boolean }>
 ) => {
   console.log('=== PROGRESS CALCULATION DEBUG ===');
-  console.log('selectedProject:', selectedProject);
-  console.log('learningPlanCreated:', learningPlanCreated);
-  console.log('publicBuildingStarted:', publicBuildingStarted);
   console.log('projectProgress:', projectProgress);
   
   // Check if user has any learning plans across all projects
@@ -25,15 +18,14 @@ export const calculateProgressPercentage = (
 
   let completed = 0;
   
-  // Step 1: Project exploration - completed if user has explored any project OR has a currently selected project
-  const step1Complete = selectedProject || hasExploredAnyProject;
+  // Step 1: Project exploration - completed if user has explored any project
+  const step1Complete = hasExploredAnyProject;
   console.log('Step 1 (Project exploration) complete:', step1Complete);
   if (step1Complete) {
     completed += 33;
   }
   
   // Step 2: Learning plan - completed if user has ANY learning plan across all projects
-  // Don't use learningPlanCreated as it's session-specific
   const step2Complete = hasAnyLearningPlan;
   console.log('Step 2 (Learning plan) complete:', step2Complete);
   if (step2Complete) {
@@ -41,7 +33,6 @@ export const calculateProgressPercentage = (
   }
   
   // Step 3: Building in public - completed if user has ANY building plan across all projects
-  // Don't use publicBuildingStarted as it's session-specific
   const step3Complete = hasAnyBuildingPlan;
   console.log('Step 3 (Building in public) complete:', step3Complete);
   if (step3Complete) {
