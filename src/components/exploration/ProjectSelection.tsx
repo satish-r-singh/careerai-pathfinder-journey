@@ -3,8 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
-import { Clock, RefreshCw, CheckCircle } from 'lucide-react';
+import { Clock, RefreshCw, CheckCircle, BookOpen, Sparkles } from 'lucide-react';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
 import { getIconComponent } from '@/utils/iconUtils';
 
@@ -34,25 +33,15 @@ const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress
     }
   };
 
-  const getProgressStatus = (projectId: string) => {
-    const progress = projectProgress[projectId];
-    if (!progress) return { text: 'Not Started', color: 'text-gray-500' };
-    
-    if (progress.learningPlan && progress.buildingPlan) {
-      return { text: 'Complete', color: 'text-green-600' };
-    } else if (progress.learningPlan) {
-      return { text: 'Learning Plan Created', color: 'text-blue-600' };
-    } else {
-      return { text: 'Not Started', color: 'text-gray-500' };
-    }
+  const hasLearningPlan = (projectId: string) => {
+    return projectProgress[projectId]?.learningPlan || false;
   };
 
   const renderProjectCard = (project: any) => {
     const IconComponent = getIconComponent(project.iconName || 'Code');
     const isSelected = selectedProjects.has(project.id);
     const isRegenerating = regeneratingProjects.has(project.id);
-    const progressPercentage = getProjectProgress(project.id);
-    const progressStatus = getProgressStatus(project.id);
+    const hasLearningPlanCreated = hasLearningPlan(project.id);
 
     if (isRegenerating) {
       return (
@@ -70,18 +59,23 @@ const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress
     return (
       <div
         key={project.id}
-        className={`p-6 border rounded-xl transition-all relative ${
-          isSelected 
+        className={`p-6 border-2 rounded-xl transition-all relative ${
+          hasLearningPlanCreated
+            ? 'border-green-300 bg-gradient-to-br from-green-50 to-emerald-50 shadow-md'
+            : isSelected 
             ? 'border-blue-300 bg-blue-50' 
-            : 'hover:shadow-lg hover:border-primary/30'
+            : 'border-gray-200 hover:shadow-lg hover:border-primary/30'
         }`}
       >
-        {/* Progress indicator */}
-        {progressPercentage > 0 && (
-          <div className="absolute top-4 right-4">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-          </div>
-        )}
+        {/* Status indicator */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {hasLearningPlanCreated && (
+            <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+              <CheckCircle className="w-3 h-3" />
+              Learning Plan Created
+            </div>
+          )}
+        </div>
 
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-2">
@@ -98,12 +92,22 @@ const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress
           className="flex items-start space-x-4 cursor-pointer"
           onClick={() => onProjectSelect(project.id)}
         >
-          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-            <IconComponent className="w-6 h-6 text-primary" />
+          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+            hasLearningPlanCreated 
+              ? 'bg-green-100' 
+              : 'bg-primary/10'
+          }`}>
+            <IconComponent className={`w-6 h-6 ${
+              hasLearningPlanCreated 
+                ? 'text-green-600' 
+                : 'text-primary'
+            }`} />
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-lg">{project.name}</h3>
+              <h3 className={`font-semibold text-lg ${
+                hasLearningPlanCreated ? 'text-green-800' : 'text-gray-900'
+              }`}>{project.name}</h3>
               <Badge className={getDifficultyColor(project.difficulty)}>
                 {project.difficulty}
               </Badge>
@@ -114,20 +118,6 @@ const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress
                 <strong>Why this fits you:</strong> {project.reasoning}
               </div>
             )}
-            
-            {/* Progress section */}
-            <div className="mb-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Exploration Progress</span>
-                <span className={`text-sm ${progressStatus.color}`}>{progressStatus.text}</span>
-              </div>
-              <Progress value={progressPercentage} className="h-2" />
-              <div className="text-xs text-gray-500">
-                {progressPercentage === 0 && "Click to start exploring this project"}
-                {progressPercentage > 0 && progressPercentage < 100 && "Continue where you left off"}
-                {progressPercentage === 100 && "Project fully explored"}
-              </div>
-            </div>
             
             <div className="space-y-2">
               <div className="flex items-center text-sm text-gray-500">
@@ -142,8 +132,23 @@ const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress
                 ))}
               </div>
             </div>
-            <Button className="w-full mt-4">
-              {progressPercentage > 0 ? 'Continue Exploring' : 'Select This Project'}
+            
+            <Button className={`w-full mt-4 ${
+              hasLearningPlanCreated 
+                ? 'bg-green-600 hover:bg-green-700' 
+                : ''
+            }`}>
+              {hasLearningPlanCreated ? (
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Continue with Learning Plan
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  Select This Project
+                </div>
+              )}
             </Button>
           </div>
         </div>
@@ -159,7 +164,7 @@ const ProjectSelection = ({ onProjectSelect, projectProgress, getProjectProgress
             <CardTitle>Your Personalized AI Projects</CardTitle>
             <CardDescription>
               These projects are tailored to your Ikigai profile, skills, and career goals from your introspection phase.
-              Progress bars show which projects you've already started exploring.
+              Projects with learning plans are highlighted in green.
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
