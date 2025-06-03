@@ -1,15 +1,14 @@
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import Index from './pages/Index';
 import Onboarding from './pages/Onboarding';
-import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Introspection from './pages/Introspection';
 import Ikigai from './pages/Ikigai';
 import IndustryResearch from './pages/IndustryResearch';
@@ -19,7 +18,14 @@ import Reflection from './pages/Reflection';
 import Action from './pages/Action';
 import { Toaster } from '@/components/ui/toaster';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
