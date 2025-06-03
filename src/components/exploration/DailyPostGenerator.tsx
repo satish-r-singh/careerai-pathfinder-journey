@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Share2, Linkedin, Twitter, RefreshCw, Copy } from 'lucide-react';
+import { Calendar, Share2, Linkedin, RefreshCw, Copy, Hash } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonalizedProjects } from '@/hooks/usePersonalizedProjects';
@@ -20,8 +20,8 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
   const { projects } = usePersonalizedProjects();
   const [generatingPosts, setGeneratingPosts] = useState(false);
   const [linkedinPost, setLinkedinPost] = useState('');
-  const [twitterPost, setTwitterPost] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<'linkedin' | 'twitter' | 'both'>('both');
+  const [xPost, setXPost] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState<'linkedin' | 'x' | 'both'>('both');
 
   const getProjectsWithProgress = () => {
     return projects.filter(project => projectProgress[project.id]);
@@ -47,7 +47,7 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
         body: {
           projects: projectsWithProgress,
           projectProgress,
-          platform: selectedPlatform
+          platform: selectedPlatform === 'x' ? 'twitter' : selectedPlatform
         }
       });
 
@@ -57,7 +57,7 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
 
       if (data) {
         if (data.linkedinPost) setLinkedinPost(data.linkedinPost);
-        if (data.twitterPost) setTwitterPost(data.twitterPost);
+        if (data.twitterPost) setXPost(data.twitterPost);
         
         toast({
           title: "Posts generated successfully!",
@@ -147,13 +147,13 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
                   <span>LinkedIn</span>
                 </Button>
                 <Button
-                  variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
+                  variant={selectedPlatform === 'x' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setSelectedPlatform('twitter')}
+                  onClick={() => setSelectedPlatform('x')}
                   className="flex items-center space-x-2"
                 >
-                  <Twitter className="w-4 h-4" />
-                  <span>Twitter</span>
+                  <Hash className="w-4 h-4" />
+                  <span>X</span>
                 </Button>
                 <Button
                   variant={selectedPlatform === 'both' ? 'default' : 'outline'}
@@ -185,7 +185,7 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
             </Button>
 
             {/* Generated Posts */}
-            {(linkedinPost || twitterPost) && (
+            {(linkedinPost || xPost) && (
               <div className="space-y-4">
                 {linkedinPost && (selectedPlatform === 'linkedin' || selectedPlatform === 'both') && (
                   <div>
@@ -212,30 +212,30 @@ const DailyPostGenerator = ({ projectProgress }: DailyPostGeneratorProps) => {
                   </div>
                 )}
 
-                {twitterPost && (selectedPlatform === 'twitter' || selectedPlatform === 'both') && (
+                {xPost && (selectedPlatform === 'x' || selectedPlatform === 'both') && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium flex items-center space-x-2">
-                        <Twitter className="w-4 h-4 text-blue-400" />
-                        <span>Twitter Post</span>
+                        <Hash className="w-4 h-4 text-black" />
+                        <span>X Post</span>
                       </h4>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => copyToClipboard(twitterPost, 'Twitter')}
+                        onClick={() => copyToClipboard(xPost, 'X')}
                       >
                         <Copy className="w-4 h-4 mr-1" />
                         Copy
                       </Button>
                     </div>
                     <Textarea
-                      value={twitterPost}
-                      onChange={(e) => setTwitterPost(e.target.value)}
-                      placeholder="Your Twitter post will appear here..."
+                      value={xPost}
+                      onChange={(e) => setXPost(e.target.value)}
+                      placeholder="Your X post will appear here..."
                       className="min-h-[100px]"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Character count: {twitterPost.length}/280
+                      Character count: {xPost.length}/280
                     </p>
                   </div>
                 )}

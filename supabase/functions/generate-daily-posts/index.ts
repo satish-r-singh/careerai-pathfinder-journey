@@ -48,7 +48,7 @@ ${progressSummary.map((p: any) => `
 Platform Requirements:
 - Platform: ${platform}
 ${platform === 'linkedin' || platform === 'both' ? '- LinkedIn: Professional, engaging, 1-3 paragraphs, include relevant hashtags' : ''}
-${platform === 'twitter' || platform === 'both' ? '- Twitter: Concise, under 280 characters, engaging, include 2-3 relevant hashtags' : ''}
+${platform === 'twitter' || platform === 'both' ? '- X (formerly Twitter): Concise, under 280 characters, engaging, include 2-3 relevant hashtags' : ''}
 
 Create authentic posts that:
 1. Show genuine progress and learning
@@ -58,16 +58,16 @@ Create authentic posts that:
 5. Include call-to-action to engage the community
 6. Reference the AI-driven nature of the learning journey
 
-${platform === 'both' ? 'Generate both LinkedIn and Twitter versions.' : `Generate a ${platform} post.`}
+${platform === 'both' ? 'Generate both LinkedIn and X versions.' : `Generate a ${platform === 'twitter' ? 'X' : platform} post.`}
 
 Respond with a JSON object in this format:
 ${platform === 'both' ? `{
   "linkedinPost": "LinkedIn post content here",
-  "twitterPost": "Twitter post content here"
+  "twitterPost": "X post content here"
 }` : platform === 'linkedin' ? `{
   "linkedinPost": "LinkedIn post content here"
 }` : `{
-  "twitterPost": "Twitter post content here"
+  "twitterPost": "X post content here"
 }`}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
