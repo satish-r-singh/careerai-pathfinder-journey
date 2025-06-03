@@ -18,6 +18,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCenter,
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -61,6 +62,7 @@ const SortableTask = ({ task, onMoveTask }: SortableTaskProps) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   const getPriorityColor = (priority: string) => {
@@ -85,10 +87,79 @@ const SortableTask = ({ task, onMoveTask }: SortableTaskProps) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`cursor-move hover:shadow-md transition-shadow duration-200 ${
-        isDragging ? 'opacity-50' : ''
-      }`}
+      className="cursor-move hover:shadow-md transition-shadow duration-200"
     >
+      <CardContent className="p-4">
+        <div className="space-y-2">
+          <div className="flex items-start justify-between">
+            <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
+            <Badge className={`text-xs ${getPriorityColor(task.priority)}`}>
+              {task.priority}
+            </Badge>
+          </div>
+          {task.description && (
+            <p className="text-xs text-gray-600 line-clamp-2">{task.description}</p>
+          )}
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center space-x-1">
+              <User className="w-3 h-3" />
+              <span>{task.assignee}</span>
+            </div>
+            {task.dueDate && (
+              <div className="flex items-center space-x-1">
+                <Calendar className="w-3 h-3" />
+                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+              </div>
+            )}
+          </div>
+          {task.project && (
+            <Badge variant="outline" className="text-xs">
+              {task.project}
+            </Badge>
+          )}
+          <div className="flex space-x-1 mt-2">
+            {columns.map((col) => (
+              col.id !== task.status && (
+                <Button
+                  key={col.id}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-6 px-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveTask(task.id, col.id as Task['status']);
+                  }}
+                >
+                  → {col.title}
+                </Button>
+              )
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const TaskItem = ({ task, onMoveTask }: SortableTaskProps) => {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const columns = [
+    { id: 'todo', title: 'To Do' },
+    { id: 'in-progress', title: 'In Progress' },
+    { id: 'review', title: 'Review' },
+    { id: 'done', title: 'Done' }
+  ];
+
+  return (
+    <Card className="bg-white shadow-lg border-0 cursor-move hover:shadow-xl transition-shadow duration-200 relative z-50">
       <CardContent className="p-4">
         <div className="space-y-2">
           <div className="flex items-start justify-between">
@@ -234,7 +305,7 @@ const ProjectDashboard = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     })
   );
@@ -440,6 +511,7 @@ const ProjectDashboard = () => {
         <CardContent>
           <DndContext
             sensors={sensors}
+            collisionDetection={closestCenter}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
@@ -479,9 +551,9 @@ const ProjectDashboard = () => {
               })}
             </div>
             
-            <DragOverlay>
+            <DragOverlay style={{ cursor: 'grabbing' }}>
               {activeTask ? (
-                <SortableTask
+                <TaskItem
                   task={activeTask}
                   onMoveTask={moveTask}
                 />
