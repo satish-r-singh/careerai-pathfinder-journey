@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTodaysTasks } from '@/hooks/useTodaysTasks';
+
 const Dashboard = () => {
   const [currentPhase, setCurrentPhase] = useState(1);
   const [phaseProgress, setPhaseProgress] = useState(0);
@@ -20,14 +21,14 @@ const Dashboard = () => {
   const [explorationProject, setExplorationProject] = useState<string | null>(null);
   const [explorationLearningPlan, setExplorationLearningPlan] = useState(false);
   const [explorationPublicBuilding, setExplorationPublicBuilding] = useState(false);
-  const {
-    user,
-    signOut
-  } = useAuth();
+  
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
     loadProgressData();
   }, [user]);
+
   const loadProgressData = async () => {
     if (!user) {
       setIkigaiLoading(false);
@@ -47,27 +48,33 @@ const Dashboard = () => {
       setIkigaiLoading(false);
     }
   };
+
   const loadIntrospectionProgress = async () => {
     try {
       // Load Ikigai progress
-      const {
-        data: ikigaiData,
-        error: ikigaiError
-      } = await supabase.from('ikigai_progress').select('*').eq('user_id', user.id).maybeSingle();
+      const { data: ikigaiData, error: ikigaiError } = await supabase
+        .from('ikigai_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       if (ikigaiError) {
         console.error('Error loading ikigai progress:', ikigaiError);
         return;
       }
+
       console.log('Dashboard - Ikigai progress data:', ikigaiData);
       const isIkigaiCompleted = ikigaiData?.is_completed || false;
       console.log('Dashboard - Setting ikigaiCompleted to:', isIkigaiCompleted);
       setIkigaiCompleted(isIkigaiCompleted);
 
       // Load Industry Research completion
-      const {
-        data: researchData,
-        error: researchError
-      } = await supabase.from('industry_research').select('id').eq('user_id', user.id).maybeSingle();
+      const { data: researchData, error: researchError } = await supabase
+        .from('industry_research')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       if (researchError) {
         console.error('Error checking Industry Research status:', researchError);
       } else {
@@ -77,10 +84,12 @@ const Dashboard = () => {
       }
 
       // Load Career Roadmap completion
-      const {
-        data: roadmapData,
-        error: roadmapError
-      } = await supabase.from('career_roadmaps').select('id').eq('user_id', user.id).maybeSingle();
+      const { data: roadmapData, error: roadmapError } = await supabase
+        .from('career_roadmaps')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       if (roadmapError) {
         console.error('Error checking Career Roadmap status:', roadmapError);
       } else {
@@ -92,34 +101,39 @@ const Dashboard = () => {
       console.error('Error loading introspection progress:', error);
     }
   };
+
   const loadExplorationProgress = async () => {
     try {
       // Check for selected project from localStorage
       const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
       setExplorationProject(savedProject);
-      if (savedProject) {
-        // Check for learning plan
-        const {
-          data: learningPlan,
-          error: learningError
-        } = await supabase.from('learning_plans').select('id').eq('user_id', user.id).eq('project_id', savedProject).maybeSingle();
-        if (!learningError && learningPlan) {
-          setExplorationLearningPlan(true);
-        }
 
-        // Check for building in public plan
-        const {
-          data: buildingPlan,
-          error: buildingError
-        } = await supabase.from('building_in_public_plans').select('id').eq('user_id', user.id).eq('project_id', savedProject).maybeSingle();
-        if (!buildingError && buildingPlan) {
-          setExplorationPublicBuilding(true);
-        }
+      // Check for ANY learning plan for this user (not just for the selected project)
+      const { data: learningPlans, error: learningError } = await supabase
+        .from('learning_plans')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (!learningError && learningPlans && learningPlans.length > 0) {
+        setExplorationLearningPlan(true);
+      }
+
+      // Check for ANY building in public plan for this user (not just for the selected project)
+      const { data: buildingPlans, error: buildingError } = await supabase
+        .from('building_in_public_plans')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (!buildingError && buildingPlans && buildingPlans.length > 0) {
+        setExplorationPublicBuilding(true);
       }
     } catch (error) {
       console.error('Error loading exploration progress:', error);
     }
   };
+
   const calculateCurrentPhaseAndProgress = () => {
     // Check if Introspection is complete
     const introspectionComplete = ikigaiCompleted && industryResearchCompleted && careerRoadmapCompleted;
@@ -129,10 +143,7 @@ const Dashboard = () => {
       if (ikigaiCompleted) totalProgress += 33;
       if (industryResearchCompleted) totalProgress += 33;
       if (careerRoadmapCompleted) totalProgress += 34;
-      return {
-        phase: 1,
-        progress: Math.round(totalProgress)
-      };
+      return { phase: 1, progress: Math.round(totalProgress) };
     }
 
     // Check if Exploration is complete
@@ -143,33 +154,27 @@ const Dashboard = () => {
       if (explorationProject) totalProgress += 33;
       if (explorationLearningPlan) totalProgress += 33;
       if (explorationPublicBuilding) totalProgress += 34;
-      return {
-        phase: 2,
-        progress: Math.round(totalProgress)
-      };
+      return { phase: 2, progress: Math.round(totalProgress) };
     }
 
     // After Exploration is complete, both Reflection and Action phases are available
     // Default to Phase 3 (Reflection) but both can be accessed
-    return {
-      phase: 3,
-      progress: 0
-    };
+    return { phase: 3, progress: 0 };
   };
-  const {
-    phase,
-    progress
-  } = calculateCurrentPhaseAndProgress();
+
+  const { phase, progress } = calculateCurrentPhaseAndProgress();
 
   // Update state if needed
   useEffect(() => {
     setCurrentPhase(phase);
     setPhaseProgress(progress);
   }, [phase, progress]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
   const handleIntrospectionClick = () => {
     console.log('Introspection clicked - ikigaiCompleted:', ikigaiCompleted, 'ikigaiLoading:', ikigaiLoading);
     if (ikigaiLoading) {
@@ -180,6 +185,7 @@ const Dashboard = () => {
     // Always navigate to introspection page first
     navigate('/introspection');
   };
+
   const handlePhaseClick = (phase: any) => {
     console.log(`Navigate to ${phase.name} phase`);
     switch (phase.name) {
@@ -218,46 +224,56 @@ const Dashboard = () => {
     }
     return 'locked';
   };
-  const phases = [{
-    id: 1,
-    name: 'Introspection',
-    description: 'Self-discovery and career alignment',
-    status: getPhaseStatus(1),
-    progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
-    estimatedTime: '1-2 weeks',
-    keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Career Roadmap and Personalized Outreach']
-  }, {
-    id: 2,
-    name: 'Exploration',
-    description: 'Project identification and knowledge building',
-    status: getPhaseStatus(2),
-    progress: currentPhase > 2 ? 100 : currentPhase === 2 ? phaseProgress : 0,
-    estimatedTime: '2-3 weeks',
-    keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public']
-  }, {
-    id: 3,
-    name: 'Reflection',
-    description: 'Skill validation through feedback',
-    status: getPhaseStatus(3),
-    progress: 0,
-    // Reflection progress is independent and ongoing
-    estimatedTime: '3-4 weeks',
-    keyActivities: ['Get peer feedback', 'Connect with mentors', 'Validate skills']
-  }, {
-    id: 4,
-    name: 'Action',
-    description: 'Active job hunting and applications',
-    status: getPhaseStatus(4),
-    progress: 0,
-    // Action progress is independent and ongoing
-    estimatedTime: 'Ongoing',
-    keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
-  }];
-  const {
-    tasks: todaysTasks,
-    completedTasks,
-    handleTaskToggle
-  } = useTodaysTasks(currentPhase, ikigaiCompleted, industryResearchCompleted, careerRoadmapCompleted, explorationProject, explorationLearningPlan, explorationPublicBuilding);
+
+  const phases = [
+    {
+      id: 1,
+      name: 'Introspection',
+      description: 'Self-discovery and career alignment',
+      status: getPhaseStatus(1),
+      progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
+      estimatedTime: '1-2 weeks',
+      keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Career Roadmap and Personalized Outreach']
+    },
+    {
+      id: 2,
+      name: 'Exploration',
+      description: 'Project identification and knowledge building',
+      status: getPhaseStatus(2),
+      progress: currentPhase > 2 ? 100 : currentPhase === 2 ? phaseProgress : 0,
+      estimatedTime: '2-3 weeks',
+      keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public']
+    },
+    {
+      id: 3,
+      name: 'Reflection',
+      description: 'Skill validation through feedback',
+      status: getPhaseStatus(3),
+      progress: 0, // Reflection progress is independent and ongoing
+      estimatedTime: '3-4 weeks',
+      keyActivities: ['Get peer feedback', 'Connect with mentors', 'Validate skills']
+    },
+    {
+      id: 4,
+      name: 'Action',
+      description: 'Active job hunting and applications',
+      status: getPhaseStatus(4),
+      progress: 0, // Action progress is independent and ongoing
+      estimatedTime: 'Ongoing',
+      keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
+    }
+  ];
+
+  const { tasks: todaysTasks, completedTasks, handleTaskToggle } = useTodaysTasks(
+    currentPhase,
+    ikigaiCompleted,
+    industryResearchCompleted,
+    careerRoadmapCompleted,
+    explorationProject,
+    explorationLearningPlan,
+    explorationPublicBuilding
+  );
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -270,6 +286,7 @@ const Dashboard = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
   const handleTaskClick = (task: any) => {
     if (task.navigationPath) {
       navigate(task.navigationPath);
@@ -285,13 +302,15 @@ const Dashboard = () => {
     const currentPhaseData = phases.find(p => p.id === currentPhase);
     return currentPhaseData?.name || 'Introspection';
   };
-  return <div className="min-h-screen gradient-bg relative overflow-hidden">
+
+  return (
+    <div className="min-h-screen gradient-bg relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float" style={{
-        animationDelay: '2s'
-      }} />
+          animationDelay: '2s'
+        }} />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse-slow" />
       </div>
 
@@ -322,8 +341,8 @@ const Dashboard = () => {
         <div className="mb-12 text-center relative overflow-hidden rounded-3xl">
           {/* Background image with overlay */}
           <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`
-        }} />
+            backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`
+          }} />
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-blue-900/70 to-purple-900/80 backdrop-blur-sm" />
           
           {/* Content */}
@@ -342,8 +361,8 @@ const Dashboard = () => {
         <Card className="mb-12 premium-card animate-scale-in relative overflow-hidden">
           {/* Background image with overlay */}
           <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10" style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')`
-        }} />
+            backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')`
+          }} />
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50" />
           
           <CardHeader className="relative z-10">
@@ -369,9 +388,10 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
-            {phases.map((phase, index) => <div key={phase.id} className="animate-fade-in transform hover:scale-[1.02] transition-all duration-300" style={{
-            animationDelay: `${index * 0.15}s`
-          }}>
+            {phases.map((phase, index) => (
+              <div key={phase.id} className="animate-fade-in transform hover:scale-[1.02] transition-all duration-300" style={{
+                animationDelay: `${index * 0.15}s`
+              }}>
                 <div className="relative group">
                   {/* Animated gradient border */}
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
@@ -386,7 +406,8 @@ const Dashboard = () => {
                     {phase.id}
                   </div>
                 </div>
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -408,14 +429,28 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {todaysTasks.map(task => <div key={task.id} className={`group flex items-start gap-4 p-6 border border-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm ${task.navigationPath ? 'hover:bg-white/30 hover:shadow-xl cursor-pointer' : 'hover:bg-white/20'}`} onClick={() => task.navigationPath && handleTaskClick(task)}>
-                      <input type="checkbox" className="w-5 h-5 mt-1 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200 flex-shrink-0" checked={completedTasks.includes(task.id)} onChange={e => {
-                    e.stopPropagation();
-                    handleTaskToggle(task.id);
-                  }} />
+                  {todaysTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className={`group flex items-start gap-4 p-6 border border-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm ${
+                        task.navigationPath ? 'hover:bg-white/30 hover:shadow-xl cursor-pointer' : 'hover:bg-white/20'
+                      }`}
+                      onClick={() => task.navigationPath && handleTaskClick(task)}
+                    >
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 mt-1 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200 flex-shrink-0"
+                        checked={completedTasks.includes(task.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleTaskToggle(task.id);
+                        }}
+                      />
                       
                       <div className="flex-1 min-w-0">
-                        <p className={`font-medium text-lg transition-all duration-200 ${completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                        <p className={`font-medium text-lg transition-all duration-200 ${
+                          completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'
+                        }`}>
                           {task.task}
                         </p>
                         <div className="flex items-center gap-3 mt-2">
@@ -425,14 +460,17 @@ const Dashboard = () => {
                       </div>
                       
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        {task.navigationPath && <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium whitespace-nowrap">
+                        {task.navigationPath && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium whitespace-nowrap">
                             Click to start →
-                          </div>}
+                          </div>
+                        )}
                         <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
                           {task.priority}
                         </Badge>
                       </div>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -442,8 +480,7 @@ const Dashboard = () => {
           <div className="space-y-8">
             {/* Quick Stats - Update task count to be dynamic */}
             <Card className="premium-card animate-scale-in">
-              
-            <CardHeader>
+              <CardHeader>
                 <CardTitle className="flex items-center space-x-2 gradient-text">
                   <TrendingUp className="w-5 h-5" />
                   <span>Quick Stats</span>
@@ -507,6 +544,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Dashboard;
