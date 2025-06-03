@@ -15,9 +15,22 @@ export const calculateProgressPercentage = (
   const hasExploredAnyProject = Object.keys(projectProgress).length > 0;
 
   let completed = 0;
-  if (selectedProject || hasExploredAnyProject) completed += 33;
-  if (hasAnyLearningPlan || learningPlanCreated) completed += 33;
-  if (hasAnyBuildingPlan || publicBuildingStarted) completed += 34;
+  
+  // Step 1: Project exploration - completed if user has explored any project OR has a currently selected project
+  if (selectedProject || hasExploredAnyProject) {
+    completed += 33;
+  }
+  
+  // Step 2: Learning plan - completed if user has ANY learning plan across all projects OR current session has one
+  if (hasAnyLearningPlan || learningPlanCreated) {
+    completed += 33;
+  }
+  
+  // Step 3: Building in public - completed if user has ANY building plan across all projects OR current session has one
+  if (hasAnyBuildingPlan || publicBuildingStarted) {
+    completed += 34;
+  }
+  
   return completed;
 };
 
