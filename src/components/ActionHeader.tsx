@@ -1,20 +1,13 @@
-
 import { Button } from '@/components/ui/button';
 import { Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const ActionHeader = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="relative min-h-[60vh] overflow-hidden">
+  return <div className="relative min-h-[60vh] overflow-hidden">
       {/* Hero Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')`
-        }}
-      >
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+      backgroundImage: `url('https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')`
+    }}>
         <div className="absolute inset-0 bg-gradient-to-br from-green-900/70 via-emerald-900/60 to-green-900/70"></div>
       </div>
 
@@ -27,19 +20,11 @@ const ActionHeader = () => {
 
       <div className="relative z-10 flex flex-col justify-center items-center h-full px-4 py-20">
         <div className="flex items-center justify-between w-full mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/dashboard')}
-            className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 transition-all duration-300"
-          >
+          <Button variant="outline" onClick={() => navigate('/dashboard')} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 transition-all duration-300">
             ← Back to Dashboard
           </Button>
           
-          <img 
-            src="/lovable-uploads/a82513ec-4139-4f2f-814a-7a8db8a59228.png" 
-            alt="CareerAI" 
-            className="h-10 w-auto"
-          />
+          
         </div>
         
         <div className="text-center mb-8 space-y-6">
@@ -59,8 +44,6 @@ const ActionHeader = () => {
           </p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ActionHeader;
