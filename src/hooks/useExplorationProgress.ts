@@ -193,10 +193,19 @@ export const useExplorationProgress = () => {
   };
 
   const getProgressPercentage = () => {
+    // Check if user has any learning plans across all projects
+    const hasAnyLearningPlan = Object.values(projectProgress).some(progress => progress.learningPlan);
+    
+    // Check if user has any building plans across all projects
+    const hasAnyBuildingPlan = Object.values(projectProgress).some(progress => progress.buildingPlan);
+    
+    // Check if user has explored any projects (has progress on any project)
+    const hasExploredAnyProject = Object.keys(projectProgress).length > 0;
+
     let completed = 0;
-    if (selectedProject) completed += 33;
-    if (learningPlanCreated) completed += 33;
-    if (publicBuildingStarted) completed += 34;
+    if (selectedProject || hasExploredAnyProject) completed += 33;
+    if (hasAnyLearningPlan || learningPlanCreated) completed += 33;
+    if (hasAnyBuildingPlan || publicBuildingStarted) completed += 34;
     return completed;
   };
 
