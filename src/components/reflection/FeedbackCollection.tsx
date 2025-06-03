@@ -62,6 +62,7 @@ const FeedbackCollection = () => {
         .from('project_options')
         .select('*')
         .eq('user_id', user.id)
+        .eq('is_selected', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
