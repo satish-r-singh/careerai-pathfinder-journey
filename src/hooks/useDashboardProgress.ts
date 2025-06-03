@@ -87,47 +87,47 @@ export const useDashboardProgress = () => {
 
   const loadExplorationProgress = async () => {
     try {
+      // Always check actual database state for exploration progress
+      const { data: learningPlans, error: learningError } = await supabase
+        .from('learning_plans')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      const hasLearningPlan = !learningError && learningPlans && learningPlans.length > 0;
+
+      const { data: buildingPlans, error: buildingError } = await supabase
+        .from('building_in_public_plans')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      const hasBuildingPlan = !buildingError && buildingPlans && buildingPlans.length > 0;
+
+      // Set the actual completion state based on database data
+      setExplorationLearningPlan(hasLearningPlan);
+      setExplorationPublicBuilding(hasBuildingPlan);
+
+      console.log('Dashboard - Exploration progress from database:', {
+        hasLearningPlan,
+        hasBuildingPlan
+      });
+
+      // Also load the current selected project for context
       const { data: explorationState, error: stateError } = await supabase
         .from('exploration_state')
-        .select('*')
+        .select('selected_project')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (stateError) {
-        console.error('Error loading exploration state:', stateError);
-      }
-
-      if (explorationState) {
+      if (!stateError && explorationState) {
         setExplorationProject(explorationState.selected_project);
-        setExplorationLearningPlan(explorationState.learning_plan_created);
-        setExplorationPublicBuilding(explorationState.public_building_started);
-        console.log('Dashboard - Loaded exploration state from database:', explorationState);
       } else {
-        console.log('Dashboard - No exploration state found, checking actual progress data');
-
+        // Fallback to localStorage only if no database state
         const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
         setExplorationProject(savedProject);
-
-        const { data: learningPlans, error: learningError } = await supabase
-          .from('learning_plans')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (!learningError && learningPlans && learningPlans.length > 0) {
-          setExplorationLearningPlan(true);
-        }
-
-        const { data: buildingPlans, error: buildingError } = await supabase
-          .from('building_in_public_plans')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (!buildingError && buildingPlans && buildingPlans.length > 0) {
-          setExplorationPublicBuilding(true);
-        }
       }
+
     } catch (error) {
       console.error('Error loading exploration progress:', error);
     }
@@ -143,6 +143,7 @@ export const useDashboardProgress = () => {
       return { phase: 1, progress: Math.round(totalProgress) };
     }
 
+    // Use the actual database state for exploration completion
     const explorationComplete = explorationLearningPlan && explorationPublicBuilding;
     console.log('Dashboard - Exploration progress check:', {
       explorationLearningPlan,
@@ -169,7 +170,8 @@ export const useDashboardProgress = () => {
   }, [phase, progress]);
 
   const getCurrentPhaseName = () => {
-    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
+    // Use the consistent exploration completion logic
+    const explorationComplete = explorationLearningPlan && explorationPublicBuilding;
     if (currentPhase === 1) return 'Introspection';
     if (currentPhase === 2) return 'Exploration';
     if (explorationComplete) return 'Reflection & Action';
