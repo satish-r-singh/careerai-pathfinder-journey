@@ -104,30 +104,52 @@ const Dashboard = () => {
 
   const loadExplorationProgress = async () => {
     try {
-      // Check for selected project from localStorage
-      const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
-      setExplorationProject(savedProject);
-
-      // Check for ANY learning plan for this user (not just for the selected project)
-      const { data: learningPlans, error: learningError } = await supabase
-        .from('learning_plans')
-        .select('id')
+      // Load exploration state from database first
+      const { data: explorationState, error: stateError } = await supabase
+        .from('exploration_state')
+        .select('*')
         .eq('user_id', user.id)
-        .limit(1);
+        .maybeSingle();
 
-      if (!learningError && learningPlans && learningPlans.length > 0) {
-        setExplorationLearningPlan(true);
+      if (stateError) {
+        console.error('Error loading exploration state:', stateError);
       }
 
-      // Check for ANY building in public plan for this user (not just for the selected project)
-      const { data: buildingPlans, error: buildingError } = await supabase
-        .from('building_in_public_plans')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1);
+      // Set the exploration progress from database
+      if (explorationState) {
+        setExplorationProject(explorationState.selected_project);
+        setExplorationLearningPlan(explorationState.learning_plan_created);
+        setExplorationPublicBuilding(explorationState.public_building_started);
+        console.log('Dashboard - Loaded exploration state from database:', explorationState);
+      } else {
+        // Fallback to checking actual data if no exploration state exists
+        console.log('Dashboard - No exploration state found, checking actual progress data');
 
-      if (!buildingError && buildingPlans && buildingPlans.length > 0) {
-        setExplorationPublicBuilding(true);
+        // Check for selected project from localStorage
+        const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
+        setExplorationProject(savedProject);
+
+        // Check for ANY learning plan for this user
+        const { data: learningPlans, error: learningError } = await supabase
+          .from('learning_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        if (!learningError && learningPlans && learningPlans.length > 0) {
+          setExplorationLearningPlan(true);
+        }
+
+        // Check for ANY building in public plan for this user
+        const { data: buildingPlans, error: buildingError } = await supabase
+          .from('building_in_public_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        if (!buildingError && buildingPlans && buildingPlans.length > 0) {
+          setExplorationPublicBuilding(true);
+        }
       }
     } catch (error) {
       console.error('Error loading exploration progress:', error);
