@@ -8,6 +8,7 @@ interface ExplorationProgressProps {
   learningPlanCreated: boolean;
   publicBuildingStarted: boolean;
   progressPercentage: number;
+  projectProgress: Record<string, { learningPlan: boolean; buildingPlan: boolean }>;
 }
 
 const steps = [
@@ -20,22 +21,31 @@ const ExplorationProgress = ({
   selectedProject, 
   learningPlanCreated, 
   publicBuildingStarted, 
-  progressPercentage 
+  progressPercentage,
+  projectProgress 
 }: ExplorationProgressProps) => {
+  // Check if user has any learning plans across all projects
+  const hasAnyLearningPlan = Object.values(projectProgress).some(progress => progress.learningPlan);
+  
+  // Check if user has any building plans across all projects
+  const hasAnyBuildingPlan = Object.values(projectProgress).some(progress => progress.buildingPlan);
+
   const getStepStatus = (stepKey: string) => {
     switch (stepKey) {
       case 'project':
         return selectedProject ? 'completed' : 'current';
       case 'learning':
-        return learningPlanCreated ? 'completed' : selectedProject ? 'current' : 'locked';
+        if (hasAnyLearningPlan || learningPlanCreated) return 'completed';
+        return selectedProject ? 'current' : 'locked';
       case 'building':
-        return publicBuildingStarted ? 'completed' : learningPlanCreated ? 'current' : 'locked';
+        if (hasAnyBuildingPlan || publicBuildingStarted) return 'completed';
+        return (hasAnyLearningPlan || learningPlanCreated) ? 'current' : 'locked';
       default:
         return 'locked';
     }
   };
 
-  const completedSteps = [selectedProject, learningPlanCreated, publicBuildingStarted].filter(Boolean).length;
+  const completedSteps = [selectedProject, hasAnyLearningPlan || learningPlanCreated, hasAnyBuildingPlan || publicBuildingStarted].filter(Boolean).length;
 
   return (
     <div className="w-full">

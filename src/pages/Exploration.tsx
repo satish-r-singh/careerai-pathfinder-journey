@@ -94,6 +94,7 @@ const Exploration = () => {
                 learningPlanCreated={learningPlanCreated}
                 publicBuildingStarted={publicBuildingStarted}
                 progressPercentage={getProgressPercentage()}
+                projectProgress={projectProgress}
               />
             </CardContent>
           </Card>
