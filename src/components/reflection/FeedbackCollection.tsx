@@ -145,28 +145,6 @@ const FeedbackCollection = () => {
     }
   };
 
-  // Mock data for existing feedback
-  const feedbackReceived = [
-    {
-      id: 1,
-      from: 'Sarah Chen',
-      role: 'Senior ML Engineer',
-      rating: 4,
-      feedback: 'Great understanding of machine learning concepts. Your project shows solid technical skills. Consider diving deeper into model optimization.',
-      skills: ['Machine Learning', 'Python'],
-      date: '2024-05-28'
-    },
-    {
-      id: 2,
-      from: 'Mike Rodriguez',
-      role: 'AI Product Manager',
-      rating: 5,
-      feedback: 'Excellent communication of technical concepts. Your presentation was clear and well-structured. Keep up the great work!',
-      skills: ['Communication', 'Presentation'],
-      date: '2024-05-25'
-    }
-  ];
-
   return (
     <div className="space-y-6">
       {/* Request Feedback Section */}
