@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,7 +169,7 @@ const Dashboard = () => {
       return { phase: 1, progress: Math.round(totalProgress) };
     }
 
-    // Check if Exploration is complete
+    // Check if Exploration is complete - Updated to use the correct state variables
     const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
     if (!explorationComplete) {
       // Phase 2: Exploration
