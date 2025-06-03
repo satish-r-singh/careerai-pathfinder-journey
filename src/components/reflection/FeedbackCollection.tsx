@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,28 +28,6 @@ const FeedbackCollection = () => {
     deadline: ''
   });
 
-  // Mock data for existing feedback
-  const feedbackReceived = [
-    {
-      id: 1,
-      from: 'Sarah Chen',
-      role: 'Senior ML Engineer',
-      rating: 4,
-      feedback: 'Great understanding of machine learning concepts. Your project shows solid technical skills. Consider diving deeper into model optimization.',
-      skills: ['Machine Learning', 'Python'],
-      date: '2024-05-28'
-    },
-    {
-      id: 2,
-      from: 'Mike Rodriguez',
-      role: 'AI Product Manager',
-      rating: 5,
-      feedback: 'Excellent communication of technical concepts. Your presentation was clear and well-structured. Keep up the great work!',
-      skills: ['Communication', 'Presentation'],
-      date: '2024-05-25'
-    }
-  ];
-
   useEffect(() => {
     if (user) {
       fetchUserProjects();
@@ -58,6 +37,17 @@ const FeedbackCollection = () => {
 
   const fetchUserProjects = async () => {
     try {
+      console.log('Fetching projects for user:', user.id);
+      
+      // First, let's check all projects for this user
+      const { data: allProjects, error: allError } = await supabase
+        .from('project_options')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      console.log('All projects for user:', allProjects);
+      
+      // Now fetch only selected projects
       const { data, error } = await supabase
         .from('project_options')
         .select('*')
@@ -66,6 +56,8 @@ const FeedbackCollection = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Selected projects:', data);
       setProjects(data || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -190,16 +182,27 @@ const FeedbackCollection = () => {
                 <label className="block text-sm font-medium mb-1">Select Project (Optional)</label>
                 <Select value={feedbackRequest.projectId} onValueChange={handleProjectSelect}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a project" />
+                    <SelectValue placeholder={projects.length > 0 ? "Choose a project" : "No selected projects available"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.project_data?.name || 'Unnamed Project'}
+                    {projects.length === 0 ? (
+                      <SelectItem value="no-projects" disabled>
+                        No selected projects found
                       </SelectItem>
-                    ))}
+                    ) : (
+                      projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.project_data?.name || 'Unnamed Project'}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
+                {projects.length === 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Go to the Exploration page to select projects first.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Deadline (Optional)</label>
@@ -316,42 +319,11 @@ const FeedbackCollection = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {feedbackReceived.map((feedback) => (
-              <div key={feedback.id} className="border rounded-lg p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">{feedback.from}</h4>
-                      <p className="text-sm text-gray-500">{feedback.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < feedback.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-3">{feedback.feedback}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-2">
-                    {feedback.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="text-xs">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  <span className="text-xs text-gray-500">{feedback.date}</span>
-                </div>
-              </div>
-            ))}
+            <div className="text-center py-8 text-gray-500">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>No feedback received yet</p>
+              <p className="text-sm">Submit a feedback request to start collecting insights</p>
+            </div>
           </div>
         </CardContent>
       </Card>
