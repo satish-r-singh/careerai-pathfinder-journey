@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LearningPlan } from '@/utils/learningPlanGeneration';
@@ -221,6 +222,12 @@ export const useExplorationProgress = () => {
     setBuildingInPublicPlan(null);
   };
 
+  // Function to refresh project progress - this will be called after learning plan creation
+  const refreshProjectProgress = async () => {
+    console.log('Refreshing project progress...');
+    await loadAllProjectsProgress();
+  };
+
   const getProgressPercentage = () => {
     const percentage = calculateProgressPercentage(projectProgress);
     console.log('Final progress percentage calculated:', percentage);
@@ -248,6 +255,7 @@ export const useExplorationProgress = () => {
     setLearningPlanCreated,
     setShowLearningPlan,
     setBuildingInPublicPlan,
-    setPublicBuildingStarted
+    setPublicBuildingStarted,
+    refreshProjectProgress
   };
 };

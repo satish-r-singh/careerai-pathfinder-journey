@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -11,6 +12,7 @@ import SelectedProjectSummary from '@/components/exploration/SelectedProjectSumm
 import LearningPlanSection from '@/components/exploration/LearningPlanSection';
 import ExplorationCompletion from '@/components/exploration/ExplorationCompletion';
 import DailyPostGenerator from '@/components/exploration/DailyPostGenerator';
+
 const Exploration = () => {
   const navigate = useNavigate();
   const {
@@ -33,8 +35,10 @@ const Exploration = () => {
     setLearningPlanCreated,
     setShowLearningPlan,
     setBuildingInPublicPlan,
-    setPublicBuildingStarted
+    setPublicBuildingStarted,
+    refreshProjectProgress
   } = useExplorationProgress();
+
   const handleBackNavigation = () => {
     if (selectedProject) {
       backToProjectSelection();
@@ -42,21 +46,27 @@ const Exploration = () => {
       navigate('/dashboard');
     }
   };
+
   const getSelectedProjectData = () => {
     return projects.find(p => p.id === selectedProject);
   };
-  const handleLearningPlanCreated = (plan: any) => {
+
+  const handleLearningPlanCreated = async (plan: any) => {
     setGeneratedLearningPlan(plan);
     setLearningPlanCreated(true);
     setShowLearningPlan(true);
+    // Refresh project progress to update the progress bars
+    await refreshProjectProgress();
   };
-  return <div className="min-h-screen gradient-bg relative overflow-hidden">
+
+  return (
+    <div className="min-h-screen gradient-bg relative overflow-hidden">
       {/* Enhanced Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float" style={{
-        animationDelay: '2s'
-      }} />
+          animationDelay: '2s'
+        }} />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-40 right-20 w-96 h-96 bg-blue-200/10 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -77,22 +87,34 @@ const Exploration = () => {
                 
               </div>
               
-              <ExplorationProgress progressPercentage={getProgressPercentage()} projectProgress={projectProgress} />
+              <ExplorationProgress 
+                progressPercentage={getProgressPercentage()} 
+                projectProgress={projectProgress} 
+              />
             </CardContent>
           </Card>
 
           {/* Project Selection */}
-          {!selectedProject && <div className="animate-slide-up">
-              <ProjectSelection onProjectSelect={handleProjectSelect} projectProgress={projectProgress} getProjectProgress={getProjectProgress} />
-            </div>}
+          {!selectedProject && (
+            <div className="animate-slide-up">
+              <ProjectSelection 
+                onProjectSelect={handleProjectSelect} 
+                projectProgress={projectProgress} 
+                getProjectProgress={getProjectProgress} 
+              />
+            </div>
+          )}
 
           {/* Daily Post Generator - Show when no project is selected */}
-          {!selectedProject && <div className="animate-fade-in">
+          {!selectedProject && (
+            <div className="animate-fade-in">
               <DailyPostGenerator projectProgress={projectProgress} />
-            </div>}
+            </div>
+          )}
 
           {/* Selected Project & Next Steps */}
-          {selectedProject && <div className="space-y-8 animate-fade-in">
+          {selectedProject && (
+            <div className="space-y-8 animate-fade-in">
               {/* Selected Project Summary */}
               <div className="animate-scale-in">
                 <SelectedProjectSummary project={getSelectedProjectData()} />
@@ -100,18 +122,29 @@ const Exploration = () => {
 
               {/* Learning Plan */}
               <div className="animate-fade-in" style={{
-            animationDelay: '0.1s'
-          }}>
-                <LearningPlanSection selectedProject={getSelectedProjectData()} learningPlanCreated={learningPlanCreated} showLearningPlan={showLearningPlan} generatedLearningPlan={generatedLearningPlan} onLearningPlanCreated={handleLearningPlanCreated} />
+                animationDelay: '0.1s'
+              }}>
+                <LearningPlanSection 
+                  selectedProject={getSelectedProjectData()} 
+                  learningPlanCreated={learningPlanCreated} 
+                  showLearningPlan={showLearningPlan} 
+                  generatedLearningPlan={generatedLearningPlan} 
+                  onLearningPlanCreated={handleLearningPlanCreated} 
+                />
               </div>
-            </div>}
+            </div>
+          )}
 
           {/* Completion Message */}
-          {selectedProject && learningPlanCreated && <div className="animate-scale-in">
+          {selectedProject && learningPlanCreated && (
+            <div className="animate-scale-in">
               <ExplorationCompletion />
-            </div>}
+            </div>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Exploration;
