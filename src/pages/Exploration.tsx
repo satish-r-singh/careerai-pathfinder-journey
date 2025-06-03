@@ -10,8 +10,8 @@ import ExplorationProgress from '@/components/exploration/ExplorationProgress';
 import ProjectSelection from '@/components/exploration/ProjectSelection';
 import SelectedProjectSummary from '@/components/exploration/SelectedProjectSummary';
 import LearningPlanSection from '@/components/exploration/LearningPlanSection';
-import BuildingInPublicSection from '@/components/exploration/BuildingInPublicSection';
 import ExplorationCompletion from '@/components/exploration/ExplorationCompletion';
+import DailyPostGenerator from '@/components/exploration/DailyPostGenerator';
 
 const Exploration = () => {
   const navigate = useNavigate();
@@ -52,11 +52,6 @@ const Exploration = () => {
     setGeneratedLearningPlan(plan);
     setLearningPlanCreated(true);
     setShowLearningPlan(true);
-  };
-
-  const handleBuildingPlanCreated = (plan: any) => {
-    setBuildingInPublicPlan(plan);
-    setPublicBuildingStarted(true);
   };
 
   return (
@@ -114,6 +109,13 @@ const Exploration = () => {
             </div>
           )}
 
+          {/* Daily Post Generator - Show when no project is selected */}
+          {!selectedProject && (
+            <div className="animate-fade-in">
+              <DailyPostGenerator projectProgress={projectProgress} />
+            </div>
+          )}
+
           {/* Selected Project & Next Steps */}
           {selectedProject && (
             <div className="space-y-8 animate-fade-in">
@@ -132,23 +134,11 @@ const Exploration = () => {
                   onLearningPlanCreated={handleLearningPlanCreated}
                 />
               </div>
-
-              {/* Building in Public */}
-              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <BuildingInPublicSection
-                  selectedProject={getSelectedProjectData()}
-                  learningPlanCreated={learningPlanCreated}
-                  publicBuildingStarted={publicBuildingStarted}
-                  buildingInPublicPlan={buildingInPublicPlan}
-                  generatedLearningPlan={generatedLearningPlan}
-                  onBuildingPlanCreated={handleBuildingPlanCreated}
-                />
-              </div>
             </div>
           )}
 
           {/* Completion Message */}
-          {selectedProject && learningPlanCreated && publicBuildingStarted && (
+          {selectedProject && learningPlanCreated && (
             <div className="animate-scale-in">
               <ExplorationCompletion />
             </div>
