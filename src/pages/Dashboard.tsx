@@ -1,300 +1,30 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import ProgressBar from '@/components/ProgressBar';
-import PhaseCard from '@/components/PhaseCard';
-import { Bell, Calendar, CheckCircle, TrendingUp, User, BookOpen, LogOut } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import WelcomeSection from '@/components/dashboard/WelcomeSection';
+import ProgressOverview from '@/components/dashboard/ProgressOverview';
+import CareerJourney from '@/components/dashboard/CareerJourney';
+import TodaysTasks from '@/components/dashboard/TodaysTasks';
+import QuickStats from '@/components/dashboard/QuickStats';
+import UpcomingSection from '@/components/dashboard/UpcomingSection';
+import ResourcesSection from '@/components/dashboard/ResourcesSection';
+import { useDashboardProgress } from '@/hooks/useDashboardProgress';
 import { useTodaysTasks } from '@/hooks/useTodaysTasks';
 
 const Dashboard = () => {
-  const [currentPhase, setCurrentPhase] = useState(1);
-  const [phaseProgress, setPhaseProgress] = useState(0);
-  const [ikigaiCompleted, setIkigaiCompleted] = useState(false);
-  const [industryResearchCompleted, setIndustryResearchCompleted] = useState(false);
-  const [careerRoadmapCompleted, setCareerRoadmapCompleted] = useState(false);
-  const [ikigaiLoading, setIkigaiLoading] = useState(true);
-  // Exploration progress states
-  const [explorationProject, setExplorationProject] = useState<string | null>(null);
-  const [explorationLearningPlan, setExplorationLearningPlan] = useState(false);
-  const [explorationPublicBuilding, setExplorationPublicBuilding] = useState(false);
-  
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const {
+    currentPhase,
+    phaseProgress,
+    ikigaiCompleted,
+    industryResearchCompleted,
+    careerRoadmapCompleted,
+    ikigaiLoading,
+    explorationProject,
+    explorationLearningPlan,
+    explorationPublicBuilding,
+    getCurrentPhaseName
+  } = useDashboardProgress();
 
-  useEffect(() => {
-    loadProgressData();
-  }, [user]);
-
-  const loadProgressData = async () => {
-    if (!user) {
-      setIkigaiLoading(false);
-      return;
-    }
-    try {
-      console.log('Loading progress data for dashboard...');
-
-      // Load Introspection progress
-      await loadIntrospectionProgress();
-
-      // Load Exploration progress
-      await loadExplorationProgress();
-    } catch (error) {
-      console.error('Error loading progress data:', error);
-    } finally {
-      setIkigaiLoading(false);
-    }
-  };
-
-  const loadIntrospectionProgress = async () => {
-    try {
-      // Load Ikigai progress
-      const { data: ikigaiData, error: ikigaiError } = await supabase
-        .from('ikigai_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (ikigaiError) {
-        console.error('Error loading ikigai progress:', ikigaiError);
-        return;
-      }
-
-      console.log('Dashboard - Ikigai progress data:', ikigaiData);
-      const isIkigaiCompleted = ikigaiData?.is_completed || false;
-      console.log('Dashboard - Setting ikigaiCompleted to:', isIkigaiCompleted);
-      setIkigaiCompleted(isIkigaiCompleted);
-
-      // Load Industry Research completion
-      const { data: researchData, error: researchError } = await supabase
-        .from('industry_research')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (researchError) {
-        console.error('Error checking Industry Research status:', researchError);
-      } else {
-        const isResearchCompleted = !!researchData;
-        console.log('Dashboard - Setting industryResearchCompleted to:', isResearchCompleted);
-        setIndustryResearchCompleted(isResearchCompleted);
-      }
-
-      // Load Career Roadmap completion
-      const { data: roadmapData, error: roadmapError } = await supabase
-        .from('career_roadmaps')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (roadmapError) {
-        console.error('Error checking Career Roadmap status:', roadmapError);
-      } else {
-        const isRoadmapCompleted = !!roadmapData;
-        console.log('Dashboard - Setting careerRoadmapCompleted to:', isRoadmapCompleted);
-        setCareerRoadmapCompleted(isRoadmapCompleted);
-      }
-    } catch (error) {
-      console.error('Error loading introspection progress:', error);
-    }
-  };
-
-  const loadExplorationProgress = async () => {
-    try {
-      // Load exploration state from database first
-      const { data: explorationState, error: stateError } = await supabase
-        .from('exploration_state')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (stateError) {
-        console.error('Error loading exploration state:', stateError);
-      }
-
-      // Set the exploration progress from database
-      if (explorationState) {
-        setExplorationProject(explorationState.selected_project);
-        setExplorationLearningPlan(explorationState.learning_plan_created);
-        setExplorationPublicBuilding(explorationState.public_building_started);
-        console.log('Dashboard - Loaded exploration state from database:', explorationState);
-      } else {
-        // Fallback to checking actual data if no exploration state exists
-        console.log('Dashboard - No exploration state found, checking actual progress data');
-
-        // Check for selected project from localStorage
-        const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
-        setExplorationProject(savedProject);
-
-        // Check for ANY learning plan for this user
-        const { data: learningPlans, error: learningError } = await supabase
-          .from('learning_plans')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (!learningError && learningPlans && learningPlans.length > 0) {
-          setExplorationLearningPlan(true);
-        }
-
-        // Check for ANY building in public plan for this user
-        const { data: buildingPlans, error: buildingError } = await supabase
-          .from('building_in_public_plans')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (!buildingError && buildingPlans && buildingPlans.length > 0) {
-          setExplorationPublicBuilding(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading exploration progress:', error);
-    }
-  };
-
-  const calculateCurrentPhaseAndProgress = () => {
-    // Check if Introspection is complete
-    const introspectionComplete = ikigaiCompleted && industryResearchCompleted && careerRoadmapCompleted;
-    if (!introspectionComplete) {
-      // Phase 1: Introspection
-      let totalProgress = 0;
-      if (ikigaiCompleted) totalProgress += 33;
-      if (industryResearchCompleted) totalProgress += 33;
-      if (careerRoadmapCompleted) totalProgress += 34;
-      return { phase: 1, progress: Math.round(totalProgress) };
-    }
-
-    // Check if Exploration is complete - Use the database-loaded state variables
-    const explorationComplete = explorationLearningPlan && explorationPublicBuilding;
-    console.log('Dashboard - Exploration progress check:', {
-      explorationLearningPlan,
-      explorationPublicBuilding,
-      explorationComplete
-    });
-    
-    if (!explorationComplete) {
-      // Phase 2: Exploration
-      let totalProgress = 0;
-      // Since we have learning plans and building plans, both should be true
-      if (explorationLearningPlan) totalProgress += 50;
-      if (explorationPublicBuilding) totalProgress += 50;
-      console.log('Dashboard - Exploration progress calculation:', totalProgress);
-      return { phase: 2, progress: Math.round(totalProgress) };
-    }
-
-    // After Exploration is complete, both Reflection and Action phases are available
-    // Default to Phase 3 (Reflection) but both can be accessed
-    return { phase: 3, progress: 0 };
-  };
-
-  const { phase, progress } = calculateCurrentPhaseAndProgress();
-
-  // Update state if needed
-  useEffect(() => {
-    setCurrentPhase(phase);
-    setPhaseProgress(progress);
-  }, [phase, progress]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  const handleIntrospectionClick = () => {
-    console.log('Introspection clicked - ikigaiCompleted:', ikigaiCompleted, 'ikigaiLoading:', ikigaiLoading);
-    if (ikigaiLoading) {
-      // Wait for loading to complete
-      return;
-    }
-
-    // Always navigate to introspection page first
-    navigate('/introspection');
-  };
-
-  const handlePhaseClick = (phase: any) => {
-    console.log(`Navigate to ${phase.name} phase`);
-    switch (phase.name) {
-      case 'Introspection':
-        handleIntrospectionClick();
-        break;
-      case 'Exploration':
-        if (phase.status === 'current' || phase.status === 'completed') {
-          navigate('/exploration');
-        }
-        break;
-      case 'Reflection':
-        if (phase.status === 'current' || phase.status === 'completed') {
-          navigate('/reflection');
-        }
-        break;
-      case 'Action':
-        if (phase.status === 'current' || phase.status === 'completed') {
-          navigate('/action');
-        }
-        break;
-      default:
-        console.log(`Unknown phase: ${phase.name}`);
-    }
-  };
-
-  // Determine phase statuses based on current phase - Updated logic for concurrent phases
-  const getPhaseStatus = (phaseId: number): 'completed' | 'current' | 'locked' => {
-    if (phaseId < currentPhase) return 'completed';
-    if (phaseId === currentPhase) return 'current';
-
-    // Special case: After Exploration (Phase 2) is complete, both Reflection (3) and Action (4) are available
-    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
-    if (explorationComplete && (phaseId === 3 || phaseId === 4)) {
-      return 'current';
-    }
-    return 'locked';
-  };
-
-  const phases = [
-    {
-      id: 1,
-      name: 'Introspection',
-      description: 'Self-discovery and career alignment',
-      status: getPhaseStatus(1),
-      progress: currentPhase > 1 ? 100 : currentPhase === 1 ? phaseProgress : 0,
-      estimatedTime: '1-2 weeks',
-      keyActivities: ['Complete Ikigai assessment', 'Research AI Industry and relevant roles', 'Career Roadmap and Personalized Outreach']
-    },
-    {
-      id: 2,
-      name: 'Exploration',
-      description: 'Project identification and knowledge building',
-      status: getPhaseStatus(2),
-      progress: currentPhase > 2 ? 100 : currentPhase === 2 ? phaseProgress : 0,
-      estimatedTime: '2-3 weeks',
-      keyActivities: ['Choose project topic', 'Build learning plan', 'Start building in public']
-    },
-    {
-      id: 3,
-      name: 'Reflection',
-      description: 'Skill validation through feedback',
-      status: getPhaseStatus(3),
-      progress: 0, // Reflection progress is independent and ongoing
-      estimatedTime: '3-4 weeks',
-      keyActivities: ['Get peer feedback', 'Connect with mentors', 'Validate skills']
-    },
-    {
-      id: 4,
-      name: 'Action',
-      description: 'Active job hunting and applications',
-      status: getPhaseStatus(4),
-      progress: 0, // Action progress is independent and ongoing
-      estimatedTime: 'Ongoing',
-      keyActivities: ['Apply to positions', 'Network with recruiters', 'Track applications']
-    }
-  ];
-
-  const { tasks: todaysTasks, completedTasks, handleTaskToggle } = useTodaysTasks(
+  const { tasks: todaysTasks, completedTasks } = useTodaysTasks(
     currentPhase,
     ikigaiCompleted,
     industryResearchCompleted,
@@ -303,35 +33,6 @@ const Dashboard = () => {
     explorationLearningPlan,
     explorationPublicBuilding
   );
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const handleTaskClick = (task: any) => {
-    if (task.navigationPath) {
-      navigate(task.navigationPath);
-    }
-  };
-
-  // Get current phase name for display - Updated for concurrent phases
-  const getCurrentPhaseName = () => {
-    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
-    if (currentPhase === 1) return 'Introspection';
-    if (currentPhase === 2) return 'Exploration';
-    if (explorationComplete) return 'Reflection & Action';
-    const currentPhaseData = phases.find(p => p.id === currentPhase);
-    return currentPhaseData?.name || 'Introspection';
-  };
 
   return (
     <div className="min-h-screen gradient-bg relative overflow-hidden">
@@ -344,233 +45,44 @@ const Dashboard = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse-slow" />
       </div>
 
-      {/* Header */}
-      <div className="relative z-10 glass-effect border-0 border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center">
-              <img src="/lovable-uploads/a82513ec-4139-4f2f-814a-7a8db8a59228.png" alt="CareerAI" className="h-10 w-auto" />
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm" className="hover:bg-white/20 transition-all duration-300">
-                <Bell className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="hover:bg-white/20 transition-all duration-300">
-                <User className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="hover:bg-white/20 transition-all duration-300">
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardHeader />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Section with background image */}
-        <div className="mb-12 text-center relative overflow-hidden rounded-3xl">
-          {/* Background image with overlay */}
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`
-          }} />
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/80 via-blue-900/70 to-purple-900/80 backdrop-blur-sm" />
-          
-          {/* Content */}
-          <div className="relative z-10 py-16 px-8">
-            <h1 className="text-5xl font-bold text-white mb-4 animate-fade-in drop-shadow-lg">
-              Welcome back, {user?.user_metadata?.full_name || user?.email}! 👋
-            </h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto animate-slide-up drop-shadow-md">
-              You're in the <span className="font-semibold text-accent-foreground bg-accent/20 px-2 py-1 rounded-lg">{getCurrentPhaseName()}</span> phase. 
-              {currentPhase === 1 ? " Let's continue building your AI career foundation." : currentPhase === 2 ? " Time to explore projects and build your skills!" : " You can now work on both reflection activities and job applications!"}
-            </p>
-          </div>
-        </div>
+        <WelcomeSection currentPhase={currentPhase} getCurrentPhaseName={getCurrentPhaseName} />
+        
+        <ProgressOverview currentPhase={currentPhase} />
 
-        {/* Progress Overview with background image */}
-        <Card className="mb-12 premium-card animate-scale-in relative overflow-hidden">
-          {/* Background image with overlay */}
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10" style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80')`
-          }} />
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50" />
-          
-          <CardHeader className="relative z-10">
-            <CardTitle className="flex items-center space-x-3 text-2xl gradient-text">
-              <TrendingUp className="w-6 h-6 text-primary" />
-              <span>Your Progress</span>
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Track your journey through the 4-phase career transition program
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <ProgressBar currentPhase={currentPhase} totalPhases={4} />
-          </CardContent>
-        </Card>
-
-        {/* Your Career Journey section - enhanced visual design */}
-        <div className="mb-12 animate-slide-up">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold gradient-text mb-4">Your Career Journey</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Navigate through our comprehensive 4-phase program designed to accelerate your AI career transition
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {phases.map((phase, index) => (
-              <div key={phase.id} className="animate-fade-in transform hover:scale-[1.02] transition-all duration-300" style={{
-                animationDelay: `${index * 0.15}s`
-              }}>
-                <div className="relative group">
-                  {/* Animated gradient border */}
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
-                  
-                  {/* Enhanced PhaseCard with better styling */}
-                  <div className="relative">
-                    <PhaseCard phase={phase} onClick={() => handlePhaseClick(phase)} />
-                  </div>
-                  
-                  {/* Phase number indicator */}
-                  <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                    {phase.id}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CareerJourney 
+          currentPhase={currentPhase}
+          phaseProgress={phaseProgress}
+          ikigaiCompleted={ikigaiCompleted}
+          ikigaiLoading={ikigaiLoading}
+          explorationProject={explorationProject}
+          explorationLearningPlan={explorationLearningPlan}
+          explorationPublicBuilding={explorationPublicBuilding}
+        />
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Today's Tasks - Updated layout for better alignment */}
-            <Card className="premium-card animate-fade-in">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3 text-xl gradient-text">
-                  <CheckCircle className="w-5 h-5 text-primary" />
-                  <span>Today's Focus</span>
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {currentPhase === 1 && "Complete these introspection tasks to build your career foundation"}
-                  {currentPhase === 2 && "Focus on exploration and skill building activities"}
-                  {currentPhase >= 3 && "Balance reflection activities with active job searching"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {todaysTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className={`group flex items-start gap-4 p-6 border border-white/20 rounded-xl transition-all duration-300 backdrop-blur-sm ${
-                        task.navigationPath ? 'hover:bg-white/30 hover:shadow-xl cursor-pointer' : 'hover:bg-white/20'
-                      }`}
-                      onClick={() => task.navigationPath && handleTaskClick(task)}
-                    >
-                      <input
-                        type="checkbox"
-                        className="w-5 h-5 mt-1 rounded border-2 border-primary/30 text-primary focus:ring-primary/20 transition-all duration-200 flex-shrink-0"
-                        checked={completedTasks.includes(task.id)}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleTaskToggle(task.id);
-                        }}
-                      />
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-medium text-lg transition-all duration-200 ${
-                          completedTasks.includes(task.id) ? 'line-through text-gray-500' : 'text-gray-800'
-                        }`}>
-                          {task.task}
-                        </p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <p className="text-sm text-gray-500">Estimated: {task.estimated}</p>
-                          <p className="text-xs text-gray-400">Phase {task.phase}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        {task.navigationPath && (
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-primary font-medium whitespace-nowrap">
-                            Click to start →
-                          </div>
-                        )}
-                        <Badge className={`${getPriorityColor(task.priority)} px-3 py-1 text-sm font-medium`}>
-                          {task.priority}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <TodaysTasks 
+              currentPhase={currentPhase}
+              ikigaiCompleted={ikigaiCompleted}
+              industryResearchCompleted={industryResearchCompleted}
+              careerRoadmapCompleted={careerRoadmapCompleted}
+              explorationProject={explorationProject}
+              explorationLearningPlan={explorationLearningPlan}
+              explorationPublicBuilding={explorationPublicBuilding}
+            />
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-8">
-            {/* Quick Stats - Update task count to be dynamic */}
-            <Card className="premium-card animate-scale-in">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 gradient-text">
-                  <TrendingUp className="w-5 h-5" />
-                  <span>Quick Stats</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">Tasks Completed</p>
-                  <p className="font-medium text-gray-800">{completedTasks.length} / {todaysTasks.length}</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">Current Phase</p>
-                  <p className="font-medium text-gray-800">{getCurrentPhaseName()}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Upcoming */}
-            <Card className="premium-card animate-fade-in">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 gradient-text">
-                  <Calendar className="w-5 h-5" />
-                  <span className="py-[4px]">Upcoming</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100">
-                  <p className="font-medium text-gray-800">Phase Assessment</p>
-                  <p className="text-sm text-gray-600 mt-1">Due in 5 days</p>
-                </div>
-                <div className="p-4 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border border-green-100">
-                  <p className="font-medium text-gray-800">Mentor Check-in</p>
-                  <p className="text-sm text-gray-600 mt-1">Scheduled for Friday</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Resources */}
-            <Card className="premium-card animate-slide-up">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 gradient-text">
-                  <BookOpen className="w-5 h-5" />
-                  <span>Recommended</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                  <p className="font-medium text-primary group-hover:text-purple-700 transition-colors">
-                    AI Career Transition Guide
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">Essential reading for Phase 1</p>
-                </div>
-                <div className="p-4 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-100 hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                  <p className="font-medium text-primary group-hover:text-blue-700 transition-colors">
-                    Industry Trends Report 2024
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">Latest AI job market insights</p>
-                </div>
-              </CardContent>
-            </Card>
+            <QuickStats 
+              completedTasksCount={completedTasks.length}
+              totalTasksCount={todaysTasks.length}
+              getCurrentPhaseName={getCurrentPhaseName}
+            />
+            <UpcomingSection />
+            <ResourcesSection />
           </div>
         </div>
       </div>
