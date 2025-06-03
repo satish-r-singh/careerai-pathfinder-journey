@@ -36,16 +36,23 @@ const ExplorationProgress = ({
   // Check if user has any building plans across all projects
   const hasAnyBuildingPlan = Object.values(projectProgress).some(progress => progress.buildingPlan);
 
+  // Check if user has explored any projects (has progress on any project)
+  const hasExploredAnyProject = Object.keys(projectProgress).length > 0;
+
   const getStepStatus = (stepKey: string) => {
     console.log(`Getting status for step: ${stepKey}`);
     switch (stepKey) {
       case 'project':
-        const projectStatus = selectedProject ? 'completed' : 'current';
-        console.log(`Project step status: ${projectStatus}, selectedProject: ${selectedProject}`);
+        // Consider project step completed if:
+        // 1. A project is currently selected, OR
+        // 2. User has explored any projects before (has progress on any project)
+        const projectCompleted = selectedProject || hasExploredAnyProject;
+        const projectStatus = projectCompleted ? 'completed' : 'current';
+        console.log(`Project step status: ${projectStatus}, selectedProject: ${selectedProject}, hasExploredAnyProject: ${hasExploredAnyProject}`);
         return projectStatus;
       case 'learning':
         if (hasAnyLearningPlan || learningPlanCreated) return 'completed';
-        return selectedProject ? 'current' : 'locked';
+        return selectedProject || hasExploredAnyProject ? 'current' : 'locked';
       case 'building':
         if (hasAnyBuildingPlan || publicBuildingStarted) return 'completed';
         return (hasAnyLearningPlan || learningPlanCreated) ? 'current' : 'locked';
@@ -54,7 +61,11 @@ const ExplorationProgress = ({
     }
   };
 
-  const completedSteps = [selectedProject, hasAnyLearningPlan || learningPlanCreated, hasAnyBuildingPlan || publicBuildingStarted].filter(Boolean).length;
+  const completedSteps = [
+    selectedProject || hasExploredAnyProject, 
+    hasAnyLearningPlan || learningPlanCreated, 
+    hasAnyBuildingPlan || publicBuildingStarted
+  ].filter(Boolean).length;
 
   return (
     <div className="w-full">
