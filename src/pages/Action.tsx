@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,9 @@ import ActionHeader from '@/components/ActionHeader';
 import JobApplicationTracker from '@/components/action/JobApplicationTracker';
 import NetworkingTools from '@/components/action/NetworkingTools';
 import ActionProgress from '@/components/action/ActionProgress';
+import ProjectDashboard from '@/components/action/ProjectDashboard';
+import Delta4Analysis from '@/components/action/Delta4Analysis';
+import TargetFirmAlerts from '@/components/action/TargetFirmAlerts';
 
 const Action = () => {
   const [activeTab, setActiveTab] = useState('applications');
@@ -19,6 +21,9 @@ const Action = () => {
   const tabs = [
     { id: 'applications', name: 'Job Applications', icon: Briefcase },
     { id: 'networking', name: 'Networking', icon: Users },
+    { id: 'projects', name: 'Project Dashboard', icon: Target },
+    { id: 'delta4', name: 'Delta 4 Analysis', icon: CheckCircle },
+    { id: 'alerts', name: 'Target Firm Alerts', icon: Search },
   ];
 
   const actionActivities = [
@@ -123,6 +128,9 @@ const Action = () => {
             <div className="space-y-6">
               {activeTab === 'applications' && <JobApplicationTracker />}
               {activeTab === 'networking' && <NetworkingTools />}
+              {activeTab === 'projects' && <ProjectDashboard />}
+              {activeTab === 'delta4' && <Delta4Analysis />}
+              {activeTab === 'alerts' && <TargetFirmAlerts />}
             </div>
           </div>
         </div>
