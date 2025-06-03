@@ -1,8 +1,22 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { LearningPlan } from '@/utils/learningPlanGeneration';
+import { ExplorationProgressState } from '@/types/explorationProgress';
+import { calculateProgressPercentage, getProjectProgress } from '@/utils/explorationProgressUtils';
+import { 
+  saveSelectedProject, 
+  getSelectedProject, 
+  removeSelectedProject,
+  getPublicBuilding,
+  removePublicBuilding
+} from '@/utils/explorationLocalStorage';
+import {
+  loadLearningPlan,
+  loadBuildingPlan,
+  loadAllLearningPlans,
+  loadAllBuildingPlans
+} from '@/services/explorationProgressService';
 
 export const useExplorationProgress = () => {
   const { user } = useAuth();
@@ -22,8 +36,8 @@ export const useExplorationProgress = () => {
     if (!user) return;
     
     try {
-      const savedProject = localStorage.getItem(`exploration_project_${user.id}`);
-      const savedPublicBuilding = localStorage.getItem(`public_building_${user.id}`);
+      const savedProject = getSelectedProject(user.id);
+      const savedPublicBuilding = getPublicBuilding(user.id);
       
       if (savedProject) setSelectedProject(savedProject);
       if (savedPublicBuilding) setPublicBuildingStarted(true);
@@ -32,39 +46,18 @@ export const useExplorationProgress = () => {
       await loadAllProjectsProgress();
       
       if (savedProject) {
-        const { data: learningPlan, error } = await supabase
-          .from('learning_plans')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('project_id', savedProject)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error loading learning plan:', error);
-        } else if (learningPlan) {
+        const learningPlan = await loadLearningPlan(user.id, savedProject);
+        
+        if (learningPlan) {
           setGeneratedLearningPlan(learningPlan.learning_plan_data as unknown as LearningPlan);
           setLearningPlanCreated(true);
           setShowLearningPlan(true);
         }
 
-        try {
-          const { data: buildingPlan, error: buildingError } = await supabase
-            .from('building_in_public_plans')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('project_id', savedProject)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (!buildingError && buildingPlan) {
-            setBuildingInPublicPlan(buildingPlan.plan_data);
-            setPublicBuildingStarted(true);
-          }
-        } catch (buildingQueryError) {
-          console.error('Error loading building in public plan for project:', buildingQueryError);
+        const buildingPlan = await loadBuildingPlan(user.id, savedProject);
+        if (buildingPlan) {
+          setBuildingInPublicPlan(buildingPlan);
+          setPublicBuildingStarted(true);
         }
       }
     } catch (error) {
@@ -76,39 +69,28 @@ export const useExplorationProgress = () => {
     if (!user) return;
 
     try {
-      // Load all learning plans for this user
-      const { data: learningPlans, error: learningError } = await supabase
-        .from('learning_plans')
-        .select('project_id')
-        .eq('user_id', user.id);
+      const learningPlans = await loadAllLearningPlans(user.id);
+      const buildingPlans = await loadAllBuildingPlans(user.id);
 
-      // Load all building plans for this user
-      const { data: buildingPlans, error: buildingError } = await supabase
-        .from('building_in_public_plans')
-        .select('project_id')
-        .eq('user_id', user.id);
+      const progress: Record<string, { learningPlan: boolean; buildingPlan: boolean }> = {};
+      
+      // Mark projects with learning plans
+      learningPlans.forEach(plan => {
+        if (!progress[plan.project_id]) {
+          progress[plan.project_id] = { learningPlan: false, buildingPlan: false };
+        }
+        progress[plan.project_id].learningPlan = true;
+      });
 
-      if (!learningError && !buildingError) {
-        const progress: Record<string, { learningPlan: boolean; buildingPlan: boolean }> = {};
-        
-        // Mark projects with learning plans
-        learningPlans?.forEach(plan => {
-          if (!progress[plan.project_id]) {
-            progress[plan.project_id] = { learningPlan: false, buildingPlan: false };
-          }
-          progress[plan.project_id].learningPlan = true;
-        });
+      // Mark projects with building plans
+      buildingPlans.forEach(plan => {
+        if (!progress[plan.project_id]) {
+          progress[plan.project_id] = { learningPlan: false, buildingPlan: false };
+        }
+        progress[plan.project_id].buildingPlan = true;
+      });
 
-        // Mark projects with building plans
-        buildingPlans?.forEach(plan => {
-          if (!progress[plan.project_id]) {
-            progress[plan.project_id] = { learningPlan: false, buildingPlan: false };
-          }
-          progress[plan.project_id].buildingPlan = true;
-        });
-
-        setProjectProgress(progress);
-      }
+      setProjectProgress(progress);
     } catch (error) {
       console.error('Error loading all projects progress:', error);
     }
@@ -118,39 +100,18 @@ export const useExplorationProgress = () => {
     if (!user) return;
     
     try {
-      const { data: learningPlan, error } = await supabase
-        .from('learning_plans')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error loading learning plan for project:', error);
-      } else if (learningPlan) {
+      const learningPlan = await loadLearningPlan(user.id, projectId);
+      
+      if (learningPlan) {
         setGeneratedLearningPlan(learningPlan.learning_plan_data as unknown as LearningPlan);
         setLearningPlanCreated(true);
         setShowLearningPlan(true);
       }
 
-      try {
-        const { data: buildingPlan, error: buildingError } = await supabase
-          .from('building_in_public_plans')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('project_id', projectId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (!buildingError && buildingPlan) {
-          setBuildingInPublicPlan(buildingPlan.plan_data);
-          setPublicBuildingStarted(true);
-        }
-      } catch (buildingQueryError) {
-        console.error('Error loading building in public plan for project:', buildingQueryError);
+      const buildingPlan = await loadBuildingPlan(user.id, projectId);
+      if (buildingPlan) {
+        setBuildingInPublicPlan(buildingPlan);
+        setPublicBuildingStarted(true);
       }
     } catch (error) {
       console.error('Error checking learning plan for project:', error);
@@ -159,7 +120,9 @@ export const useExplorationProgress = () => {
 
   const handleProjectSelect = (projectId: string) => {
     setSelectedProject(projectId);
-    localStorage.setItem(`exploration_project_${user.id}`, projectId);
+    if (user) {
+      saveSelectedProject(user.id, projectId);
+    }
     
     setLearningPlanCreated(false);
     setShowLearningPlan(false);
@@ -172,51 +135,41 @@ export const useExplorationProgress = () => {
 
   const backToProjectSelection = () => {
     setSelectedProject(null);
-    localStorage.removeItem(`exploration_project_${user.id}`);
+    if (user) {
+      removeSelectedProject(user.id);
+      removePublicBuilding(user.id);
+    }
     setLearningPlanCreated(false);
     setPublicBuildingStarted(false);
     setShowLearningPlan(false);
     setGeneratedLearningPlan(null);
     setBuildingInPublicPlan(null);
-    localStorage.removeItem(`public_building_${user.id}`);
   };
 
   const resetExploration = () => {
     setSelectedProject(null);
-    localStorage.removeItem(`exploration_project_${user.id}`);
+    if (user) {
+      removeSelectedProject(user.id);
+      removePublicBuilding(user.id);
+    }
     setLearningPlanCreated(false);
     setPublicBuildingStarted(false);
     setShowLearningPlan(false);
     setGeneratedLearningPlan(null);
     setBuildingInPublicPlan(null);
-    localStorage.removeItem(`public_building_${user.id}`);
   };
 
   const getProgressPercentage = () => {
-    // Check if user has any learning plans across all projects
-    const hasAnyLearningPlan = Object.values(projectProgress).some(progress => progress.learningPlan);
-    
-    // Check if user has any building plans across all projects
-    const hasAnyBuildingPlan = Object.values(projectProgress).some(progress => progress.buildingPlan);
-    
-    // Check if user has explored any projects (has progress on any project)
-    const hasExploredAnyProject = Object.keys(projectProgress).length > 0;
-
-    let completed = 0;
-    if (selectedProject || hasExploredAnyProject) completed += 33;
-    if (hasAnyLearningPlan || learningPlanCreated) completed += 33;
-    if (hasAnyBuildingPlan || publicBuildingStarted) completed += 34;
-    return completed;
+    return calculateProgressPercentage(
+      selectedProject,
+      learningPlanCreated,
+      publicBuildingStarted,
+      projectProgress
+    );
   };
 
-  const getProjectProgress = (projectId: string) => {
-    const progress = projectProgress[projectId];
-    if (!progress) return 0;
-    
-    let completed = 0;
-    if (progress.learningPlan) completed += 50;
-    if (progress.buildingPlan) completed += 50;
-    return completed;
+  const getProjectProgressPercentage = (projectId: string) => {
+    return getProjectProgress(projectId, projectProgress);
   };
 
   return {
@@ -231,7 +184,7 @@ export const useExplorationProgress = () => {
     backToProjectSelection,
     resetExploration,
     getProgressPercentage,
-    getProjectProgress,
+    getProjectProgress: getProjectProgressPercentage,
     setGeneratedLearningPlan,
     setLearningPlanCreated,
     setShowLearningPlan,
