@@ -24,6 +24,12 @@ const ExplorationProgress = ({
   progressPercentage,
   projectProgress 
 }: ExplorationProgressProps) => {
+  // Debug logging
+  console.log('ExplorationProgress - selectedProject:', selectedProject);
+  console.log('ExplorationProgress - learningPlanCreated:', learningPlanCreated);
+  console.log('ExplorationProgress - publicBuildingStarted:', publicBuildingStarted);
+  console.log('ExplorationProgress - projectProgress:', projectProgress);
+
   // Check if user has any learning plans across all projects
   const hasAnyLearningPlan = Object.values(projectProgress).some(progress => progress.learningPlan);
   
@@ -31,9 +37,12 @@ const ExplorationProgress = ({
   const hasAnyBuildingPlan = Object.values(projectProgress).some(progress => progress.buildingPlan);
 
   const getStepStatus = (stepKey: string) => {
+    console.log(`Getting status for step: ${stepKey}`);
     switch (stepKey) {
       case 'project':
-        return selectedProject ? 'completed' : 'current';
+        const projectStatus = selectedProject ? 'completed' : 'current';
+        console.log(`Project step status: ${projectStatus}, selectedProject: ${selectedProject}`);
+        return projectStatus;
       case 'learning':
         if (hasAnyLearningPlan || learningPlanCreated) return 'completed';
         return selectedProject ? 'current' : 'locked';
@@ -64,6 +73,8 @@ const ExplorationProgress = ({
         {steps.map((step, index) => {
           const status = getStepStatus(step.key);
           const IconComponent = step.icon;
+          
+          console.log(`Step ${step.name} has status: ${status}`);
           
           return (
             <div key={step.key} className={cn(
