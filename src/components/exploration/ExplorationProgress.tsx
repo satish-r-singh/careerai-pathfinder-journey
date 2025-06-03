@@ -1,3 +1,4 @@
+
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, CheckCircle, Clock, TrendingUp, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
