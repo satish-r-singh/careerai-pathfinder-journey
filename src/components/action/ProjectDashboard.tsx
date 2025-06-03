@@ -338,12 +338,14 @@ const ProjectDashboard = () => {
   };
 
   const moveTask = (taskId: string, newStatus: Task['status']) => {
+    console.log('Moving task:', taskId, 'to status:', newStatus);
     setTasks(tasks.map(task => 
       task.id === taskId ? { ...task, status: newStatus } : task
     ));
   };
 
   function handleDragStart(event: DragStartEvent) {
+    console.log('Drag start:', event.active.id);
     setActiveId(event.active.id as string);
   }
 
@@ -355,18 +357,22 @@ const ProjectDashboard = () => {
     const activeId = active.id as string;
     const overId = over.id as string;
 
+    console.log('Drag over - activeId:', activeId, 'overId:', overId);
+
     // Check if we're dropping over a column
     const isOverAColumn = columns.some(col => col.id === overId);
     
     if (isOverAColumn) {
       const task = tasks.find(t => t.id === activeId);
       if (task && task.status !== overId) {
+        console.log('Updating task status during drag over');
         moveTask(activeId, overId as Task['status']);
       }
     }
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    console.log('Drag end:', event.active.id, event.over?.id);
     setActiveId(null);
     
     const { active, over } = event;
@@ -382,6 +388,7 @@ const ProjectDashboard = () => {
     if (isOverAColumn) {
       const task = tasks.find(t => t.id === activeId);
       if (task && task.status !== overId) {
+        console.log('Final task status update on drag end');
         moveTask(activeId, overId as Task['status']);
       }
     }
