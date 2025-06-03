@@ -32,15 +32,17 @@ export const calculateProgressPercentage = (
     completed += 33;
   }
   
-  // Step 2: Learning plan - completed if user has ANY learning plan across all projects OR current session has one
-  const step2Complete = hasAnyLearningPlan || learningPlanCreated;
+  // Step 2: Learning plan - completed if user has ANY learning plan across all projects
+  // Don't use learningPlanCreated as it's session-specific
+  const step2Complete = hasAnyLearningPlan;
   console.log('Step 2 (Learning plan) complete:', step2Complete);
   if (step2Complete) {
     completed += 33;
   }
   
-  // Step 3: Building in public - completed if user has ANY building plan across all projects OR current session has one
-  const step3Complete = hasAnyBuildingPlan || publicBuildingStarted;
+  // Step 3: Building in public - completed if user has ANY building plan across all projects
+  // Don't use publicBuildingStarted as it's session-specific
+  const step3Complete = hasAnyBuildingPlan;
   console.log('Step 3 (Building in public) complete:', step3Complete);
   if (step3Complete) {
     completed += 34;
