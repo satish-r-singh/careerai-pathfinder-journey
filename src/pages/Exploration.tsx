@@ -52,11 +52,14 @@ const Exploration = () => {
   };
 
   const handleLearningPlanCreated = async (plan: any) => {
+    console.log('Learning plan created, refreshing progress...');
     setGeneratedLearningPlan(plan);
     setLearningPlanCreated(true);
     setShowLearningPlan(true);
-    // Refresh project progress to update the progress bars
+    
+    // Refresh project progress to update the progress bars immediately
     await refreshProjectProgress();
+    console.log('Project progress refreshed after learning plan creation');
   };
 
   return (

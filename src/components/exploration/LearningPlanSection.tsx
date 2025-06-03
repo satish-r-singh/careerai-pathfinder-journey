@@ -61,7 +61,8 @@ const LearningPlanSection = ({
             variant: "destructive",
           });
         } else {
-          onLearningPlanCreated(aiLearningPlan);
+          // Call the callback function which will refresh progress
+          await onLearningPlanCreated(aiLearningPlan);
           localStorage.setItem(`learning_plan_${user.id}`, 'true');
           
           toast({
