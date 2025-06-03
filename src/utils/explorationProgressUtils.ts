@@ -5,31 +5,49 @@ export const calculateProgressPercentage = (
   publicBuildingStarted: boolean,
   projectProgress: Record<string, { learningPlan: boolean; buildingPlan: boolean }>
 ) => {
+  console.log('=== PROGRESS CALCULATION DEBUG ===');
+  console.log('selectedProject:', selectedProject);
+  console.log('learningPlanCreated:', learningPlanCreated);
+  console.log('publicBuildingStarted:', publicBuildingStarted);
+  console.log('projectProgress:', projectProgress);
+  
   // Check if user has any learning plans across all projects
   const hasAnyLearningPlan = Object.values(projectProgress).some(progress => progress.learningPlan);
+  console.log('hasAnyLearningPlan:', hasAnyLearningPlan);
   
   // Check if user has any building plans across all projects
   const hasAnyBuildingPlan = Object.values(projectProgress).some(progress => progress.buildingPlan);
+  console.log('hasAnyBuildingPlan:', hasAnyBuildingPlan);
   
   // Check if user has explored any projects (has progress on any project)
   const hasExploredAnyProject = Object.keys(projectProgress).length > 0;
+  console.log('hasExploredAnyProject:', hasExploredAnyProject);
 
   let completed = 0;
   
   // Step 1: Project exploration - completed if user has explored any project OR has a currently selected project
-  if (selectedProject || hasExploredAnyProject) {
+  const step1Complete = selectedProject || hasExploredAnyProject;
+  console.log('Step 1 (Project exploration) complete:', step1Complete);
+  if (step1Complete) {
     completed += 33;
   }
   
   // Step 2: Learning plan - completed if user has ANY learning plan across all projects OR current session has one
-  if (hasAnyLearningPlan || learningPlanCreated) {
+  const step2Complete = hasAnyLearningPlan || learningPlanCreated;
+  console.log('Step 2 (Learning plan) complete:', step2Complete);
+  if (step2Complete) {
     completed += 33;
   }
   
   // Step 3: Building in public - completed if user has ANY building plan across all projects OR current session has one
-  if (hasAnyBuildingPlan || publicBuildingStarted) {
+  const step3Complete = hasAnyBuildingPlan || publicBuildingStarted;
+  console.log('Step 3 (Building in public) complete:', step3Complete);
+  if (step3Complete) {
     completed += 34;
   }
+  
+  console.log('Final calculated progress:', completed);
+  console.log('=== END PROGRESS CALCULATION DEBUG ===');
   
   return completed;
 };
