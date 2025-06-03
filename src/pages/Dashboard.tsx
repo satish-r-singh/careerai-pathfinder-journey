@@ -169,14 +169,21 @@ const Dashboard = () => {
       return { phase: 1, progress: Math.round(totalProgress) };
     }
 
-    // Check if Exploration is complete - Updated to use the correct state variables
-    const explorationComplete = explorationProject && explorationLearningPlan && explorationPublicBuilding;
+    // Check if Exploration is complete - Use the database-loaded state variables
+    const explorationComplete = explorationLearningPlan && explorationPublicBuilding;
+    console.log('Dashboard - Exploration progress check:', {
+      explorationLearningPlan,
+      explorationPublicBuilding,
+      explorationComplete
+    });
+    
     if (!explorationComplete) {
       // Phase 2: Exploration
       let totalProgress = 0;
-      if (explorationProject) totalProgress += 33;
-      if (explorationLearningPlan) totalProgress += 33;
-      if (explorationPublicBuilding) totalProgress += 34;
+      // Since we have learning plans and building plans, both should be true
+      if (explorationLearningPlan) totalProgress += 50;
+      if (explorationPublicBuilding) totalProgress += 50;
+      console.log('Dashboard - Exploration progress calculation:', totalProgress);
       return { phase: 2, progress: Math.round(totalProgress) };
     }
 
